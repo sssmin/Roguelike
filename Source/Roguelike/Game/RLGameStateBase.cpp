@@ -30,7 +30,6 @@ void ARLGameStateBase::BeginPlay()
 	}
 
 }
-//클리어 조건이 됐을 때 포탈컴프 접근해서 파티클 보이게.
 
 void ARLGameStateBase::SetObjective()
 {
@@ -87,7 +86,6 @@ void ARLGameStateBase::ClearThisCell() //어떠한 조건으로 클리어 했을 때
 
 void ARLGameStateBase::TestKillScored()
 {
-	UE_LOG(LogTemp, Warning, TEXT("CurrentNum : %d, ObjectiveNum : %d"), CurrentNum, ObjectiveNum);
 	if (++CurrentNum == ObjectiveNum)
 	{
 		ClearThisCell();

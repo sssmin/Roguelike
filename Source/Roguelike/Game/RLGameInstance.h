@@ -24,10 +24,11 @@ public:
 	void TestPrintMap();
 	virtual void Init() override;
 	void RequestInfo();
-	void RequestMove(int32 Dir);
+	void RequestMove(int32 Dir, const FVector& OtherSide);
 	TArray<int32> GetConnectedDir();
 	void ClearThisCell();
 	FOnMoveMap OnMoveMap;
+
 private:
 	FVector2Int MapSize;
 	TSharedPtr<DFSAgrt> DFS;
@@ -42,7 +43,7 @@ private:
 	bool bIsDiscoverdBoss; //BossPrevCell에 도착하면 true. 
 	int32 TotalRoomNum; // 방 총개수. 시작지점 미포함. Total - 1 == ClearCount면 보스 입장 가능
 
-
+	FVector PlayerSpawnLoc;
 	//위치한 방이 무슨 방이냐에 따라 게임스테이트에 줘야할 내용이 다른데
 	//몹 수나 뭐 그런것들을 어케 계산해서 줄까?
 	//아니면 몇스테이지인지랑, 이방 타입만 주고
@@ -57,5 +58,5 @@ public:
 	void SetManager(FManage InManager) { Manager = InManager; }
 	int32 GetStageLevel() const { return StageLevel; }
 	FCell GetCellInfo() const { return Board[PlayerCurrentCell]; }
-	
+	FVector GetPlayerSpawnLoc() const { return PlayerSpawnLoc;  }
 };

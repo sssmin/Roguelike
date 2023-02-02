@@ -38,7 +38,15 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SetActorLocation(FVector(0.f, 0.f, 0.f));
+	URLGameInstance* GI = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
+	if (GI)
+	{
+		SetActorLocation(GI->GetPlayerSpawnLoc());
+		FVector Loc = GI->GetPlayerSpawnLoc();
+		UE_LOG(LogTemp, Warning, TEXT("%f, %f, %f"), Loc.X, Loc.Y, Loc.Z);
+	}
+
+	//SetActorLocation(FVector(0.f, 0.f, 0.f));
 	PC = GetWorld()->GetFirstPlayerController();
 	if (PC)
 	{

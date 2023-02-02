@@ -14,6 +14,7 @@ APortalActor::APortalActor()
 	PrimaryActorTick.bCanEverTick = false;
 
 	SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
+	OtherSide = FVector(0.f, 0.f, 0.f);
 }
 
 void APortalActor::BeginPlay()
@@ -55,7 +56,7 @@ void APortalActor::BeginOverlapped(UPrimitiveComponent* OverlappedComponent, AAc
 	{
 		if (Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this)))
 		{
-			Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this))->RequestMove(Dir);
+			Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this))->RequestMove(Dir, OtherSide);
 		}
 	}
 	

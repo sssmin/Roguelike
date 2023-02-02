@@ -34,9 +34,10 @@ private:
 	UFUNCTION()
 	void BeginOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	
-
+	FVector OtherSide;
 
 public:
 	void PortalParticleVisible(bool IsActive);
 	void SetDir(int32 InDir) { Dir = InDir; }
+	void SetOtherSide(const FVector& InOtherSide) { OtherSide = InOtherSide;  }
 };
