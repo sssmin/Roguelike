@@ -43,6 +43,5 @@ private:
 	void SetLocationPotal();
 	void CreatePortal(TArray<int32> Dirs);
 public:
-
 	void ActiveAllPortal();
 };

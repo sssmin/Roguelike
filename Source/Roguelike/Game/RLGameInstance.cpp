@@ -20,12 +20,15 @@ URLGameInstance::URLGameInstance()
 
 void URLGameInstance::Init()
 {
+	Super::Init();
 }
 
 void URLGameInstance::Initialize()
 {
 	GenerateMap();
-	Manager = FManage();
+	HealthManage = FHealthManage();
+	CombatManage = FCombatManage();
+	State = 0;
 	PlayerSpawnLoc = FVector(0.f, 0.f, 0.f);
 }
 

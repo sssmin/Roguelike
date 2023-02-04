@@ -50,13 +50,25 @@ private:
 	//스테이지에 따라서 게임스테이트에서 데이터테이블에서 빼오게할까?
 	// 
 	//아이템 정보, 플레이어 정보도 저장해야함.
-	FManage Manager;
+	FHealthManage HealthManage;
+	FCombatManage CombatManage;
+	uint8 State; //맵 이동하면 상태 유지?
 
 	int32 CalcNextCell(int32 Dir);
 public:
-	FManage GetManager() const { return Manager; }
-	void SetManager(FManage InManager) { Manager = InManager; }
+	void GetManager(OUT FHealthManage& InHealthManage, OUT FCombatManage& InCombatManage, OUT uint8& InState)
+	{ 
+		InHealthManage = HealthManage;
+		InCombatManage = CombatManage;
+		InState = State;
+	}
+	void SetManager(FHealthManage& InHealthManage, FCombatManage& InCombatManage, uint8& InState) 
+	{
+		HealthManage = InHealthManage;
+		CombatManage = InCombatManage;
+		State = InState;
+	}
 	int32 GetStageLevel() const { return StageLevel; }
 	FCell GetCellInfo() const { return Board[PlayerCurrentCell]; }
-	FVector GetPlayerSpawnLoc() const { return PlayerSpawnLoc;  }
+	FVector GetPlayerSpawnLoc() const { return PlayerSpawnLoc; }
 };

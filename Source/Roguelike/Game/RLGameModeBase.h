@@ -13,13 +13,10 @@ struct FMonsterStatTable : public FTableRowBase
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 StageLevel;
+	float AvgATK;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 AvgATK;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 AvgMaxHP;
+	float AvgMaxHP;
 
 };
 
@@ -47,6 +44,11 @@ enum class EMonsterType : uint8
 
 	MAX
 };
+
+class AMonsterCharacter;
+struct FHealthManage;
+struct FCombatManage;
+
 UCLASS()
 class ROGUELIKE_API ARLGameModeBase : public AGameModeBase
 {
@@ -57,5 +59,11 @@ public:
 	virtual void BeginPlay() override;
 	void SpawnMob(int32 StageLevel, int32 MobCount);
 	void SpawnBoss(int32 StageLevel);
-	
+
+private:
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AMonsterCharacter> MonsterClass;
+	TArray<FVector> MobSpawnPoints;
+
+	void SetMonsterManage(int32 StageLevel, OUT FHealthManage& HealthManage, OUT FCombatManage& CombatManage);
 };

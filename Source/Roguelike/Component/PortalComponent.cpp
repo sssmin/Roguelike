@@ -64,7 +64,7 @@ void UPortalComponent::SetLocationPotal()
 {
 	TArray<AActor*> TargetPointActors;
 	UGameplayStatics::GetAllActorsOfClass(this, ATargetPoint::StaticClass(), TargetPointActors);
-	
+
 	TMap<int32, FVector> SpawnLocation;
 	for (auto TagetPoint : TargetPointActors)
 	{
@@ -80,8 +80,8 @@ void UPortalComponent::SetLocationPotal()
 			}
 		}
 	}
-	
-	
+
+
 	for (auto PortalInfo : Portals)
 	{
 		if (SpawnLocation.Find(PortalInfo.Dir))
@@ -90,26 +90,26 @@ void UPortalComponent::SetLocationPotal()
 
 			switch (PortalInfo.Dir)
 			{
-				case 0:
-					if (SpawnLocation.Find(1))
-						PortalInfo.Portal->SetOtherSide(*SpawnLocation.Find(1) + FVector(100.f, 0.f, 0.f));
-					break;
-				case 1:
-					if (SpawnLocation.Find(0))
-						PortalInfo.Portal->SetOtherSide(*SpawnLocation.Find(0) + FVector(-100.f, 0.f, 0.f));
-					break;
-				case 2:
-					if (SpawnLocation.Find(3))
-						PortalInfo.Portal->SetOtherSide(*SpawnLocation.Find(3) + FVector(0.f, 100.f, 0.f));
-					break;
-				case 3:
-					if (SpawnLocation.Find(2))
-						PortalInfo.Portal->SetOtherSide(*SpawnLocation.Find(2) + FVector(0.f, -100.f, 0.f));
-					break;
+			case 0:
+				if (SpawnLocation.Find(1))
+					PortalInfo.Portal->SetOtherSide(*SpawnLocation.Find(1) + FVector(100.f, 0.f, 0.f));
+				break;
+			case 1:
+				if (SpawnLocation.Find(0))
+					PortalInfo.Portal->SetOtherSide(*SpawnLocation.Find(0) + FVector(-100.f, 0.f, 0.f));
+				break;
+			case 2:
+				if (SpawnLocation.Find(3))
+					PortalInfo.Portal->SetOtherSide(*SpawnLocation.Find(3) + FVector(0.f, 100.f, 0.f));
+				break;
+			case 3:
+				if (SpawnLocation.Find(2))
+					PortalInfo.Portal->SetOtherSide(*SpawnLocation.Find(2) + FVector(0.f, -100.f, 0.f));
+				break;
 			}
-			
+
 		}
-		
+
 	}
 }
 

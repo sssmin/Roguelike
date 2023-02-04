@@ -31,6 +31,7 @@ void ARLGameStateBase::BeginPlay()
 
 }
 
+
 void ARLGameStateBase::SetObjective()
 {
 	ARLGameModeBase* GM = Cast<ARLGameModeBase>(UGameplayStatics::GetGameMode(this));

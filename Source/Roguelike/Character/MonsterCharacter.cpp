@@ -2,4 +2,10 @@
 
 
 #include "MonsterCharacter.h"
+#include "Components/CapsuleComponent.h"
 
+AMonsterCharacter::AMonsterCharacter()
+{
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	GetCapsuleComponent()->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
+}

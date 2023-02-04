@@ -5,6 +5,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/InputComponent.h"
+
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -26,11 +27,14 @@ APlayerCharacter::APlayerCharacter()
 
 	GetCharacterMovement()->JumpZVelocity = 700.f;
 	GetCharacterMovement()->AirControl = 0.f;
-	GetCharacterMovement()->MaxWalkSpeed = 500.f;
+	GetCharacterMovement()->MaxWalkSpeed = 700.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
+	
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Player_Portal"));
 
-
+	
 }
 
 
@@ -42,15 +46,14 @@ void APlayerCharacter::BeginPlay()
 	if (GI)
 	{
 		SetActorLocation(GI->GetPlayerSpawnLoc());
-		FVector Loc = GI->GetPlayerSpawnLoc();
-		UE_LOG(LogTemp, Warning, TEXT("%f, %f, %f"), Loc.X, Loc.Y, Loc.Z);
 	}
 
-	//SetActorLocation(FVector(0.f, 0.f, 0.f));
 	PC = GetWorld()->GetFirstPlayerController();
 	if (PC)
 	{
 		FInputModeGameAndUI InputModeData;
+		InputModeData.SetHideCursorDuringCapture(false);
+		InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::LockInFullscreen);
 		PC->SetInputMode(InputModeData);
 	}
 }
@@ -86,6 +89,9 @@ void APlayerCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 	PlayerInputComponent->BindAction("TestPrintMap", IE_Pressed, this, &ThisClass::TestPrintMap);
 	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &ThisClass::Attack);
 
+	PlayerInputComponent->BindAction("FreeCam", IE_Pressed, this, &ThisClass::PressedFreeCam);
+	PlayerInputComponent->BindAction("FreeCam", IE_Released, this, &ThisClass::ReleasedFreeCam);
+
 	PlayerInputComponent->BindAxis("Move Forward / Backward", this, &ThisClass::MoveForward);
 	PlayerInputComponent->BindAxis("Move Right / Left", this, &ThisClass::MoveRight);
 }
@@ -112,6 +118,16 @@ void APlayerCharacter::MoveRight(float Value)
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		AddMovementInput(Direction, Value);
 	}
+}
+
+void APlayerCharacter::PressedFreeCam()
+{
+	OnPressedFreeCam.ExecuteIfBound(true);
+}
+
+void APlayerCharacter::ReleasedFreeCam()
+{
+	OnPressedFreeCam.ExecuteIfBound(false);
 }
 
 
@@ -145,7 +161,7 @@ void APlayerCharacter::TestPrintMap()
 
 void APlayerCharacter::Interact()
 {
-	//포탈에 다가가면 그냥 가지게할까?
+	
 }
 
 

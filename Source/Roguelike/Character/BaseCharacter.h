@@ -2,9 +2,12 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "Roguelike/Roguelike.h"
 #include "GameFramework/Character.h"
+#include "Roguelike/Manage.h"
 #include "BaseCharacter.generated.h"
+
+
 
 class UCombatComponent;
 class ABaseProjectile;
@@ -19,9 +22,10 @@ public:
 	ABaseCharacter();
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
-	
+	virtual void OnHit(AActor* Attacker, const FCombatManage& EnemyManage);
 protected:
 	virtual void Attack();
+
 private:
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UCombatComponent* CombatComp;
@@ -30,5 +34,7 @@ private:
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UManagerComponent* ManagerComp;
 
-	
+	FCombatManage GetCombatManage() const;
+public:
+	UManagerComponent* GetManagerComp() const { return ManagerComp;  }
 };
