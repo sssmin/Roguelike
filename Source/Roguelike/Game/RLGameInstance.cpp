@@ -20,12 +20,16 @@ URLGameInstance::URLGameInstance()
 
 void URLGameInstance::Init()
 {
+	Super::Init();
 }
 
 void URLGameInstance::Initialize()
 {
 	GenerateMap();
-	Manager = FManage();
+	HealthManage = FHealthManage();
+	CombatManage = FCombatManage();
+	State = 0;
+	PlayerSpawnLoc = FVector(0.f, 0.f, 0.f);
 }
 
 void URLGameInstance::GenerateMap()
@@ -100,13 +104,14 @@ TArray<int32> URLGameInstance::GetConnectedDir()
 	return Ret;
 }
 
-void URLGameInstance::RequestMove(int32 Dir) //0,1,2,3중 하나로 넘어옴
+void URLGameInstance::RequestMove(int32 Dir, const FVector& OtherSide) //0,1,2,3중 하나로 넘어옴
 {
 	int32 NextCell = CalcNextCell(Dir);
 	Board[PlayerCurrentCell].CellState = ECellState::CLEAR;
 	PlayerCurrentCell = NextCell;
 	Board[PlayerCurrentCell].CellState = ECellState::INPLAYER;
 	//레벨이동
+	PlayerSpawnLoc = OtherSide;
 	
 	if (Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld())))
 	{
@@ -117,7 +122,6 @@ void URLGameInstance::RequestMove(int32 Dir) //0,1,2,3중 하나로 넘어옴
 
 int32 URLGameInstance::CalcNextCell(int32 Dir)
 {
-	
 	switch (Dir)
 	{
 		case 0:

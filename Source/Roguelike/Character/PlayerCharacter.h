@@ -6,8 +6,11 @@
 #include "BaseCharacter.h"
 #include "PlayerCharacter.generated.h"
 
-
 class USphereComponent;
+class UCameraComponent;
+class USpringArmComponent;
+
+DECLARE_DELEGATE_OneParam(FOnPressedFreeCam, bool);
 
 UCLASS()
 class ROGUELIKE_API APlayerCharacter : public ABaseCharacter
@@ -17,6 +20,7 @@ public:
 	APlayerCharacter();
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
+	FOnPressedFreeCam OnPressedFreeCam;
 protected:
 	void MoveForward(float Value);
 	void MoveRight(float Value);
@@ -27,11 +31,14 @@ private:
 	UPROPERTY()
 	APlayerController* PC;
 	FRotator LookRot;
+
 	void TestIncreaseKillCount();
 	void TestLevelMove();
 	void TestPrintMap();
 
 	void Interact();
+	void PressedFreeCam();
+	void ReleasedFreeCam();
 
 public:
 	FRotator GetLookRot() const { return LookRot; }

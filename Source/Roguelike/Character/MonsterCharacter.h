@@ -14,4 +14,7 @@ class ROGUELIKE_API AMonsterCharacter : public ABaseCharacter
 {
 	GENERATED_BODY()
 	
+public:
+	AMonsterCharacter();
+	
 };

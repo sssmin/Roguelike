@@ -12,6 +12,9 @@ ABaseCharacter::ABaseCharacter()
 	CombatComp = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComp"));
 	ManagerComp = CreateDefaultSubobject<UManagerComponent>(TEXT("ManagerComp"));
 
+
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	GetMesh()->SetCollisionProfileName(TEXT("CharacterBlockProjectile"));
 }
 
 void ABaseCharacter::BeginPlay()
@@ -21,13 +24,13 @@ void ABaseCharacter::BeginPlay()
 	if (CombatComp && ProjectileClass)
 	{
 		CombatComp->SetProjectileClass(ProjectileClass);
+		CombatComp->GetCombatManage.BindUObject(this, &ThisClass::GetCombatManage);
+		
 	}
 }
 
 void ABaseCharacter::Tick(float DeltaTime)
 {
-	
-	
 	
 	
 }
@@ -40,3 +43,19 @@ void ABaseCharacter::Attack()
 	}
 }
 
+void ABaseCharacter::OnHit(AActor* Attacker, const FCombatManage& EnemyCombatManage)
+{
+	if (ManagerComp)
+	{
+		ManagerComp->ReceiveDamage(EnemyCombatManage);
+	}
+}
+
+FCombatManage ABaseCharacter::GetCombatManage() const
+{
+	if (ManagerComp)
+	{
+		return ManagerComp->GetCombatManage();
+	}
+	return FCombatManage();
+}

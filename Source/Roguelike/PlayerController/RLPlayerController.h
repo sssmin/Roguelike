@@ -10,6 +10,7 @@
 
 class ABSPAlgorithm;
 class UMinimapWidget;
+class APlayersCamera;
 
 UCLASS()
 class ROGUELIKE_API ARLPlayerController : public APlayerController
@@ -36,6 +37,9 @@ private:
 
 	/*이런저런 아이템 정보,플레이어 정보들*/
 
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<APlayersCamera> PlayersCameraClass;
 public:
 	
 };

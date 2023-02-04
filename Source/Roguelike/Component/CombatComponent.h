@@ -4,7 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Roguelike/Manage.h"
 #include "CombatComponent.generated.h"
+
+
+DECLARE_DELEGATE_RetVal(FCombatManage, FGetCombatManage);
 
 class ABaseProjectile;
 
@@ -18,11 +22,13 @@ public:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	void Fire();
+	FGetCombatManage GetCombatManage;
+
+
 private:
 	TSubclassOf<ABaseProjectile> ProjectileClass;
 
 public:	
-	
 	void SetProjectileClass(TSubclassOf<ABaseProjectile> Class) { ProjectileClass = Class;  }
 	
 		

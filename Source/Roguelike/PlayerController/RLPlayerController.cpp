@@ -5,6 +5,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Roguelike/Game/RLGameInstance.h"
 #include "Roguelike/Widget/MinimapWidget.h"
+#include "Roguelike/PlayersCamera.h"
 
 
 
@@ -19,6 +20,20 @@ void ARLPlayerController::BeginPlay()
 	Super::BeginPlay();
 
 	bShowMouseCursor = true;
+	FVector PlayerLocation = GetPawn()->GetActorLocation();
+	FTransform SpawnTransform = FTransform(FRotator::ZeroRotator, GetPawn()->GetActorLocation(), FVector(1.f, 1.f, 1.f));
+	FActorSpawnParameters Params;
+	Params.Owner = GetPawn();
+	if (PlayersCameraClass)
+	{
+		APlayersCamera* PlayersCamera = GetWorld()->SpawnActor<APlayersCamera>(PlayersCameraClass, SpawnTransform, Params);
+		if (PlayersCamera)
+		{
+			SetViewTargetWithBlend(PlayersCamera);
+		}
+	}
+	
+
 }
 
 void ARLPlayerController::OnPossess(APawn* aPawn)

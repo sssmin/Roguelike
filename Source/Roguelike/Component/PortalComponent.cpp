@@ -62,28 +62,54 @@ void UPortalComponent::CreatePortal(TArray<int32> Dirs)
 
 void UPortalComponent::SetLocationPotal()
 {
-	for (int32 i = 0; i < Portals.Num(); ++i)
+	TArray<AActor*> TargetPointActors;
+	UGameplayStatics::GetAllActorsOfClass(this, ATargetPoint::StaticClass(), TargetPointActors);
+
+	TMap<int32, FVector> SpawnLocation;
+	for (auto TagetPoint : TargetPointActors)
 	{
-		TArray<AActor*> Actors;
-		UGameplayStatics::GetAllActorsOfClass(this, ATargetPoint::StaticClass(), Actors);
-		
-		for (int32 j = 0; j < Actors.Num(); ++j)
+		ATargetPoint* TP = Cast<ATargetPoint>(TagetPoint);
+		if (TP)
 		{
-			ATargetPoint* TP = Cast<ATargetPoint>(Actors[j]);
-			if (TP)
+			TArray<FName> TPTag = TP->Tags;
+			if (TPTag.IsValidIndex(0))
 			{
-				TArray<FName> TPTag = TP->Tags;
-				if (TPTag.IsValidIndex(0))
-				{
-					FString Str = TPTag[0].ToString();
-					int32 StrToInt = FCString::Atoi(*Str);
-					if (StrToInt == Portals[i].Dir)
-					{
-						Portals[i].Portal->SetActorLocation(TP->GetActorLocation());
-					}
-				}
+				FString Str = TPTag[0].ToString();
+				int32 StrToInt = FCString::Atoi(*Str);
+				SpawnLocation.Add(StrToInt, TP->GetActorLocation());
 			}
 		}
+	}
+
+
+	for (auto PortalInfo : Portals)
+	{
+		if (SpawnLocation.Find(PortalInfo.Dir))
+		{
+			PortalInfo.Portal->SetActorLocation(*SpawnLocation.Find(PortalInfo.Dir));
+
+			switch (PortalInfo.Dir)
+			{
+			case 0:
+				if (SpawnLocation.Find(1))
+					PortalInfo.Portal->SetOtherSide(*SpawnLocation.Find(1) + FVector(100.f, 0.f, 0.f));
+				break;
+			case 1:
+				if (SpawnLocation.Find(0))
+					PortalInfo.Portal->SetOtherSide(*SpawnLocation.Find(0) + FVector(-100.f, 0.f, 0.f));
+				break;
+			case 2:
+				if (SpawnLocation.Find(3))
+					PortalInfo.Portal->SetOtherSide(*SpawnLocation.Find(3) + FVector(0.f, 100.f, 0.f));
+				break;
+			case 3:
+				if (SpawnLocation.Find(2))
+					PortalInfo.Portal->SetOtherSide(*SpawnLocation.Find(2) + FVector(0.f, -100.f, 0.f));
+				break;
+			}
+
+		}
+
 	}
 }
 

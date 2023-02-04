@@ -31,11 +31,22 @@ void UCombatComponent::Fire()
 	Params.Owner = GetOwner();
 	if (ProjectileClass)
 	{
-		ABaseProjectile* SpawnedProjectile = GetWorld()->SpawnActor<ABaseProjectile>(ProjectileClass, GetOwner()->GetActorLocation(), GetOwner()->GetActorRotation(), Params);
+		ABaseProjectile* SpawnedProjectile = 
+			GetWorld()->SpawnActor<ABaseProjectile>(
+				ProjectileClass, 
+				GetOwner()->GetActorLocation() + GetOwner()->GetActorForwardVector() * 100.f, 
+				GetOwner()->GetActorRotation(), 
+				Params);
 		if (SpawnedProjectile)
 		{
 			SpawnedProjectile->SetVelocity(GetOwner()->GetActorForwardVector());
 			//여기서 내가 가진 특성이나, 효과로 미사일에 값을 줘야한다.
+			if (GetCombatManage.IsBound())
+			{
+				const FCombatManage CombatManage = GetCombatManage.Execute();
+				SpawnedProjectile->SetCombatManage(CombatManage);
+			}
+			
 		}
 	}
 	

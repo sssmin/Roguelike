@@ -13,6 +13,12 @@ ABaseProjectile::ABaseProjectile()
 
 	Sphere = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
 	RootComponent = Sphere;
+	Sphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	Sphere->SetCollisionObjectType(ECC_Projectile);
+	Sphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	Sphere->SetCollisionResponseToChannel(ECC_CharacterBlockProjectile, ECollisionResponse::ECR_Block);
+	Sphere->SetCollisionResponseToChannel(ECC_WallBlockProjectile, ECollisionResponse::ECR_Block);
+	Sphere->SetCollisionResponseToChannel(ECC_WorldStatic, ECollisionResponse::ECR_Block);
 
 	PMC = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("PMC"));
 	if (PMC)
@@ -28,15 +34,40 @@ void ABaseProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	if (ProjectileParticle)
+	if (!ProjectileParticles.IsEmpty())
 	{
-		UGameplayStatics::SpawnEmitterAttached(
-			ProjectileParticle, 
-			RootComponent, 
-			NAME_None, 
-			GetActorLocation(), 
-			GetActorRotation(), 
-			EAttachLocation::KeepWorldPosition);
+		UParticleSystem* Particle = nullptr;
+		switch (CombatManage.Element)
+		{
+			case EElement::NONE:
+				Particle = ProjectileParticles[0];
+				break;
+			case EElement::FIRE:
+				Particle = ProjectileParticles[1];
+				break;
+			case EElement::WATER:
+				Particle = ProjectileParticles[2];
+				break;
+			case EElement::EARTH:
+				Particle = ProjectileParticles[3];
+				break;
+			case EElement::DARKNESS:
+				Particle = ProjectileParticles[4];
+				break;
+			case EElement::LIGHT:
+				Particle = ProjectileParticles[5];
+				break;
+		}
+		if (Particle)
+		{
+			UGameplayStatics::SpawnEmitterAttached(
+				Particle,
+				RootComponent,
+				NAME_None,
+				GetActorLocation(),
+				GetActorRotation(),
+				EAttachLocation::KeepWorldPosition);
+		}
 	}
 
 	if (Sphere)
@@ -64,6 +95,28 @@ void ABaseProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UP
 {
 	if (OtherActor && Cast<ABaseCharacter>(OtherActor) && (OtherActor != GetOwner()))
 	{
-		//OtherActor에 대미지 적용
+		Cast<ABaseCharacter>(OtherActor)->OnHit(GetOwner(), CombatManage);
+		PlayHitEffect();
 	}
+	else
+	{
+		PlayDestroyEffect();
+	}
+}
+
+void ABaseProjectile::PlayHitEffect()
+{
+	UE_LOG(LogTemp, Warning, TEXT("hit character"));
+	Destroy();
+}
+
+void ABaseProjectile::PlayDestroyEffect()
+{
+	UE_LOG(LogTemp, Warning, TEXT("hit other"));
+	Destroy();
+}
+
+void ABaseProjectile::Destroyed()
+{
+
 }

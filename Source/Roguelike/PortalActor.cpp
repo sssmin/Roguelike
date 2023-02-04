@@ -14,6 +14,10 @@ APortalActor::APortalActor()
 	PrimaryActorTick.bCanEverTick = false;
 
 	SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
+	OtherSide = FVector(0.f, 0.f, 0.f);
+	SphereComp->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
+	SphereComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	SphereComp->SetCollisionResponseToChannel(ECC_Player_Portal, ECollisionResponse::ECR_Overlap);
 }
 
 void APortalActor::BeginPlay()
@@ -50,12 +54,11 @@ void APortalActor::PortalParticleVisible(bool IsActive)
 
 void APortalActor::BeginOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	//보이진 않는데 활성화되어있음.
 	if (Cast<APlayerCharacter>(OtherActor))
 	{
 		if (Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this)))
 		{
-			Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this))->RequestMove(Dir);
+			Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this))->RequestMove(Dir, OtherSide);
 		}
 	}
 	

@@ -30,7 +30,7 @@ void ARLGameStateBase::BeginPlay()
 	}
 
 }
-//클리어 조건이 됐을 때 포탈컴프 접근해서 파티클 보이게.
+
 
 void ARLGameStateBase::SetObjective()
 {
