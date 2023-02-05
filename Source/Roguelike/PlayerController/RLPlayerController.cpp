@@ -60,9 +60,27 @@ void ARLPlayerController::DrawMap()
 		{
 			MinimapWidget->Init(MapSize.X, MapSize.Y, Board);
 			MinimapWidget->AddToViewport();
-
 		}
 	}
-	
+}
+
+void ARLPlayerController::RemoveMinimapWidget()
+{
+	if (MinimapWidget)
+	{
+		MinimapWidget->RemoveFromViewport();
+	}
+}
+
+void ARLPlayerController::ShowNoticeWidget()
+{
+	if (NoticeWidgetClass)
+	{
+		UUserWidget* NoticeWidget = CreateWidget<UUserWidget>(GetWorld(), NoticeWidgetClass);
+		if (NoticeWidget)
+		{
+			NoticeWidget->AddToViewport();
+		}
+	}
 }
 

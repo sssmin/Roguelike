@@ -37,7 +37,11 @@ public:
 
 private:
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<AMonsterCharacter> MonsterClass;
+	TSubclassOf<AMonsterCharacter> NormalMonsterClass;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AMonsterCharacter> EliteMonsterClass;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AMonsterCharacter> BossMonsterClass;
 	TArray<FVector> MobSpawnPoints;
 
 	void SetMonsterManage(int32 StageLevel, OUT FHealthManage& HealthManage, OUT FCombatManage& CombatManage);

@@ -44,4 +44,5 @@ private:
 	void CreatePortal(TArray<int32> Dirs);
 public:
 	void ActiveAllPortal();
+	void CreateCenterPortal();
 };

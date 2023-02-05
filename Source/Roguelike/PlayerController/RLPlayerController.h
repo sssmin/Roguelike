@@ -20,6 +20,8 @@ public:
 	virtual void SetupInputComponent() override;
 	virtual void BeginPlay() override;
 	void SetMapInfo(FVector2Int MapSize, TArray<FCell> Board, int32 PlayerCurrentCell);
+	void RemoveMinimapWidget();
+	void ShowNoticeWidget();
 protected:
 	virtual void OnPossess(APawn* aPawn) override;
 private:
@@ -34,6 +36,10 @@ private:
 	UPROPERTY()
 	UMinimapWidget* MinimapWidget;
 
+	/****************************/
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UUserWidget> NoticeWidgetClass;
 
 	/*이런저런 아이템 정보,플레이어 정보들*/
 

@@ -28,7 +28,6 @@ void ARLGameStateBase::BeginPlay()
 		CellInfo = RLGameInstance->GetCellInfo();
 		SetObjective();
 	}
-
 }
 
 
@@ -53,6 +52,7 @@ void ARLGameStateBase::SetObjective()
 		case ECellType::BOSS:
 			if (GM)
 			{
+				ObjectiveNum = 1;
 				GM->SpawnBoss(StageLevel);
 			}
 			break;
@@ -61,8 +61,13 @@ void ARLGameStateBase::SetObjective()
 			break;
 		}
 	}
-	
-	
+}
+
+void ARLGameStateBase::KillBoss()
+{
+	//가운데에 포탈 만들기. 포탈 타면 다음 스테이지로
+
+	CreateCenterPortal();
 }
 
 void ARLGameStateBase::KillScored()
@@ -98,5 +103,13 @@ void ARLGameStateBase::ActivePortal()
 	if (PortalComp)
 	{
 		PortalComp->ActiveAllPortal();
+	}
+}
+
+void ARLGameStateBase::CreateCenterPortal()
+{
+	if (PortalComp)
+	{
+		PortalComp->CreateCenterPortal();
 	}
 }

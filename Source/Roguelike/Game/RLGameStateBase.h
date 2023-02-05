@@ -19,6 +19,8 @@ class ROGUELIKE_API ARLGameStateBase : public AGameStateBase
 public:
 	virtual void BeginPlay() override;
 	ARLGameStateBase();
+	void KillScored();
+	void KillBoss();
 private:
 	/* 셀 목표 */
 	int32 ObjectiveNum; //목표 킬수
@@ -29,13 +31,12 @@ private:
 	FCell CellInfo;
 	int32 StageLevel;
 
-
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UPortalComponent* PortalComp;
 
 	void ClearThisCell();
 	void SetObjective();
-	void KillScored();
+	void CreateCenterPortal();
 	void ActivePortal();
 public:
 	void TestKillScored();

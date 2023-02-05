@@ -18,6 +18,7 @@ APortalActor::APortalActor()
 	SphereComp->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
 	SphereComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	SphereComp->SetCollisionResponseToChannel(ECC_Player_Portal, ECollisionResponse::ECR_Overlap);
+	IsCenterPortal = false;
 }
 
 void APortalActor::BeginPlay()
@@ -58,9 +59,26 @@ void APortalActor::BeginOverlapped(UPrimitiveComponent* OverlappedComponent, AAc
 	{
 		if (Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this)))
 		{
-			Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this))->RequestMove(Dir, OtherSide);
+			if (!IsCenterPortal)
+			{
+				Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this))->RequestMove(Dir, OtherSide);
+			}
+			else
+			{
+				Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this))->ClearStage();
+			}
 		}
 	}
-	
+}
+
+void APortalActor::SetCenterPortal()
+{
+	if (CenterPortalCreateParticle && CenterPortalParticle)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), CenterPortalCreateParticle, GetActorTransform());
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), CenterPortalParticle, GetActorTransform());
+	}
+	PortalParticleVisible(true);
+	IsCenterPortal = true;
 }
 

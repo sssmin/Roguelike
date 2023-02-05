@@ -8,12 +8,14 @@
 URLGameInstance::URLGameInstance()
 {
 	DFS = MakeShared<DFSAgrt>();
-	ClearCount = 0;
+	
 	StartCell = 0;
 	PlayerCurrentCell = 0;
 	StageLevel = 1;
 	BossCell = 0;
 	BossPrevCell = 0;
+
+	ClearCount = 0;
 	bIsDiscoverdBoss = false;
 
 }
@@ -42,9 +44,11 @@ void URLGameInstance::GenerateMap()
 		Board = DFS->GetBoard();
 		StartCell = DFS->GetStartCell();
 		PlayerCurrentCell = StartCell;
+		BossPrevCell = DFS->GetBossPrevCell();
+		BossCell = DFS->GetBossCell();
+		TotalCellNum = DFS->GetTotalCellNum();
 	}
 }
-
 
 void URLGameInstance::TestPrintMap()
 {
@@ -57,6 +61,8 @@ void URLGameInstance::TestPrintMap()
 	}
 
 	UE_LOG(LogTemp, Warning, TEXT("CurrentCell : %d"), PlayerCurrentCell);
+	UE_LOG(LogTemp, Warning, TEXT("TotalCellNum : %d"), TotalCellNum);
+	UE_LOG(LogTemp, Warning, TEXT("BossCell : %d"), BossCell);
 }
 
 void URLGameInstance::RequestInfo()
@@ -66,8 +72,6 @@ void URLGameInstance::RequestInfo()
 		Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld()))->SetMapInfo(MapSize, Board, PlayerCurrentCell);
 	}
 }
-
-
 
 TArray<int32> URLGameInstance::GetConnectedDir()
 {
@@ -107,17 +111,40 @@ TArray<int32> URLGameInstance::GetConnectedDir()
 void URLGameInstance::RequestMove(int32 Dir, const FVector& OtherSide) //0,1,2,3중 하나로 넘어옴
 {
 	int32 NextCell = CalcNextCell(Dir);
+	if (NextCell == BossCell) //가려는 셀이 보스셀일 때
+	{
+		if (TotalCellNum - 1 != ClearCount) //반대편 셀을 모두 클리어하지 않았으면
+		{
+			if (Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld())))
+			{
+				Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld()))->ShowNoticeWidget();
+			}
+			return;
+		}
+	}
+	else if (NextCell == BossPrevCell)
+	{
+		Board[BossCell].CellState = ECellState::DISCOVEREDBOSS;
+	}
+
 	Board[PlayerCurrentCell].CellState = ECellState::CLEAR;
 	PlayerCurrentCell = NextCell;
 	Board[PlayerCurrentCell].CellState = ECellState::INPLAYER;
-	//레벨이동
+
 	PlayerSpawnLoc = OtherSide;
-	
+	OnMoveMap.ExecuteIfBound(); //매니저 받아오기
 	if (Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld())))
 	{
-		Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld()))->ClientTravel("/Game/Maps/GameMap2", ETravelType::TRAVEL_Relative, true);
+		Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld()))->RemoveMinimapWidget();
+		if (PlayerCurrentCell == StartCell)
+		{
+			GetFirstLocalPlayerController(GetWorld())->ClientTravel("/Game/Maps/StartMap", ETravelType::TRAVEL_Relative, true);
+		}
+		else
+		{
+			GetFirstLocalPlayerController(GetWorld())->ClientTravel("/Game/Maps/GameMap2", ETravelType::TRAVEL_Relative, true);
+		}
 	}
-	OnMoveMap.ExecuteIfBound();
 }
 
 int32 URLGameInstance::CalcNextCell(int32 Dir)
@@ -140,4 +167,21 @@ void URLGameInstance::ClearThisCell()
 {
 	Board[PlayerCurrentCell].IsCleared = true;
 	ClearCount++;
+}
+
+void URLGameInstance::ClearStage()
+{
+	StageLevel++;
+	ClearCount = 0;
+	bIsDiscoverdBoss = false;
+	PlayerSpawnLoc = FVector(0.f, 0.f, 0.f);
+	GenerateMap();
+	
+	OnMoveMap.ExecuteIfBound(); 
+
+	if (Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld())))
+	{
+		Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld()))->RemoveMinimapWidget();
+		GetFirstLocalPlayerController(GetWorld())->ClientTravel("/Game/Maps/StartMap", ETravelType::TRAVEL_Relative, true);
+	}
 }

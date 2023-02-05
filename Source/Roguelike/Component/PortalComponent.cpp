@@ -46,8 +46,6 @@ void UPortalComponent::CreatePortal(TArray<int32> Dirs)
 	{
 		for (int32 i = 0; i < Dirs.Num(); ++i)
 		{
-			FActorSpawnParameters Params;
-
 			APortalActor* Portal = Cast<APortalActor>(GetWorld()->SpawnActor(PortalActorClass));
 			if (Portal)
 			{
@@ -92,24 +90,22 @@ void UPortalComponent::SetLocationPotal()
 			{
 			case 0:
 				if (SpawnLocation.Find(1))
-					PortalInfo.Portal->SetOtherSide(*SpawnLocation.Find(1) + FVector(100.f, 0.f, 0.f));
+					PortalInfo.Portal->SetOtherSide(*SpawnLocation.Find(1) + FVector(200.f, 0.f, 0.f));
 				break;
 			case 1:
 				if (SpawnLocation.Find(0))
-					PortalInfo.Portal->SetOtherSide(*SpawnLocation.Find(0) + FVector(-100.f, 0.f, 0.f));
+					PortalInfo.Portal->SetOtherSide(*SpawnLocation.Find(0) + FVector(-200.f, 0.f, 0.f));
 				break;
 			case 2:
 				if (SpawnLocation.Find(3))
-					PortalInfo.Portal->SetOtherSide(*SpawnLocation.Find(3) + FVector(0.f, 100.f, 0.f));
+					PortalInfo.Portal->SetOtherSide(*SpawnLocation.Find(3) + FVector(0.f, 200.f, 0.f));
 				break;
 			case 3:
 				if (SpawnLocation.Find(2))
-					PortalInfo.Portal->SetOtherSide(*SpawnLocation.Find(2) + FVector(0.f, -100.f, 0.f));
+					PortalInfo.Portal->SetOtherSide(*SpawnLocation.Find(2) + FVector(0.f, -200.f, 0.f));
 				break;
 			}
-
 		}
-
 	}
 }
 
@@ -120,7 +116,15 @@ void UPortalComponent::ActiveAllPortal()
 		if (PortalInfo.Portal)
 		{
 			PortalInfo.Portal->PortalParticleVisible(true);
-			
 		}
+	}
+}
+
+void UPortalComponent::CreateCenterPortal()
+{
+	APortalActor* Portal = Cast<APortalActor>(GetWorld()->SpawnActor(PortalActorClass));
+	if (Portal)
+	{
+		Portal->SetCenterPortal();
 	}
 }

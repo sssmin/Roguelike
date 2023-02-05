@@ -3,7 +3,9 @@
 
 #include "ManagerComponent.h"
 #include "Roguelike/Game/RLGameInstance.h"
+#include "Roguelike/Game/RLGameStateBase.h"
 #include "Roguelike/Character/PlayerCharacter.h"
+#include "Roguelike/Character/BossMonsterCharacter.h"
 #include "Kismet/GameplayStatics.h"
 
 UManagerComponent::UManagerComponent()
@@ -49,8 +51,8 @@ void UManagerComponent::SendManager()
 void UManagerComponent::ReceiveDamage(const FCombatManage& EnemyCombatManage)
 {
 	if (CheckState(EState::DEAD)) return;
-	//상성 계산
-	const float Coefficient = CalcCounter(EnemyCombatManage.Element);
+
+	const float Coefficient = CalcCounter(EnemyCombatManage.Element); //계수
 	const float EnemyATK = EnemyCombatManage.ATK;
 	//대미지 계산
 	const float Result = FMath::Clamp((EnemyATK * Coefficient) * FMath::RandRange(0.9, 1.1), 0.f, TNumericLimits<int32>::Max());
@@ -58,7 +60,7 @@ void UManagerComponent::ReceiveDamage(const FCombatManage& EnemyCombatManage)
 
 	if (HealthManager.CurrentHP <= 0.f)
 	{
-		GiveState(EState::DEAD);
+		Dead();
 	}
 }
 
@@ -130,4 +132,32 @@ float UManagerComponent::CalcCounter(EElement EnemyElement)//상성. 받을 대미지 �
 		break;
 	}
 	return Ret;
+}
+
+void UManagerComponent::Dead()
+{
+	GiveState(EState::DEAD);
+
+	if (Cast<APlayerCharacter>(GetOwner())) //죽은게 플레이어
+	{
+		//게임 끝.
+		
+	}
+	else //죽은게 몬스터
+	{
+		ARLGameStateBase* RLGameState = Cast<ARLGameStateBase>(UGameplayStatics::GetGameState(this));
+		if (RLGameState)
+		{
+			if (Cast<ABossMonsterCharacter>(GetOwner())) //죽은게 보스
+			{
+				RLGameState->KillBoss();
+			}
+			else //일반 몹
+			{
+				RLGameState->KillScored();
+			}
+		}
+		
+	}
+
 }

@@ -6,7 +6,6 @@
 #include "Roguelike/DFSInterface.h"
 
 
-
 class ROGUELIKE_API DFSAgrt
 {
 public:
@@ -23,13 +22,14 @@ private:
 	FVector2Int Size;
 	int32 StartPos;
 	TArray<FCell> Board;
-	int32 RoomCount;
+	int32 CellCount;
 	int32 Parts; //시작점에서 몇갈래? 랜덤
 	int32 CreatedPart;
 	int32 BossCell;
 	int32 BossPrevCell;
 	FVector StartPostion;
-	int32 TotalRoomNum;
+	int32 TotalCellNum;
+	void ValueInit();
 	
 public:
 	FVector GetStartPostion() const { return StartPostion; }
@@ -37,4 +37,5 @@ public:
 	int32 GetStartCell() const { return StartPos; }
 	int32 GetBossCell() const { return BossCell; }
 	int32 GetBossPrevCell() const { return BossPrevCell; }
+	int32 GetTotalCellNum() const { return TotalCellNum; }
 };

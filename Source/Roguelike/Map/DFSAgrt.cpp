@@ -4,13 +4,7 @@
 
 DFSAgrt::DFSAgrt()
 {
-	StartPos = 0;
-	Parts = 1;
-	CreatedPart = 0;
-	BossCell = 0;
-	BossPrevCell = 0;
-	StartPostion = FVector::ZeroVector;
-	TotalRoomNum = 0;
+	ValueInit();
 }
 
 DFSAgrt::~DFSAgrt()
@@ -21,9 +15,23 @@ DFSAgrt::~DFSAgrt()
 void DFSAgrt::StartAlgorithm(FVector2Int MapSize)
 {
 	Size = MapSize;
-	Init();
+	ValueInit(); //초기값 세팅
+	Init(); //세팅 한 값 초기화
 	MazeGenerator();
 	GenerateDungeon();
+}
+
+void DFSAgrt::ValueInit()
+{
+	Board.Empty();
+	CellCount = 0;
+	StartPos = 0;
+	Parts = 1;
+	CreatedPart = 0;
+	BossCell = 0;
+	BossPrevCell = 0;
+	StartPostion = FVector::ZeroVector;
+	TotalCellNum = 0;
 }
 
 void DFSAgrt::Init()
@@ -33,10 +41,10 @@ void DFSAgrt::Init()
 		Board.Add(FCell());
 	}
 
-	RoomCount = (Size.X + Size.Y) / 2;
+	CellCount = (Size.X + Size.Y) / 2;
 	Parts = FMath::RandRange(1, 3);
 	if (Parts == 1)
-		RoomCount += RoomCount / 2;
+		CellCount += CellCount / 2;
 
 	int32 Length = Size.X / 2;
 	int32 Breadth = Size.Y / 2;
@@ -55,7 +63,7 @@ void DFSAgrt::MazeGenerator()
 	TArray<int> Path;
 	TArray<int32> SideCells;
 
-	int32 CreatedRoomCount = 0;
+	int32 CreatedCellCount = 0;
 	int32 BeforeCell = 0;
 
 	while (true)
@@ -66,7 +74,7 @@ void DFSAgrt::MazeGenerator()
 		Board[CurrentCell].CellState = ECellState::NORMAL;
 		Board[CurrentCell].CellType = ECellType::MOBS;
 		
-		if (CreatedRoomCount == RoomCount) break;
+		if (CreatedCellCount == CellCount) break;
 
 		if (CurrentCell == Board.Num()) break;
 
@@ -75,8 +83,8 @@ void DFSAgrt::MazeGenerator()
 		if (SideCells.Num() != 0)
 		{
 			BeforeCell = CurrentCell;
-			CreatedRoomCount++;
-			TotalRoomNum++;
+			CreatedCellCount++;
+			TotalCellNum++;
 
 			int32 NewCell = SideCells[FMath::RandRange(0, SideCells.Num() - 1)];
 
@@ -196,27 +204,22 @@ TArray<int32> DFSAgrt::CheckSideCell(int32 Cell)
 {
 	TArray<int32> SideCells;
 
-	if (Cell - Size.Y >= 0 && !Board[Cell - Size.Y].Visited) //위의 셀이 있고, 위의 셀을 방문하지 않았으면
+	if (Cell - Size.Y >= 0 && !Board[Cell - Size.Y].Visited) 
 	{
 		SideCells.Add(Cell - Size.Y);
 	}
-	if (Cell + Size.Y < Board.Num() && !Board[Cell + Size.Y].Visited) //아래 셀이 있고, 아래 셀을 방문하지 않았으면
+	if (Cell + Size.Y < Board.Num() && !Board[Cell + Size.Y].Visited)
 	{
 		SideCells.Add(Cell + Size.Y);
 	}
-	if ((Cell + 1) % Size.Y != 0 && !Board[Cell + 1].Visited) //오른쪽 셀이 있고, 오른쪽 셀을 방문하지 않았으면
+	if ((Cell + 1) % Size.Y != 0 && !Board[Cell + 1].Visited) 
 	{
-		SideCells.Add(Cell + 1); //자기자신이 오른쪽 끝에 해당하면 오른쪽이 없는 것. if문 첫번째가 그걸 판별
+		SideCells.Add(Cell + 1); 
 	}
-	if (Cell % Size.X != 0 && !Board[Cell - 1].Visited) //왼쪽 셀이 있고, 왼쪽 셀을 방문하지 않았으면
+	if (Cell % Size.X != 0 && !Board[Cell - 1].Visited)
 	{
-		SideCells.Add(Cell - 1); //자기자신이 왼쪽 끝에 해당하면 왼쪽이 없는 것. if문 첫번째가 그걸 판별
+		SideCells.Add(Cell - 1); 
 	}
-	//0, 1, 2, 3, 4
-	//5, 6, 7, 8, 9... xsize 5, ysize 5일 때 4의 오른쪽은 없고, 5의 왼쪽은 없다.
-
-	//셀을 배열로 관리하기 때문에 위 같이 계산이 된다. 또한 방 크기가 같기 때문에
-	//0을 스타트 포인트로 한다면 0, 0 이고 1은 방 크기 offset만큼 오른쪽으로 이동한 것 = 방마다 좌표 계산이 쉽다.
 
 	return SideCells;
 }

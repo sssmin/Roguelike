@@ -28,10 +28,10 @@ void UMinimapCellWidget::Init(ECellState CellState)
 			Cell->SetBrushColor(FLinearColor::Red);
 			break;
 		case ECellState::INPLAYER:
-			//Cell->SetBrushColor(FLinearColor::White);
-			if (LocationImg)
+			Cell->SetBrushColor(FLinearColor::Black);
+			if (FlikerAnim)
 			{
-				Cell->SetBrushFromTexture(LocationImg);
+				PlayAnimation(FlikerAnim, 0.f, 0);
 			}
 			break;
 		case ECellState::CLEAR:

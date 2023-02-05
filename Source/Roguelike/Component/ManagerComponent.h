@@ -18,6 +18,7 @@ public:
 	UManagerComponent();
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	void ReceiveDamage(const FCombatManage& EnemyCombatManage);
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -28,15 +29,16 @@ private:
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
 	FCombatManage CombatManager;
 
-	void SendManager();
-	float CalcCounter(EElement EnemyElement);
-
 	UPROPERTY(Meta = (Bitmask, BitmaskEnum = EStat))
 	uint8 CurrentState;
 
+	void SendManager();
+	float CalcCounter(EElement EnemyElement);
 	bool CheckState(EState State);
 	void GiveState(EState State);
 	void RemoveState(EState State);
+
+	void Dead();
 public:
 	void SetManager(const FHealthManage& InHealthManager, const FCombatManage& InCombatManager )
 	{

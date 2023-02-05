@@ -20,8 +20,7 @@ public:
 private:
 	UPROPERTY(Meta = (BindWidget))
 	UBorder* Cell;
-	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	UTexture2D* LocationImg;
-	
+	UPROPERTY(Transient, Meta = (BindWidgetAnim))
+	UWidgetAnimation* FlikerAnim;
 	
 };

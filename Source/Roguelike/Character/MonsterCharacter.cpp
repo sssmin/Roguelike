@@ -8,4 +8,5 @@ AMonsterCharacter::AMonsterCharacter()
 {
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	GetCapsuleComponent()->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
+	MonsterType = EMonsterType::NORMAL;
 }

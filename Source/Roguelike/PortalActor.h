@@ -16,7 +16,7 @@ class ROGUELIKE_API APortalActor : public AActor
 	
 public:	
 	APortalActor();
-
+	void SetCenterPortal();
 protected:
 	virtual void BeginPlay() override;
 
@@ -27,6 +27,12 @@ private:
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* PortalParticle;
 
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* CenterPortalCreateParticle;
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* CenterPortalParticle;
+
 	UPROPERTY()
 	UParticleSystemComponent* PortalParticleComp;
 
@@ -36,6 +42,8 @@ private:
 	void BeginOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	
 	FVector OtherSide;
+
+	bool IsCenterPortal;
 
 public:
 	void PortalParticleVisible(bool IsActive);

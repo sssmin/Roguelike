@@ -26,4 +26,7 @@ public:
 	
 private:
 	EMonsterType MonsterType;
+	
+public:
+	void SetMonsterType(EMonsterType Type) { MonsterType = Type; }
 };
