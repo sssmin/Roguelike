@@ -44,7 +44,6 @@ void ARLGameModeBase::SpawnMob(int32 StageLevel, int32 MobCount)
 			Mob->GetManagerComp()->SetManager(HealthManage, CombatManage);
 			//스테이지 레벨에 따라 평균체력,평균공격력이 있다.
 			//노말몹이면 평균을 다르고, 정예몹은 1.5배. 몹의 원소는 랜덤으로 하나만 정해서 모두 같게
-			//
 
 		}
 	}

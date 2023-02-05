@@ -6,9 +6,16 @@
 #include "BaseCharacter.h"
 #include "MonsterCharacter.generated.h"
 
-/**
- * 
- */
+enum class EMonsterType : uint8
+{
+	NONE,
+	NORMAL,
+	ELITE,
+	BOSS,
+
+	MAX
+};
+
 UCLASS()
 class ROGUELIKE_API AMonsterCharacter : public ABaseCharacter
 {
@@ -17,4 +24,6 @@ class ROGUELIKE_API AMonsterCharacter : public ABaseCharacter
 public:
 	AMonsterCharacter();
 	
+private:
+	EMonsterType MonsterType;
 };

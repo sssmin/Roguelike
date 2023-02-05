@@ -20,31 +20,6 @@ struct FMonsterStatTable : public FTableRowBase
 
 };
 
-//USTRUCT(BlueprintType)
-//struct FMonsterTypeTable : public FTableRowBase
-//{
-//	GENERATED_BODY()
-//
-//	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-//	EMonsterType Type;
-//
-//	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-//	int32 AvgATK;
-//
-//	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-//	int32 AvgMaxHP;
-//};
-
-enum class EMonsterType : uint8
-{
-	NONE,
-	NORMAL,
-	ELITE,
-	BOSS,
-
-	MAX
-};
-
 class AMonsterCharacter;
 struct FHealthManage;
 struct FCombatManage;
