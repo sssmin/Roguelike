@@ -2,6 +2,7 @@
 
 
 #include "BaseCharacter.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Roguelike/Component/CombatComponent.h"
 #include "Roguelike/Component/ManagerComponent.h"
 #include "Roguelike/Projectile/BaseProjectile.h"
@@ -25,6 +26,7 @@ void ABaseCharacter::BeginPlay()
 	{
 		CombatComp->SetProjectileClass(ProjectileClass);
 		CombatComp->GetCombatManage.BindUObject(this, &ThisClass::GetCombatManage);
+		CombatComp->GetItemManage.BindUObject(this, &ThisClass::GetItemManage);
 		
 	}
 }
@@ -39,15 +41,15 @@ void ABaseCharacter::Attack()
 {
 	if (CombatComp)
 	{
-		CombatComp->Fire();
+		CombatComp->ReadyToFire();
 	}
 }
 
-void ABaseCharacter::OnHit(AActor* Attacker, const FCombatManage& EnemyCombatManage)
+void ABaseCharacter::OnHit(AActor* Attacker, const FCombatManage& EnemyCombatManage, const FItemManage& EnemyItemManage)
 {
 	if (ManagerComp)
 	{
-		ManagerComp->ReceiveDamage(EnemyCombatManage);
+		ManagerComp->ReceiveDamage(EnemyCombatManage, EnemyItemManage);
 	}
 }
 
@@ -58,4 +60,18 @@ FCombatManage ABaseCharacter::GetCombatManage() const
 		return ManagerComp->GetCombatManage();
 	}
 	return FCombatManage();
+}
+
+FItemManage ABaseCharacter::GetItemManage() const
+{
+	if (ManagerComp)
+	{
+		return ManagerComp->GetItemManage();
+	}
+	return FItemManage();
+}
+
+void ABaseCharacter::Dead()
+{
+	GetMovementComponent()->SetActive(false);
 }

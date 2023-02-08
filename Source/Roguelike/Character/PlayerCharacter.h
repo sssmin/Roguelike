@@ -21,24 +21,34 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	FOnPressedFreeCam OnPressedFreeCam;
+	void GetElementFromItem(int32 ConvertElement);
+	void IncreaseMovementSpeed();
+	void DecreaseMovementSpeed();
+	void HealByHit();
+	void HealByItem();
+
 protected:
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void Attack() override;
+
 private:
-	
 	UPROPERTY()
 	APlayerController* PC;
 	FRotator LookRot;
 
 	void TestIncreaseKillCount();
-	void TestLevelMove();
+	void TestKillMe();
 	void TestPrintMap();
 
 	void Interact();
 	void PressedFreeCam();
 	void ReleasedFreeCam();
+	void LookAtCursor();
+
+	bool bPressedAttackButton;
+	float AttackDelay;
 
 public:
 	FRotator GetLookRot() const { return LookRot; }

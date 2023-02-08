@@ -29,15 +29,6 @@ void APortalActor::BeginPlay()
 	{
 		SphereComp->Deactivate();
 	}
-	
-	if (PortalParticle)
-	{
-		PortalParticleComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PortalParticle, GetActorTransform());
-		if (PortalParticleComp)
-		{
-			PortalParticleComp->SetVisibility(false);
-		}
-	}
 }
 
 void APortalActor::PortalParticleVisible(bool IsActive)
@@ -46,10 +37,6 @@ void APortalActor::PortalParticleVisible(bool IsActive)
 	{
 		SphereComp->OnComponentBeginOverlap.AddDynamic(this, &APortalActor::BeginOverlapped);
 		SphereComp->Activate();
-	}
-	if (PortalParticleComp)
-	{
-		PortalParticleComp->SetVisibility(IsActive);
 	}
 }
 
@@ -73,12 +60,22 @@ void APortalActor::BeginOverlapped(UPrimitiveComponent* OverlappedComponent, AAc
 
 void APortalActor::SetCenterPortal()
 {
-	if (CenterPortalCreateParticle && CenterPortalParticle)
+	if (CenterPortalCreateParticle && CenterPortalParticle && GetWorld())
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), CenterPortalCreateParticle, GetActorTransform());
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), CenterPortalParticle, GetActorTransform());
 	}
 	PortalParticleVisible(true);
 	IsCenterPortal = true;
+}
+
+void APortalActor::SetSidePortal()
+{
+	if (PortalParticle && GetWorld())
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PortalParticle, GetActorTransform());
+	}
+	PortalParticleVisible(true);
+	IsCenterPortal = false;
 }
 

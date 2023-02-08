@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Roguelike.h"
+#include "Roguelike/Roguelike.h"
 #include "GameFramework/Actor.h"
 #include "PortalActor.generated.h"
 
@@ -17,6 +17,7 @@ class ROGUELIKE_API APortalActor : public AActor
 public:	
 	APortalActor();
 	void SetCenterPortal();
+	void SetSidePortal();
 protected:
 	virtual void BeginPlay() override;
 

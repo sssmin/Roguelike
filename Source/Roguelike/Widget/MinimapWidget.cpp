@@ -6,7 +6,7 @@
 void UMinimapWidget::Init(int32 MapSizeX, int32 MapSizeY, TArray<FCell> Board)
 {
 	
-	if (MapGrid && MinimapCellWidgetClass)
+	if (MapGrid && MinimapCellWidgetClass && GetWorld())
 	{
 		for (int i = 0; i < MapSizeX; i++)
 		{

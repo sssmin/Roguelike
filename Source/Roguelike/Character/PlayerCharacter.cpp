@@ -13,6 +13,9 @@
 #include "Roguelike/Game/RLGameInstance.h"
 #include "Roguelike/Game/RLGameStateBase.h"
 #include "Roguelike/PlayerController/RLPlayerController.h"
+#include "Roguelike/Type/Manage.h"
+
+#include "Roguelike/Component/ManagerComponent.h" //Test
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -34,7 +37,7 @@ APlayerCharacter::APlayerCharacter()
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Player_Portal"));
 
-	
+	bPressedAttackButton = false;
 }
 
 
@@ -47,8 +50,10 @@ void APlayerCharacter::BeginPlay()
 	{
 		SetActorLocation(GI->GetPlayerSpawnLoc());
 	}
-
-	PC = GetWorld()->GetFirstPlayerController();
+	if (GetWorld())
+	{
+		PC = GetWorld()->GetFirstPlayerController();
+	}
 	if (PC)
 	{
 		FInputModeGameAndUI InputModeData;
@@ -62,6 +67,11 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	LookAtCursor();
+}
+
+void APlayerCharacter::LookAtCursor()
+{
 	FVector Start = GetActorLocation();
 	FVector Target;
 	FHitResult Hit;
@@ -73,9 +83,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 			Target = Hit.ImpactPoint;
 		}
 	}
-
 	LookRot = UKismetMathLibrary::FindLookAtRotation(Start, Target);
-	LookRot.Yaw;
 	SetActorRotation(FRotator(0.f, LookRot.Yaw, 0.f));
 }
 
@@ -84,7 +92,7 @@ void APlayerCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 	check(PlayerInputComponent);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
-	PlayerInputComponent->BindAction("TestLevelMove", IE_Pressed, this, &ThisClass::TestLevelMove);
+	PlayerInputComponent->BindAction("TestLevelMove", IE_Pressed, this, &ThisClass::TestKillMe);
 	PlayerInputComponent->BindAction("TestIncreaseKillCount", IE_Pressed, this, &ThisClass::TestIncreaseKillCount);
 	PlayerInputComponent->BindAction("TestPrintMap", IE_Pressed, this, &ThisClass::TestPrintMap);
 	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &ThisClass::Attack);
@@ -144,19 +152,21 @@ void APlayerCharacter::TestIncreaseKillCount()
 
 }
 
-void APlayerCharacter::TestLevelMove()
+void APlayerCharacter::TestKillMe()
 {
-	PC->ClientTravel("/Game/Maps/GameMap1", ETravelType::TRAVEL_Absolute);
+	if (ManagerComp)
+	{
+		ManagerComp->TestHurt();
+	}
 }
 
 void APlayerCharacter::TestPrintMap()
 {
-	if (Cast<URLGameInstance>(GetWorld()->GetGameInstance()))
+	if (GetWorld() && Cast<URLGameInstance>(GetWorld()->GetGameInstance()))
 	{
 		Cast<URLGameInstance>(GetWorld()->GetGameInstance())->TestPrintMap();
 	}
 }
-
 
 
 void APlayerCharacter::Interact()
@@ -168,4 +178,44 @@ void APlayerCharacter::Interact()
 void APlayerCharacter::Attack()
 {
 	Super::Attack();
+}
+
+void APlayerCharacter::GetElementFromItem(int32 ConvertElement)
+{
+	if (ManagerComp)
+	{
+		ManagerComp->ApplyPlayerElement(ConvertElement);
+	}
+}
+
+void APlayerCharacter::IncreaseMovementSpeed()
+{
+	if (GetMovementComponent())
+	{
+		GetCharacterMovement()->MaxWalkSpeed = 1100.f;
+	}
+}
+
+void APlayerCharacter::DecreaseMovementSpeed()
+{
+	if (GetMovementComponent())
+	{
+		GetCharacterMovement()->MaxWalkSpeed = 700.f;
+	}
+}
+
+void APlayerCharacter::HealByHit()
+{
+	if (ManagerComp)
+	{
+		ManagerComp->Heal(7.5f);
+	}
+}
+
+void APlayerCharacter::HealByItem()
+{
+	if (ManagerComp)
+	{
+		ManagerComp->Heal(30.f);
+	}
 }

@@ -21,12 +21,15 @@ void ARLGameStateBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	URLGameInstance* RLGameInstance = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	if (RLGameInstance)
+	if (GetWorld())
 	{
-		StageLevel = RLGameInstance->GetStageLevel();
-		CellInfo = RLGameInstance->GetCellInfo();
-		SetObjective();
+		URLGameInstance* RLGameInstance = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+		if (RLGameInstance)
+		{
+			StageLevel = RLGameInstance->GetStageLevel();
+			CellInfo = RLGameInstance->GetCellInfo();
+			SetObjective();
+		}
 	}
 }
 
@@ -57,6 +60,10 @@ void ARLGameStateBase::SetObjective()
 			}
 			break;
 		case ECellType::BONUS: 
+			if (GM)
+			{
+				GM->SpawnHealItem();
+			}
 			ClearThisCell();  
 			break;
 		}
@@ -65,8 +72,6 @@ void ARLGameStateBase::SetObjective()
 
 void ARLGameStateBase::KillBoss()
 {
-	//가운데에 포탈 만들기. 포탈 타면 다음 스테이지로
-
 	CreateCenterPortal();
 }
 
@@ -81,13 +86,17 @@ void ARLGameStateBase::KillScored()
 
 void ARLGameStateBase::ClearThisCell() //어떠한 조건으로 클리어 했을 때
 {
-	URLGameInstance* RLGameInstance = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	if (RLGameInstance)
+	if (GetWorld())
 	{
-		RLGameInstance->ClearThisCell();
-	}
+		URLGameInstance* RLGameInstance = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+		if (RLGameInstance)
+		{
+			RLGameInstance->ClearThisCell();
+		}
 
-	ActivePortal();
+		ActivePortal();
+	}
+	
 }
 
 void ARLGameStateBase::TestKillScored()

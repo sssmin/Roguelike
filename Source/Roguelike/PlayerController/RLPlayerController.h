@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
-#include "Roguelike/DFSInterface.h"
+#include "Roguelike/Type/DFSInterface.h"
 #include "RLPlayerController.generated.h"
 
 
@@ -22,6 +22,7 @@ public:
 	void SetMapInfo(FVector2Int MapSize, TArray<FCell> Board, int32 PlayerCurrentCell);
 	void RemoveMinimapWidget();
 	void ShowNoticeWidget();
+	void ShowGameOverWidget();
 protected:
 	virtual void OnPossess(APawn* aPawn) override;
 private:
@@ -40,6 +41,8 @@ private:
 
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UUserWidget> NoticeWidgetClass;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UUserWidget> GameOverWidgetClass;
 
 	/*이런저런 아이템 정보,플레이어 정보들*/
 

@@ -7,7 +7,7 @@
 UCombatComponent::UCombatComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-
+	MutliShotTime = 0.5f;
 }
 
 
@@ -25,30 +25,57 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 }
 
-void UCombatComponent::Fire()
+bool UCombatComponent::HaveItem(const FItemManage& Manage, EOnceEquippedItem ItemType)
+{
+	return Manage.OnceEquipedItem & static_cast<uint8>(ItemType);
+}
+
+void UCombatComponent::ReadyToFire()
+{
+	if (GetCombatManage.IsBound())
+	{
+		FCombatManage CombatManage = GetCombatManage.Execute();
+		const FItemManage ItemManage = GetItemManage.Execute();
+
+		if (ItemManage.EquippedItemCount > 0) //뭔가 아이템이 있다.
+		{
+			if (HaveItem(ItemManage, EOnceEquippedItem::RISK_RETURN))
+			{
+				CombatManage.ATK *= 2.f;
+			}
+			if (HaveItem(ItemManage, EOnceEquippedItem::MULTI_SHOT))
+			{
+				FTimerDelegate MultiShotTimerDelegate; 
+				MultiShotTimerDelegate.BindUFunction(this, FName("Fire"), CombatManage, ItemManage);
+				GetWorld()->GetTimerManager().SetTimer(MultiShotTimerHandle, MultiShotTimerDelegate, MutliShotTime, false);
+			}
+		}
+
+		Fire(CombatManage, ItemManage);
+
+	}
+}
+
+
+void UCombatComponent::Fire(const FCombatManage& CombatManage, const FItemManage& ItemManage)
 {
 	FActorSpawnParameters Params;
+	
 	Params.Owner = GetOwner();
-	if (ProjectileClass)
+	if (ProjectileClass && GetWorld())
 	{
-		ABaseProjectile* SpawnedProjectile = 
+		ABaseProjectile* SpawnedProjectile =
 			GetWorld()->SpawnActor<ABaseProjectile>(
-				ProjectileClass, 
-				GetOwner()->GetActorLocation() + GetOwner()->GetActorForwardVector() * 100.f, 
-				GetOwner()->GetActorRotation(), 
+				ProjectileClass,
+				GetOwner()->GetActorLocation() + GetOwner()->GetActorForwardVector() * 100.f,
+				GetOwner()->GetActorRotation(),
 				Params);
 		if (SpawnedProjectile)
 		{
 			SpawnedProjectile->SetVelocity(GetOwner()->GetActorForwardVector());
-			//여기서 내가 가진 특성이나, 효과로 미사일에 값을 줘야한다.
-			if (GetCombatManage.IsBound())
-			{
-				const FCombatManage CombatManage = GetCombatManage.Execute();
-				SpawnedProjectile->SetCombatManage(CombatManage);
-			}
-			
+
+			SpawnedProjectile->SetCombatManage(CombatManage);
+			SpawnedProjectile->SetItemManage(ItemManage);
 		}
 	}
-	
 }
-

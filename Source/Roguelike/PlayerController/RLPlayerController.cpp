@@ -5,7 +5,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Roguelike/Game/RLGameInstance.h"
 #include "Roguelike/Widget/MinimapWidget.h"
-#include "Roguelike/PlayersCamera.h"
+#include "Roguelike/Actor/PlayersCamera.h"
 
 
 
@@ -24,7 +24,7 @@ void ARLPlayerController::BeginPlay()
 	FTransform SpawnTransform = FTransform(FRotator::ZeroRotator, GetPawn()->GetActorLocation(), FVector(1.f, 1.f, 1.f));
 	FActorSpawnParameters Params;
 	Params.Owner = GetPawn();
-	if (PlayersCameraClass)
+	if (PlayersCameraClass && GetWorld())
 	{
 		APlayersCamera* PlayersCamera = GetWorld()->SpawnActor<APlayersCamera>(PlayersCameraClass, SpawnTransform, Params);
 		if (PlayersCamera)
@@ -53,7 +53,7 @@ void ARLPlayerController::SetMapInfo(FVector2Int Size, TArray<FCell> InBoard, in
 
 void ARLPlayerController::DrawMap()
 {
-	if (MinimapWidgetClass)
+	if (MinimapWidgetClass && GetWorld())
 	{
 		MinimapWidget = CreateWidget<UMinimapWidget>(GetWorld(), MinimapWidgetClass);
 		if (MinimapWidget)
@@ -74,12 +74,28 @@ void ARLPlayerController::RemoveMinimapWidget()
 
 void ARLPlayerController::ShowNoticeWidget()
 {
-	if (NoticeWidgetClass)
+	if (NoticeWidgetClass && GetWorld())
 	{
 		UUserWidget* NoticeWidget = CreateWidget<UUserWidget>(GetWorld(), NoticeWidgetClass);
 		if (NoticeWidget)
 		{
 			NoticeWidget->AddToViewport();
+		}
+	}
+}
+
+void ARLPlayerController::ShowGameOverWidget()
+{
+	if (GameOverWidgetClass && GetWorld())
+	{
+		UUserWidget* GameOverWidget = CreateWidget<UUserWidget>(GetWorld(), GameOverWidgetClass);
+		if (GameOverWidget)
+		{
+			FInputModeUIOnly InputModeData;
+			InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::LockInFullscreen);
+			SetInputMode(InputModeData);
+			
+			GameOverWidget->AddToViewport();
 		}
 	}
 }

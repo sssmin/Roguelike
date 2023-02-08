@@ -21,13 +21,13 @@ void UMinimapCellWidget::Init(ECellState CellState)
 		case ECellState::BONUS:
 			Cell->SetBrushColor(FLinearColor::Yellow);
 			break;
-		case ECellState::DONTFINDBOSS:
+		case ECellState::DONT_FIND_BOSS:
 			Cell->SetBrushColor(FLinearColor::White);
 			break;
-		case ECellState::DISCOVEREDBOSS:
+		case ECellState::DISCOVERED_BOSS:
 			Cell->SetBrushColor(FLinearColor::Red);
 			break;
-		case ECellState::INPLAYER:
+		case ECellState::IN_PLAYER:
 			Cell->SetBrushColor(FLinearColor::Black);
 			if (FlikerAnim)
 			{

@@ -40,31 +40,6 @@ struct FVector2Int
 
 };
 
-USTRUCT()
-struct FRule
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<AActor> Room;
-	UPROPERTY(EditAnywhere)
-	FVector2Int MinPosition;
-	UPROPERTY(EditAnywhere)
-	FVector2Int MaxPosition;
-	UPROPERTY(EditAnywhere)
-	bool Obligatory;
-
-	int ProbilityOfSpawning(int32 X, int32 Y)
-	{
-		if (X >= MinPosition.X && X <= MaxPosition.X && Y >= MinPosition.Y && Y <= MaxPosition.Y)
-		{
-			return Obligatory ? 2 : 1;
-		}
-
-		return 0;
-	}
-};
-
 
 UINTERFACE(MinimalAPI)
 class UDFSInterface : public UInterface

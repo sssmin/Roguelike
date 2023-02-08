@@ -7,9 +7,9 @@ enum class ECellState : uint8 //∏ ø° «•Ω√«“ ºø ªÛ≈¬
 	DEACTIVE,
 	NORMAL,
 	BONUS,
-	DONTFINDBOSS,
-	DISCOVEREDBOSS,
-	INPLAYER,
+	DONT_FIND_BOSS,
+	DISCOVERED_BOSS,
+	IN_PLAYER,
 	CLEAR,
 
 	MAX
@@ -25,3 +25,4 @@ enum class ECellType : uint8 //ºø ≈∏¿‘
 
 	MAX
 };
+

@@ -4,11 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Roguelike/Manage.h"
+#include "Roguelike/Type/Manage.h"
 #include "CombatComponent.generated.h"
 
 
 DECLARE_DELEGATE_RetVal(FCombatManage, FGetCombatManage);
+DECLARE_DELEGATE_RetVal(FItemManage, FGetItemManage);
 
 class ABaseProjectile;
 
@@ -21,13 +22,17 @@ public:
 	UCombatComponent();
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	void Fire();
+	void ReadyToFire();
 	FGetCombatManage GetCombatManage;
+	FGetItemManage GetItemManage;
 
-
+	bool HaveItem(const FItemManage& Manage, EOnceEquippedItem ItemType);
 private:
 	TSubclassOf<ABaseProjectile> ProjectileClass;
-
+	UFUNCTION()
+	void Fire(const FCombatManage& CombatManage, const FItemManage& ItemManage);
+	FTimerHandle MultiShotTimerHandle;
+	float MutliShotTime;
 public:	
 	void SetProjectileClass(TSubclassOf<ABaseProjectile> Class) { ProjectileClass = Class;  }
 	

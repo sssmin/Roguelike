@@ -3,7 +3,7 @@
 
 #include "PortalComponent.h"
 #include "Components/SphereComponent.h"
-#include "Roguelike/PortalActor.h"
+#include "Roguelike/Actor/PortalActor.h"
 #include "Roguelike/Game/RLGameInstance.h"
 #include "Engine/TargetPoint.h"
 #include "Kismet/GameplayStatics.h"
@@ -33,11 +33,7 @@ void UPortalComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
 
-	URLGameInstance* RLGameInstance = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	if (RLGameInstance)
-	{
-		CreatePortal(RLGameInstance->GetConnectedDir());
-	}
+	
 }
 
 void UPortalComponent::CreatePortal(TArray<int32> Dirs)
@@ -79,7 +75,6 @@ void UPortalComponent::SetLocationPotal()
 		}
 	}
 
-
 	for (auto PortalInfo : Portals)
 	{
 		if (SpawnLocation.Find(PortalInfo.Dir))
@@ -111,20 +106,35 @@ void UPortalComponent::SetLocationPotal()
 
 void UPortalComponent::ActiveAllPortal()
 {
+	if (GetWorld())
+	{
+		URLGameInstance* RLGameInstance = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+		if (RLGameInstance)
+		{
+			CreatePortal(RLGameInstance->GetConnectedDir());
+		}
+	}
+	
+	
+	
 	for (auto PortalInfo : Portals)
 	{
 		if (PortalInfo.Portal)
 		{
-			PortalInfo.Portal->PortalParticleVisible(true);
+			PortalInfo.Portal->SetSidePortal();
 		}
 	}
 }
 
 void UPortalComponent::CreateCenterPortal()
 {
-	APortalActor* Portal = Cast<APortalActor>(GetWorld()->SpawnActor(PortalActorClass));
-	if (Portal)
+	if (GetWorld())
 	{
-		Portal->SetCenterPortal();
+		APortalActor* Portal = Cast<APortalActor>(GetWorld()->SpawnActor(PortalActorClass));
+		if (Portal)
+		{
+			Portal->SetCenterPortal();
+		}
 	}
+	
 }

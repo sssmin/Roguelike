@@ -54,8 +54,11 @@ void APlayersCamera::Tick(float DeltaTime)
 		{
 			if (!IsMoving) //떼고나서 한번만 실행해야함
 			{
-				GetWorld()->GetTimerManager().SetTimer(CameraMoveTimerHandle, 0.5f, false);
-				IsMoving = true;
+				if (GetWorld())
+				{
+					GetWorld()->GetTimerManager().SetTimer(CameraMoveTimerHandle, 0.5f, false);
+					IsMoving = true;
+				}
 			}
 			ResetPlayerLocation();
 		}
@@ -82,7 +85,7 @@ void APlayersCamera::ResetPlayerLocation()
 	if (!UKismetMathLibrary::EqualEqual_VectorVector(GetActorLocation(), PlayerCharacter->GetActorLocation(), 1.f))
 	{
 		CurrentLoc = GetActorLocation();
-		if (CameraMoveCurve)
+		if (CameraMoveCurve && GetWorld())
 		{
 			const float ElapsedTime = GetWorld()->GetTimerManager().GetTimerElapsed(CameraMoveTimerHandle);
 			const float CurveValue = CameraMoveCurve->GetFloatValue(ElapsedTime);

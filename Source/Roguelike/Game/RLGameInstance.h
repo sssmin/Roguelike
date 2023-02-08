@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
-#include "Roguelike/DFSInterface.h"
-#include "Roguelike/Manage.h"
+#include "Roguelike/Type/DFSInterface.h"
+#include "Roguelike/Type/Manage.h"
 #include "RLGameInstance.generated.h"
 
 class DFSAgrt;
@@ -19,6 +19,7 @@ class ROGUELIKE_API URLGameInstance : public UGameInstance
 public:
 	URLGameInstance();
 	UFUNCTION(BlueprintCallable)
+	void NewGame();
 	void Initialize();
 	void GenerateMap();
 	void TestPrintMap();
@@ -30,8 +31,9 @@ public:
 	FOnMoveMap OnMoveMap;
 	void ClearStage();
 private:
-	FVector2Int MapSize;
 	TSharedPtr<DFSAgrt> DFS;
+
+	FVector2Int MapSize;
 	int32 ClearCount; //방 클리어 갯수
 	TArray<FCell> Board;
 	FVector StartPos;
@@ -42,27 +44,34 @@ private:
 	int32 BossPrevCell; //플레이어가 여기 위치하면 BossCell 발견
 	bool bIsDiscoverdBoss; //BossPrevCell에 도착하면 true. 
 	int32 TotalCellNum; // 방 총개수. 시작지점 미포함. Total - 1 == ClearCount면 보스 입장 가능
-
+	
 	FVector PlayerSpawnLoc;
 	
 	//아이템 정보, 플레이어 정보도 저장해야함.
 	FHealthManage HealthManage;
 	FCombatManage CombatManage;
-	uint8 State;
+	FItemManage ItemManage;
+	uint8 Buff;
+	uint8 EquipItem;
 
 	int32 CalcNextCell(int32 Dir);
+	UFUNCTION()
+	void MoveNextStage(const FString& MapName);
 public:
-	void GetManager(OUT FHealthManage& InHealthManage, OUT FCombatManage& InCombatManage, OUT uint8& InState)
+	void GetManager(OUT FHealthManage& OutHealthManage, OUT FCombatManage& OutCombatManage, OUT FItemManage& OutItemManage, OUT uint8& OutBuff)
 	{ 
-		InHealthManage = HealthManage;
-		InCombatManage = CombatManage;
-		InState = State;
+		OutHealthManage = HealthManage;
+		OutCombatManage = CombatManage;
+		OutItemManage = ItemManage;
+		OutBuff = Buff;
+		
 	}
-	void SetManager(FHealthManage& InHealthManage, FCombatManage& InCombatManage, uint8& InState) 
+	void SetManager(FHealthManage& InHealthManage, FCombatManage& InCombatManage, FItemManage& InItemManage, uint8& InBuff)
 	{
 		HealthManage = InHealthManage;
 		CombatManage = InCombatManage;
-		State = InState;
+		ItemManage = InItemManage;
+		Buff = InBuff;
 	}
 	int32 GetStageLevel() const { return StageLevel; }
 	FCell GetCellInfo() const { return Board[PlayerCurrentCell]; }

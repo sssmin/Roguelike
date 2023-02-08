@@ -4,7 +4,7 @@
 
 #include "Roguelike/Roguelike.h"
 #include "GameFramework/Character.h"
-#include "Roguelike/Manage.h"
+#include "Roguelike/Type/Manage.h"
 #include "BaseCharacter.generated.h"
 
 
@@ -22,19 +22,21 @@ public:
 	ABaseCharacter();
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
-	virtual void OnHit(AActor* Attacker, const FCombatManage& EnemyManage);
+	virtual void OnHit(AActor* Attacker, const FCombatManage& EnemyManage, const FItemManage& EnemyItemManage);
+	void Dead();
 protected:
 	virtual void Attack();
-
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UManagerComponent* ManagerComp;
 private:
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UCombatComponent* CombatComp;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<ABaseProjectile> ProjectileClass;
-	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	UManagerComponent* ManagerComp;
+	
 
 	FCombatManage GetCombatManage() const;
+	FItemManage GetItemManage() const;
 public:
 	UManagerComponent* GetManagerComp() const { return ManagerComp;  }
 };

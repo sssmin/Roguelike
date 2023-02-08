@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameStateBase.h"
-#include "Roguelike/DFSInterface.h"
+#include "Roguelike/Type/DFSInterface.h"
 #include "RLGameStateBase.generated.h"
 
 

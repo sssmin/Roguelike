@@ -9,15 +9,7 @@ URLGameInstance::URLGameInstance()
 {
 	DFS = MakeShared<DFSAgrt>();
 	
-	StartCell = 0;
-	PlayerCurrentCell = 0;
-	StageLevel = 1;
-	BossCell = 0;
-	BossPrevCell = 0;
-
-	ClearCount = 0;
-	bIsDiscoverdBoss = false;
-
+	Initialize();
 }
 
 void URLGameInstance::Init()
@@ -25,13 +17,28 @@ void URLGameInstance::Init()
 	Super::Init();
 }
 
+void URLGameInstance::NewGame()
+{
+	Initialize();
+	GenerateMap();
+}
+
 void URLGameInstance::Initialize()
 {
-	GenerateMap();
+	Board.Empty();
+	StartPos = FVector::ZeroVector;
+	StartCell = 0;
+	PlayerCurrentCell = 0;
+	StageLevel = 1;
+	BossCell = 0;
+	BossPrevCell = 0;
+
+	TotalCellNum = 0;
+
 	HealthManage = FHealthManage();
 	CombatManage = FCombatManage();
-	State = 0;
-	PlayerSpawnLoc = FVector(0.f, 0.f, 0.f);
+
+	Buff = 0;
 }
 
 void URLGameInstance::GenerateMap()
@@ -40,14 +47,17 @@ void URLGameInstance::GenerateMap()
 	{
 		MapSize = FVector2Int(4 + StageLevel, 4 + StageLevel);
 		DFS->StartAlgorithm(MapSize);
-		StartPos = DFS->GetStartPostion();
 		Board = DFS->GetBoard();
+		StartPos = DFS->GetStartPostion();
 		StartCell = DFS->GetStartCell();
 		PlayerCurrentCell = StartCell;
-		BossPrevCell = DFS->GetBossPrevCell();
 		BossCell = DFS->GetBossCell();
+		BossPrevCell = DFS->GetBossPrevCell();
 		TotalCellNum = DFS->GetTotalCellNum();
 	}
+	ClearCount = 0;
+	bIsDiscoverdBoss = false;
+	PlayerSpawnLoc = FVector::ZeroVector;
 }
 
 void URLGameInstance::TestPrintMap()
@@ -124,12 +134,14 @@ void URLGameInstance::RequestMove(int32 Dir, const FVector& OtherSide) //0,1,2,3
 	}
 	else if (NextCell == BossPrevCell)
 	{
-		Board[BossCell].CellState = ECellState::DISCOVEREDBOSS;
+		Board[BossCell].CellState = ECellState::DISCOVERED_BOSS;
 	}
 
 	Board[PlayerCurrentCell].CellState = ECellState::CLEAR;
+	UE_LOG(LogTemp, Warning, TEXT("CurrentCell : %d"), PlayerCurrentCell);
 	PlayerCurrentCell = NextCell;
-	Board[PlayerCurrentCell].CellState = ECellState::INPLAYER;
+	UE_LOG(LogTemp, Warning, TEXT("NextCell : %d"), PlayerCurrentCell);
+	Board[PlayerCurrentCell].CellState = ECellState::IN_PLAYER;
 
 	PlayerSpawnLoc = OtherSide;
 	OnMoveMap.ExecuteIfBound(); //매니저 받아오기
@@ -138,11 +150,23 @@ void URLGameInstance::RequestMove(int32 Dir, const FVector& OtherSide) //0,1,2,3
 		Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld()))->RemoveMinimapWidget();
 		if (PlayerCurrentCell == StartCell)
 		{
-			GetFirstLocalPlayerController(GetWorld())->ClientTravel("/Game/Maps/StartMap", ETravelType::TRAVEL_Relative, true);
+			FTimerHandle MoveStageTimerHandle;
+			FTimerDelegate MoveStageTimerDelegate;
+			FString MapName = TEXT("/Game/Maps/StartMap");
+
+			MoveStageTimerDelegate.BindUFunction(this, FName("MoveNextStage"), MapName);
+			GetWorld()->GetTimerManager().SetTimer(MoveStageTimerHandle, MoveStageTimerDelegate, 1.5f, false);
+			//GetFirstLocalPlayerController(GetWorld())->ClientTravel("/Game/Maps/StartMap", ETravelType::TRAVEL_Relative, true);
 		}
 		else
 		{
-			GetFirstLocalPlayerController(GetWorld())->ClientTravel("/Game/Maps/GameMap2", ETravelType::TRAVEL_Relative, true);
+			FTimerHandle MoveStageTimerHandle;
+			FTimerDelegate MoveStageTimerDelegate;
+			FString MapName = TEXT("/Game/Maps/GameMap2");
+
+			MoveStageTimerDelegate.BindUFunction(this, FName("MoveNextStage"), MapName);
+			GetWorld()->GetTimerManager().SetTimer(MoveStageTimerHandle, MoveStageTimerDelegate, 1.5f, false);
+			//GetFirstLocalPlayerController(GetWorld())->ClientTravel("/Game/Maps/GameMap2", ETravelType::TRAVEL_Relative, true);
 		}
 	}
 }
@@ -172,16 +196,24 @@ void URLGameInstance::ClearThisCell()
 void URLGameInstance::ClearStage()
 {
 	StageLevel++;
-	ClearCount = 0;
-	bIsDiscoverdBoss = false;
-	PlayerSpawnLoc = FVector(0.f, 0.f, 0.f);
 	GenerateMap();
 	
 	OnMoveMap.ExecuteIfBound(); 
 
+	Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld()))->RemoveMinimapWidget();
+
+	FTimerHandle MoveStageTimerHandle;
+	FTimerDelegate MoveStageTimerDelegate;
+	FString MapName = TEXT("");
+
+	MoveStageTimerDelegate.BindUFunction(this, FName("MoveNextStage"), MapName);
+	GetWorld()->GetTimerManager().SetTimer(MoveStageTimerHandle, MoveStageTimerDelegate, 1.5f, false);
+}
+
+void URLGameInstance::MoveNextStage(const FString& MapName)
+{
 	if (Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld())))
 	{
-		Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld()))->RemoveMinimapWidget();
-		GetFirstLocalPlayerController(GetWorld())->ClientTravel("/Game/Maps/StartMap", ETravelType::TRAVEL_Relative, true);
+		GetFirstLocalPlayerController(GetWorld())->ClientTravel(MapName, ETravelType::TRAVEL_Relative, true);
 	}
 }

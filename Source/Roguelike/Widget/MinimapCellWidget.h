@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Roguelike/Types.h"
+#include "Roguelike/Type/Types.h"
 #include "MinimapCellWidget.generated.h"
 
 class UBorder;

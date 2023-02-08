@@ -5,7 +5,8 @@
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Roguelike/Character/BaseCharacter.h"
+#include "Roguelike/Character/MonsterCharacter.h"
+#include "Roguelike/Character/PlayerCharacter.h"
 
 ABaseProjectile::ABaseProjectile()
 {
@@ -95,13 +96,15 @@ void ABaseProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UP
 {
 	if (OtherActor && Cast<ABaseCharacter>(OtherActor) && (OtherActor != GetOwner()))
 	{
-		Cast<ABaseCharacter>(OtherActor)->OnHit(GetOwner(), CombatManage);
+		Cast<ABaseCharacter>(OtherActor)->OnHit(GetOwner(), CombatManage, ItemManage);
 		PlayHitEffect();
+		CheckAttackerBeHealed(OtherActor, Cast<APlayerCharacter>(GetOwner()));
 	}
 	else
 	{
 		PlayDestroyEffect();
 	}
+
 }
 
 void ABaseProjectile::PlayHitEffect()
@@ -119,4 +122,16 @@ void ABaseProjectile::PlayDestroyEffect()
 void ABaseProjectile::Destroyed()
 {
 
+}
+
+void ABaseProjectile::CheckAttackerBeHealed(AActor* Other, APlayerCharacter* Player)
+{
+	
+	if ((CombatManage.Element == EElement::LIGHT) && Cast<AMonsterCharacter>(Other) && Player)
+	{
+		if (FMath::RandRange(1, 100) < 8)
+		{
+			Player->HealByHit();
+		}
+	}
 }

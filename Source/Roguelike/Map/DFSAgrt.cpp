@@ -18,25 +18,26 @@ void DFSAgrt::StartAlgorithm(FVector2Int MapSize)
 	ValueInit(); //초기값 세팅
 	Init(); //세팅 한 값 초기화
 	MazeGenerator();
-	GenerateDungeon();
+	MakeBonusCell();
 }
 
 void DFSAgrt::ValueInit()
 {
 	Board.Empty();
 	CellCount = 0;
-	StartPos = 0;
+	StartCell = 0;
 	Parts = 1;
 	CreatedPart = 0;
 	BossCell = 0;
 	BossPrevCell = 0;
 	StartPostion = FVector::ZeroVector;
 	TotalCellNum = 0;
+	BonusCellNum = 0;
 }
 
 void DFSAgrt::Init()
 {
-	for (int i = 0; i < Size.X * Size.Y; ++i)
+	for (int32 i = 0; i < Size.X * Size.Y; ++i)
 	{
 		Board.Add(FCell());
 	}
@@ -46,19 +47,25 @@ void DFSAgrt::Init()
 	if (Parts == 1)
 		CellCount += CellCount / 2;
 
+	BonusCellNum = FMath::RandRange(1, Parts);
+
+	//CellCount = 2;
+	//Parts = 1; 
+	//BonusCellNum = 0; //test
+
 	int32 Length = Size.X / 2;
 	int32 Breadth = Size.Y / 2;
-	for (int y = 0; y < Breadth; ++y)
+	for (int32 y = 0; y < Breadth; ++y)
 	{
-		StartPos += Size.Y;
+		StartCell += Size.Y;
 	}
-	StartPos += Length;
+	StartCell += Length;
 }
 
 
 void DFSAgrt::MazeGenerator()
 {
-	int32 CurrentCell = StartPos;
+	int32 CurrentCell = StartCell;
 
 	TArray<int> Path;
 	TArray<int32> SideCells;
@@ -125,7 +132,6 @@ void DFSAgrt::MazeGenerator()
 		}
 	}
 	
-
 	if (++CreatedPart != Parts)
 	{
 		MazeGenerator();
@@ -134,71 +140,31 @@ void DFSAgrt::MazeGenerator()
 	{
 		BossPrevCell = BeforeCell;
 		BossCell = CurrentCell;
-		Board[BossCell].CellState = ECellState::DONTFINDBOSS;
+		Board[BossCell].CellState = ECellState::DONT_FIND_BOSS;
 		Board[BossCell].CellType = ECellType::BOSS;
-		Board[StartPos].CellState = ECellState::INPLAYER;
-		Board[StartPos].CellType = ECellType::START;
-		Board[StartPos].IsCleared = true;
+		Board[StartCell].CellState = ECellState::IN_PLAYER;
+		Board[StartCell].CellType = ECellType::START;
+		Board[StartCell].IsCleared = true;
 	}
 }
 
-void DFSAgrt::GenerateDungeon()
+void DFSAgrt::MakeBonusCell()
 {
-	//for (int i = 0; i < Size.X; ++i)
-	//{
-	//	for (int j = 0; j < Size.Y; ++j)
-	//	{
-	//		FCell CurrentCell = Board[i + j * Size.X];
-	//		if (CurrentCell.Visited)
-	//		{
-	//			int32 RandomRoom = -1;
-	//			TArray<int32> AvaliableRooms;
-	//			for (int k = 0; k < Rooms.Num(); ++k)
-	//			{
-	//				int32 P = Rooms[k].ProbilityOfSpawning(i, j);
+	int32 MakedBonusCell = 0;
+	int32 RandCellIdx = 0;
 
-	//				if (P == 2)
-	//				{
-	//					RandomRoom = k;
-	//					break;
-	//				}
-	//				else if (P == 1)
-	//				{
-	//					AvaliableRooms.Add(k);
-	//				}
-	//			}
-
-	//			if (RandomRoom == -1)
-	//			{
-	//				if (AvaliableRooms.Num() > 0)
-	//				{
-	//					RandomRoom = AvaliableRooms[FMath::RandRange(0, AvaliableRooms.Num() - 1)];
-	//				}
-	//				else
-	//				{
-	//					RandomRoom = 0;
-	//				}
-	//			}
-	//			if (i + j * Size.X == StartPos)
-	//			{
-	//				RandomRoom = 2;
-	//				StartPostion = FVector(i * Offset.X, j * Offset.Y, 100.f);
-	//			}
-	//			else if (i + j * Size.X == BossCell)
-	//			{
-	//				RandomRoom = 0;
-	//			}
-	//			else
-	//			{
-	//				RandomRoom = 1;
-	//			}
-
-
-	//			
-	//		}
-	//	}
-	//}
+	while (MakedBonusCell != BonusCellNum)
+	{
+		RandCellIdx = FMath::RandRange(0, (Size.X * Size.Y) - 1);
+		if (Board[RandCellIdx].Visited && (RandCellIdx != BossCell) && (RandCellIdx != BossPrevCell) && (RandCellIdx != StartCell))
+		{
+			Board[RandCellIdx].CellState = ECellState::BONUS;
+			Board[RandCellIdx].CellType = ECellType::BONUS;
+			MakedBonusCell++;
+		}
+	}
 }
+
 
 TArray<int32> DFSAgrt::CheckSideCell(int32 Cell)
 {
@@ -226,10 +192,10 @@ TArray<int32> DFSAgrt::CheckSideCell(int32 Cell)
 
 void DFSAgrt::GetMaxWidgetHeight(OUT int32 MaxWidth, OUT int32 MaxHeight)
 {
-	for (int i = 0; i < Size.Y; ++i)
+	for (int32 i = 0; i < Size.Y; ++i)
 	{
 		int32 Compare = 0;
-		for (int j = 0; j < Size.X; j++)
+		for (int32 j = 0; j < Size.X; j++)
 		{
 			FCell CurrentCell = Board[i * Size.Y + j]; //0 1 2 3 4 순
 			if (CurrentCell.Visited)
@@ -241,10 +207,10 @@ void DFSAgrt::GetMaxWidgetHeight(OUT int32 MaxWidth, OUT int32 MaxHeight)
 	}
 
 
-	for (int i = 0; i < Size.X; ++i)
+	for (int32 i = 0; i < Size.X; ++i)
 	{
 		int32 Compare = 0;
-		for (int j = 0; j < Size.Y; ++j)
+		for (int32 j = 0; j < Size.Y; ++j)
 		{
 			FCell CurrentCell = Board[i + j * Size.X]; //0 5 10 15 순
 			if (CurrentCell.Visited)

@@ -4,12 +4,13 @@
 
 #include "Roguelike/Roguelike.h"
 #include "GameFramework/Actor.h"
-#include "Roguelike/Manage.h"
+#include "Roguelike/Type/Manage.h"
 #include "BaseProjectile.generated.h"
 
 class UProjectileMovementComponent;
 class USphereComponent;
 class UParticleSystem;
+class APlayerCharacter;
 
 UCLASS()
 class ROGUELIKE_API ABaseProjectile : public AActor
@@ -38,14 +39,16 @@ private:
 
 	void PlayHitEffect(); //캐릭터 맞췄을 때
 	void PlayDestroyEffect(); //벽에 맞고 파괴됐을때
+	void CheckAttackerBeHealed(AActor* Other, APlayerCharacter* Player);
 
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
-	//특성, 대미지 등을 넣을 수 있겠음.
 	FCombatManage CombatManage; //공격자의 공격력과 속성 들어있음.
+	FItemManage ItemManage; //공격자의 아이템
 
 public:
 	void SetVelocity(const FVector& Dir);
 	void SetCombatManage(FCombatManage InManage) { CombatManage = InManage; }
+	void SetItemManage(FItemManage InManage) { ItemManage = InManage; }
 };

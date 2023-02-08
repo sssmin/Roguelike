@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Roguelike/DFSInterface.h"
-#include "Roguelike/Types.h"
+#include "Roguelike/Type/DFSInterface.h"
+#include "Roguelike/Type/Types.h"
 #include "MinimapWidget.generated.h"
 
 class UUniformGridPanel;
