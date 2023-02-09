@@ -20,7 +20,7 @@ public:
 	void SetSidePortal();
 protected:
 	virtual void BeginPlay() override;
-
+	virtual void Destroyed() override;
 private:
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	USphereComponent* SphereComp;
@@ -37,17 +37,20 @@ private:
 	UPROPERTY()
 	UParticleSystemComponent* PortalParticleComp;
 
+	UPROPERTY()
+	UParticleSystemComponent* CenterPortalParticleComp;
+
 	int32 Dir;
 
 	UFUNCTION()
 	void BeginOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	
-	FVector OtherSide;
+	
 
 	bool IsCenterPortal;
 
 public:
 	void PortalParticleVisible(bool IsActive);
 	void SetDir(int32 InDir) { Dir = InDir; }
-	void SetOtherSide(const FVector& InOtherSide) { OtherSide = InOtherSide; }
+	
 };

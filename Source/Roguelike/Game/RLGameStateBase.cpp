@@ -5,15 +5,11 @@
 #include "RLGameInstance.h"
 #include "RLGameModeBase.h"
 #include "Kismet/GameplayStatics.h"
-#include "Roguelike/Component/PortalComponent.h"
 
 ARLGameStateBase::ARLGameStateBase()
 {
-	PortalComp = CreateDefaultSubobject<UPortalComponent>(TEXT("PortalComponent"));
-
 	ObjectiveNum = 0;
 	CurrentNum = 0;
-	IsClear = false;
 	StageLevel = 0;
 }
 
@@ -21,6 +17,7 @@ void ARLGameStateBase::BeginPlay()
 {
 	Super::BeginPlay();
 
+	RLGameMode = Cast<ARLGameModeBase>(UGameplayStatics::GetGameMode(this));
 	if (GetWorld())
 	{
 		URLGameInstance* RLGameInstance = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
@@ -28,44 +25,56 @@ void ARLGameStateBase::BeginPlay()
 		{
 			StageLevel = RLGameInstance->GetStageLevel();
 			CellInfo = RLGameInstance->GetCellInfo();
+			RLGameMode->SpawnCell(CellInfo.CellClass, CellInfo.TempWall);
 			SetObjective();
 		}
+	}
+	
+}
+
+void ARLGameStateBase::ReconstructCuzMove(int32 Dir, int32 Level, const FCell& Info)
+{
+	StageLevel = Level;
+	CellInfo = Info;
+	SpawnCell(Dir);
+	SetObjective();
+}
+
+void ARLGameStateBase::SpawnCell(int32 Dir)
+{
+	if (RLGameMode)
+	{
+		RLGameMode->SpawnCell(CellInfo.CellClass, CellInfo.TempWall, Dir);
 	}
 }
 
 
 void ARLGameStateBase::SetObjective()
 {
-	ARLGameModeBase* GM = Cast<ARLGameModeBase>(UGameplayStatics::GetGameMode(this));
+	CurrentNum = 0;
 	if (CellInfo.IsCleared)
 	{
-		ActivePortal();
+		CreateSidePortal();
 	}
 	else
 	{
-		switch (CellInfo.CellType)
+		if (RLGameMode)
 		{
-		case ECellType::MOBS:
-			if (GM)
+			switch (CellInfo.CellType)
 			{
+			case ECellType::MOBS:
 				ObjectiveNum = FMath::RandRange(4, 6);
-				GM->SpawnMob(StageLevel, ObjectiveNum);
-			}
-			break;
-		case ECellType::BOSS:
-			if (GM)
-			{
+				RLGameMode->SpawnMob(StageLevel, ObjectiveNum);
+				break;
+			case ECellType::BOSS:
 				ObjectiveNum = 1;
-				GM->SpawnBoss(StageLevel);
+				RLGameMode->SpawnBoss(StageLevel);
+				break;
+			case ECellType::BONUS:
+				RLGameMode->SpawnHealItem();
+				CreateSidePortal();
+				break;
 			}
-			break;
-		case ECellType::BONUS: 
-			if (GM)
-			{
-				GM->SpawnHealItem();
-			}
-			ClearThisCell();  
-			break;
 		}
 	}
 }
@@ -73,14 +82,20 @@ void ARLGameStateBase::SetObjective()
 void ARLGameStateBase::KillBoss()
 {
 	CreateCenterPortal();
+	URLGameInstance* RLGameInstance = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	
+	if (RLGameInstance)
+	{
+		RLGameInstance->ClearStage();
+	}
 }
 
 void ARLGameStateBase::KillScored()
 {
 	if (++CurrentNum == ObjectiveNum)
 	{
-		IsClear = true;
 		ClearThisCell();
+		CreateSidePortal();
 	}
 }
 
@@ -93,10 +108,19 @@ void ARLGameStateBase::ClearThisCell() //어떠한 조건으로 클리어 했을 때
 		{
 			RLGameInstance->ClearThisCell();
 		}
-
-		ActivePortal();
 	}
-	
+}
+
+void ARLGameStateBase::AteHealThisCell()
+{
+	if (GetWorld())
+	{
+		URLGameInstance* RLGameInstance = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+		if (RLGameInstance)
+		{
+			RLGameInstance->AteHealThisCell();
+		}
+	}
 }
 
 void ARLGameStateBase::TestKillScored()
@@ -107,18 +131,18 @@ void ARLGameStateBase::TestKillScored()
 	}
 }
 
-void ARLGameStateBase::ActivePortal()
+void ARLGameStateBase::CreateSidePortal()
 {
-	if (PortalComp)
+	if (RLGameMode)
 	{
-		PortalComp->ActiveAllPortal();
+		RLGameMode->CreateSidePortal();
 	}
 }
 
 void ARLGameStateBase::CreateCenterPortal()
 {
-	if (PortalComp)
+	if (RLGameMode)
 	{
-		PortalComp->CreateCenterPortal();
+		RLGameMode->CreateCenterPortal();
 	}
 }

@@ -45,12 +45,12 @@ private:
 	void Interact();
 	void PressedFreeCam();
 	void ReleasedFreeCam();
-	void LookAtCursor();
 
 	bool bPressedAttackButton;
 	float AttackDelay;
 
 public:
 	FRotator GetLookRot() const { return LookRot; }
+	void SetLookRot(FRotator Rot) { LookRot = Rot; }
 	
 };

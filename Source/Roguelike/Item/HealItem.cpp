@@ -8,7 +8,7 @@
 
 AHealItem::AHealItem()
 {
-	SetItemType(EItemType::STACK_ITEM);
+
 }
 
 void AHealItem::BeginPlay()
@@ -18,6 +18,16 @@ void AHealItem::BeginPlay()
 	if (ItemParticle && GetWorld())
 	{
 		HealItemParticleComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ItemParticle, GetActorTransform());
+	}
+}
+
+void AHealItem::Destroyed()
+{
+	Super::Destroyed();
+
+	if (HealItemParticleComp)
+	{
+		HealItemParticleComp->DestroyComponent();
 	}
 }
 

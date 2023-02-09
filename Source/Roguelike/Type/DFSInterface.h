@@ -7,9 +7,10 @@
 #include "UObject/Interface.h"
 #include "DFSInterface.generated.h"
 
-
+USTRUCT(BlueprintType)
 struct FCell
 {
+	GENERATED_BODY()
 	FCell()
 	{
 		Visited = false;
@@ -17,12 +18,17 @@ struct FCell
 		CellState = ECellState::DEACTIVE;
 		CellType = ECellType::NONE;
 		IsCleared = false;
+		TempWall = 0;
+		CellClass = 2;
 	}
 	bool Visited;
 	TArray<bool> Status;
 	ECellState CellState;
 	ECellType CellType;
 	bool IsCleared;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (Bitmask, BitmaskEnum = ETempWall))
+	uint8 TempWall;
+	int32 CellClass;
 };
 
 USTRUCT()
@@ -39,6 +45,21 @@ struct FVector2Int
 	int32 Y;
 
 };
+
+UENUM(BlueprintType, Meta = (Bitflags, UseEnumValueAsMaskValuesInEditor = "true"))
+enum class ETempWall : uint8
+{
+	NONE			= 0,
+	CENTER_UP		= 1 << 0,
+	CENTER_DOWN		= 1 << 1,
+	CENTER_RIGHT	= 1 << 2,
+	CENTER_LEFT		= 1 << 3,
+	SIDE_UP			= 1 << 4,
+	SIDE_DOWN		= 1 << 5,
+	SIDE_RIGHT		= 1 << 6,
+	SIDE_LEFT		= 1 << 7
+};
+ENUM_CLASS_FLAGS(ETempWall);
 
 
 UINTERFACE(MinimalAPI)

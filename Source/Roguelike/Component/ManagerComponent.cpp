@@ -232,7 +232,6 @@ void UManagerComponent::Dead()
 	if (Cast<ABaseCharacter>(GetOwner()))
 	{
 		Cast<ABaseCharacter>(GetOwner())->Dead();
-		Cast<ABaseCharacter>(GetOwner())->SetActorTickEnabled(false);
 	}
 
 	if (Cast<APlayerCharacter>(GetOwner())) //죽은게 플레이어
@@ -251,10 +250,12 @@ void UManagerComponent::Dead()
 			if (Cast<ABossMonsterCharacter>(GetOwner())) //죽은게 보스
 			{
 				RLGameState->KillBoss();
+				GetOwner()->Destroy();
 			}
 			else //일반 몹
 			{
 				RLGameState->KillScored();
+				GetOwner()->Destroy();
 			}
 		}
 	}
@@ -267,16 +268,31 @@ void UManagerComponent::TestDead()
 	if (Cast<ABaseCharacter>(GetOwner()))
 	{
 		Cast<ABaseCharacter>(GetOwner())->Dead();
-		Cast<ABaseCharacter>(GetOwner())->SetActorTickEnabled(false);
 	}
-	
+
 	if (Cast<APlayerCharacter>(GetOwner())) //죽은게 플레이어
 	{
-		//게임 끝.
 		ARLPlayerController* PC = Cast<ARLPlayerController>(Cast<APlayerCharacter>(GetOwner())->GetController());
 		if (PC)
 		{
 			PC->ShowGameOverWidget();
+		}
+	}
+	else //죽은게 몬스터
+	{
+		ARLGameStateBase* RLGameState = Cast<ARLGameStateBase>(UGameplayStatics::GetGameState(this));
+		if (RLGameState)
+		{
+			if (Cast<ABossMonsterCharacter>(GetOwner())) //죽은게 보스
+			{
+				RLGameState->KillBoss();
+				GetOwner()->Destroy();
+			}
+			else //일반 몹
+			{
+				RLGameState->KillScored();
+				GetOwner()->Destroy();
+			}
 		}
 	}
 }

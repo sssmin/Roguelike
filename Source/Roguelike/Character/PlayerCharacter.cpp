@@ -19,6 +19,8 @@
 
 APlayerCharacter::APlayerCharacter()
 {
+	
+	
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
 	bUseControllerRotationPitch = false;
@@ -45,11 +47,7 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	URLGameInstance* GI = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
-	if (GI)
-	{
-		SetActorLocation(GI->GetPlayerSpawnLoc());
-	}
+	
 	if (GetWorld())
 	{
 		PC = GetWorld()->GetFirstPlayerController();
@@ -67,24 +65,6 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	LookAtCursor();
-}
-
-void APlayerCharacter::LookAtCursor()
-{
-	FVector Start = GetActorLocation();
-	FVector Target;
-	FHitResult Hit;
-	if (PC)
-	{
-		PC->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, false, Hit);
-		if (Hit.bBlockingHit)
-		{
-			Target = Hit.ImpactPoint;
-		}
-	}
-	LookRot = UKismetMathLibrary::FindLookAtRotation(Start, Target);
-	SetActorRotation(FRotator(0.f, LookRot.Yaw, 0.f));
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -156,7 +136,7 @@ void APlayerCharacter::TestKillMe()
 {
 	if (ManagerComp)
 	{
-		ManagerComp->TestHurt();
+		ManagerComp->TestDead();
 	}
 }
 
@@ -217,5 +197,10 @@ void APlayerCharacter::HealByItem()
 	if (ManagerComp)
 	{
 		ManagerComp->Heal(30.f);
+	}
+	ARLGameStateBase* GSB = Cast<ARLGameStateBase>(UGameplayStatics::GetGameState(this));
+	if (GSB)
+	{
+		GSB->AteHealThisCell();
 	}
 }

@@ -7,9 +7,9 @@
 #include "Roguelike/Type/DFSInterface.h"
 #include "RLGameStateBase.generated.h"
 
+class ARLGameModeBase;
 
 
-class UPortalComponent;
 
 UCLASS()
 class ROGUELIKE_API ARLGameStateBase : public AGameStateBase
@@ -21,24 +21,28 @@ public:
 	ARLGameStateBase();
 	void KillScored();
 	void KillBoss();
+	void SpawnCell(int32 Dir);
+	void AteHealThisCell();
+	void ReconstructCuzMove(int32 Dir, int32 Level, const FCell& Info);
 private:
 	/* 셀 목표 */
 	int32 ObjectiveNum; //목표 킬수
 	int32 CurrentNum; //현재 킬수
-	bool IsClear; //클리어인지
 
 	/* 정보 */
 	FCell CellInfo;
 	int32 StageLevel;
 
-	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	UPortalComponent* PortalComp;
+	UPROPERTY()
+	ARLGameModeBase* RLGameMode;
+
 
 	void ClearThisCell();
 	void SetObjective();
 	void CreateCenterPortal();
-	void ActivePortal();
+	void CreateSidePortal();
 public:
 	void TestKillScored();
+	void SetCellInfo(const FCell& Info) { CellInfo = Info;  }
 	
 };

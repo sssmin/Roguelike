@@ -4,9 +4,13 @@
 #include "RLPlayerController.h"
 #include "Blueprint/UserWidget.h"
 #include "Roguelike/Game/RLGameInstance.h"
+#include "Roguelike/Game/RLGameModeBase.h"
 #include "Roguelike/Widget/MinimapWidget.h"
+#include "Roguelike/Widget/SelectItemWidget.h"
 #include "Roguelike/Actor/PlayersCamera.h"
-
+#include "Roguelike/Character/PlayerCharacter.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 
 
 void ARLPlayerController::SetupInputComponent()
@@ -32,8 +36,14 @@ void ARLPlayerController::BeginPlay()
 			SetViewTargetWithBlend(PlayersCamera);
 		}
 	}
-	
+	PlayerCharacter = Cast<APlayerCharacter>(GetPawn());
+}
 
+void ARLPlayerController::PlayerTick(float DeltaTime)
+{
+	Super::PlayerTick(DeltaTime);
+
+	LookAtCursor();
 }
 
 void ARLPlayerController::OnPossess(APawn* aPawn)
@@ -86,6 +96,8 @@ void ARLPlayerController::ShowNoticeWidget()
 
 void ARLPlayerController::ShowGameOverWidget()
 {
+	SetActorTickEnabled(false);
+	
 	if (GameOverWidgetClass && GetWorld())
 	{
 		UUserWidget* GameOverWidget = CreateWidget<UUserWidget>(GetWorld(), GameOverWidgetClass);
@@ -100,3 +112,76 @@ void ARLPlayerController::ShowGameOverWidget()
 	}
 }
 
+void ARLPlayerController::ShowSelectItemWidget()
+{
+	SetActorTickEnabled(false);
+	
+	TArray<FAllItemTable> SelectedItems = GetRandItem();
+		
+	if (SelectItemWidgetClass && GetWorld())
+	{
+		CreatedSelectItemWidget = CreateWidget<USelectItemWidget>(GetWorld(), SelectItemWidgetClass);
+		if (CreatedSelectItemWidget)
+		{
+			ensureMsgf(CreatedSelectItemWidget, TEXT("SelectItemWidget No Exist"));
+			CreatedSelectItemWidget->CreateRandItem.BindUObject(this, &ThisClass::GetRandItem);
+			FInputModeUIOnly InputModeData;
+			InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::LockInFullscreen);
+			SetInputMode(InputModeData);
+
+			CreatedSelectItemWidget->AddToViewport();
+			CreatedSelectItemWidget->Init(SelectedItems);
+			CreatedSelectItemWidget->CreateCellWidget();
+		}
+	}
+	
+}
+
+TArray<FAllItemTable> ARLPlayerController::GetRandItem()
+{
+	TArray<FAllItemTable> RandItem;
+	ARLGameModeBase* GM = Cast<ARLGameModeBase>(UGameplayStatics::GetGameMode(this));
+	if (GM)
+	{
+		RandItem = GM->CreateRandItem();
+	}
+	return RandItem;
+}
+
+void ARLPlayerController::LookAtCursor()
+{
+	if (PlayerCharacter)
+	{
+		FVector Start = PlayerCharacter->GetActorLocation();
+		FVector Target;
+		FHitResult Hit;
+
+		GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, false, Hit);
+		if (Hit.bBlockingHit)
+		{
+			Target = Hit.ImpactPoint;
+		}
+
+		LookRot = UKismetMathLibrary::FindLookAtRotation(Start, Target);
+		PlayerCharacter->SetLookRot(LookRot);
+		PlayerCharacter->SetActorRotation(FRotator(0.f, LookRot.Yaw, 0.f));
+		
+	}
+	
+}
+
+void ARLPlayerController::ResumeController()
+{
+	FInputModeGameAndUI InputModeData;
+	InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::LockInFullscreen);
+	SetInputMode(InputModeData);
+	SetActorTickEnabled(true);
+}
+
+void ARLPlayerController::RemoveSelectWidget()
+{
+	if (CreatedSelectItemWidget)
+	{
+		CreatedSelectItemWidget->RemoveFromViewport();
+	}
+}

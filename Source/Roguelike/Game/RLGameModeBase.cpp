@@ -6,20 +6,24 @@
 #include "Roguelike/Component/ManagerComponent.h"
 #include "Roguelike/Item/ElementItem.h"
 #include "Roguelike/Item/HealItem.h"
+#include "Roguelike/Actor/CellActor.h"
+#include "GameFramework/Character.h"
+#include "Kismet/GameplayStatics.h"
 
 ARLGameModeBase::ARLGameModeBase()
 {
-	MobSpawnPoints.Add(FVector(-300.f, 0.f, 0.f));
-	MobSpawnPoints.Add(FVector(0.f, -300.f, 0.f));
-	MobSpawnPoints.Add(FVector(300.f, 0.f, 0.f));
-	MobSpawnPoints.Add(FVector(0.f, 300.f, 0.f));
-	MobSpawnPoints.Add(FVector(-300.f, -300.f, 0.f));
-	MobSpawnPoints.Add(FVector(300.f, 300.f, 0.f));
+	MobSpawnPoints.Add(FVector(-300.f, 0.f, 200.f));
+	MobSpawnPoints.Add(FVector(0.f, -300.f, 200.f));
+	MobSpawnPoints.Add(FVector(300.f, 0.f, 200.f));
+	MobSpawnPoints.Add(FVector(0.f, 300.f, 200.f));
+	MobSpawnPoints.Add(FVector(-300.f, -300.f, 200.f));
+	MobSpawnPoints.Add(FVector(300.f, 300.f, 200.f));
 }
 
 void ARLGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
+
 }
 
 void ARLGameModeBase::SpawnMob(int32 StageLevel, int32 MobCount)
@@ -61,7 +65,6 @@ void ARLGameModeBase::SpawnMob(int32 StageLevel, int32 MobCount)
 
 void ARLGameModeBase::SpawnBoss(int32 StageLevel)
 {
-	//보스 스폰
 	FCombatManage CombatManage;
 	FHealthManage HealthManage;
 	SetMonsterManage(StageLevel, HealthManage, CombatManage); //out param
@@ -81,12 +84,37 @@ void ARLGameModeBase::SpawnBoss(int32 StageLevel)
 	}
 }
 
+void ARLGameModeBase::SpawnCell(int32 CellIndex, uint8 TempWall, int32 Dir)
+{
+	if (SpawnedCell)
+	{
+		SpawnedCell->Destroy();
+	}
+	if (SpawnedHealItem)
+	{
+		SpawnedHealItem->Destroy();
+	}
+	if (CellClasses.IsValidIndex(CellIndex))
+	{
+		SpawnedCell = GetWorld()->SpawnActor<ACellActor>(CellClasses[CellIndex], FVector::ZeroVector, FRotator::ZeroRotator);
+		if (SpawnedCell)
+		{
+			SpawnedCell->SetTempWall(TempWall);
+			FVector PlayerLocation{ FVector::ZeroVector };
+			if (Dir != -1)
+			{
+				PlayerLocation = SpawnedCell->GetPlayerSpawnLocation(Dir);
+			}
+			UGameplayStatics::GetPlayerCharacter(this, 0)->SetActorLocation(PlayerLocation);
+		}
+	}
+}
+
 void ARLGameModeBase::SpawnHealItem()
 {
 	if (HealItemClass && GetWorld())
 	{
-		GetWorld()->SpawnActor<AHealItem>(HealItemClass, FVector::ZeroVector, FRotator::ZeroRotator);
-		
+		SpawnedHealItem = GetWorld()->SpawnActor<AHealItem>(HealItemClass, FVector::ZeroVector, FRotator::ZeroRotator);
 	}
 }
 
@@ -152,6 +180,54 @@ void ARLGameModeBase::SpawnCounterElementItem(EElement Element)
 			ElementItem->SetElement(ItemElement);
 			ElementItem->SetParticle();
 		}
-	}
-	
+	}	
 }
+
+void ARLGameModeBase::CreateSidePortal()
+{
+	if (SpawnedCell)
+	{
+		SpawnedCell->CreateSidePortal();
+	}
+}
+
+void ARLGameModeBase::CreateCenterPortal()
+{
+	if (SpawnedCell)
+	{
+		SpawnedCell->CreateCenterPortal();
+	}
+}
+
+TArray<FAllItemTable> ARLGameModeBase::CreateRandItem()
+{
+	TArray<FAllItemTable> SelectedItem;
+	FString AllItemTablePath = FString(TEXT("/Game/DataTable/AllItem"));
+	UDataTable* AllItemTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *AllItemTablePath));
+	if (AllItemTableObject)
+	{
+		TArray<FAllItemTable*> AllItems;
+		AllItemTableObject->GetAllRows<FAllItemTable>(TEXT("AllItem"), AllItems);
+		if (!AllItems.IsEmpty())
+		{
+			int32 ItemNum = AllItems.Num();
+			
+			while (true)
+			{
+				int32 Rand = FMath::RandRange(0, ItemNum - 1);
+				if (!SelectedItem.IsEmpty())
+				{
+					if (SelectedItem[0].ItemName != (*AllItems[Rand]->ItemName))
+					{
+						SelectedItem.Add(*AllItems[Rand]);
+						break;
+					}
+					continue;
+				}
+				SelectedItem.Add(*AllItems[Rand]);
+			}
+		}
+	}
+	return SelectedItem;
+}
+

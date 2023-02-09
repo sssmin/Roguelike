@@ -5,12 +5,14 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "Roguelike/Type/DFSInterface.h"
+#include "Roguelike/Type/Item.h"
 #include "RLPlayerController.generated.h"
 
 
-class ABSPAlgorithm;
 class UMinimapWidget;
 class APlayersCamera;
+class USelectItemWidget;
+class APlayerCharacter;
 
 UCLASS()
 class ROGUELIKE_API ARLPlayerController : public APlayerController
@@ -23,6 +25,10 @@ public:
 	void RemoveMinimapWidget();
 	void ShowNoticeWidget();
 	void ShowGameOverWidget();
+	void ShowSelectItemWidget();
+	virtual void PlayerTick(float DeltaTime);
+	void ResumeController();
+	void RemoveSelectWidget();
 protected:
 	virtual void OnPossess(APawn* aPawn) override;
 private:
@@ -31,6 +37,7 @@ private:
 	FVector2Int MapSize;
 	int32 PlayerCell;
 	void DrawMap();
+	
 
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UMinimapWidget> MinimapWidgetClass;
@@ -38,17 +45,22 @@ private:
 	UMinimapWidget* MinimapWidget;
 
 	/****************************/
-
+	void LookAtCursor();
+	FRotator LookRot;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UUserWidget> NoticeWidgetClass;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UUserWidget> GameOverWidgetClass;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<USelectItemWidget> SelectItemWidgetClass;
+	UPROPERTY()
+	USelectItemWidget* CreatedSelectItemWidget;
 
-	/*이런저런 아이템 정보,플레이어 정보들*/
-
-
+	TArray<FAllItemTable> GetRandItem();
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<APlayersCamera> PlayersCameraClass;
+	UPROPERTY()
+	APlayerCharacter* PlayerCharacter;
 public:
 	
 };

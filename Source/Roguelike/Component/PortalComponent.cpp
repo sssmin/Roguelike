@@ -5,8 +5,8 @@
 #include "Components/SphereComponent.h"
 #include "Roguelike/Actor/PortalActor.h"
 #include "Roguelike/Game/RLGameInstance.h"
-#include "Engine/TargetPoint.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/ArrowComponent.h"
 
 UPortalComponent::UPortalComponent()
 {
@@ -17,23 +17,17 @@ UPortalComponent::UPortalComponent()
 void UPortalComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-
 }
 
 
 void UPortalComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-
 }
 
 void UPortalComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
-
-	
 }
 
 void UPortalComponent::CreatePortal(TArray<int32> Dirs)
@@ -48,7 +42,6 @@ void UPortalComponent::CreatePortal(TArray<int32> Dirs)
 				Portal->SetDir(Dirs[i]);
 				Portals.Add(FPortalInfo(Dirs[i], Portal));
 			}
-			
 		}
 		SetLocationPotal();
 	}
@@ -56,21 +49,22 @@ void UPortalComponent::CreatePortal(TArray<int32> Dirs)
 
 void UPortalComponent::SetLocationPotal()
 {
-	TArray<AActor*> TargetPointActors;
-	UGameplayStatics::GetAllActorsOfClass(this, ATargetPoint::StaticClass(), TargetPointActors);
+	TArray<UArrowComponent*> ArrowComponents;
+	GetOwner()->GetComponents(ArrowComponents);
 
 	TMap<int32, FVector> SpawnLocation;
-	for (auto TagetPoint : TargetPointActors)
+
+	for (auto Arrow : ArrowComponents)
 	{
-		ATargetPoint* TP = Cast<ATargetPoint>(TagetPoint);
-		if (TP)
+		UArrowComponent* ArrowComp = Cast<UArrowComponent>(Arrow);
+		if (ArrowComp)
 		{
-			TArray<FName> TPTag = TP->Tags;
+			TArray<FName> TPTag = ArrowComp->ComponentTags;
 			if (TPTag.IsValidIndex(0))
 			{
 				FString Str = TPTag[0].ToString();
 				int32 StrToInt = FCString::Atoi(*Str);
-				SpawnLocation.Add(StrToInt, TP->GetActorLocation());
+				SpawnLocation.Add(StrToInt, ArrowComp->GetComponentLocation());
 			}
 		}
 	}
@@ -80,31 +74,11 @@ void UPortalComponent::SetLocationPotal()
 		if (SpawnLocation.Find(PortalInfo.Dir))
 		{
 			PortalInfo.Portal->SetActorLocation(*SpawnLocation.Find(PortalInfo.Dir));
-
-			switch (PortalInfo.Dir)
-			{
-			case 0:
-				if (SpawnLocation.Find(1))
-					PortalInfo.Portal->SetOtherSide(*SpawnLocation.Find(1) + FVector(200.f, 0.f, 0.f));
-				break;
-			case 1:
-				if (SpawnLocation.Find(0))
-					PortalInfo.Portal->SetOtherSide(*SpawnLocation.Find(0) + FVector(-200.f, 0.f, 0.f));
-				break;
-			case 2:
-				if (SpawnLocation.Find(3))
-					PortalInfo.Portal->SetOtherSide(*SpawnLocation.Find(3) + FVector(0.f, 200.f, 0.f));
-				break;
-			case 3:
-				if (SpawnLocation.Find(2))
-					PortalInfo.Portal->SetOtherSide(*SpawnLocation.Find(2) + FVector(0.f, -200.f, 0.f));
-				break;
-			}
 		}
 	}
 }
 
-void UPortalComponent::ActiveAllPortal()
+void UPortalComponent::CreateSidePortal()
 {
 	if (GetWorld())
 	{
@@ -114,8 +88,6 @@ void UPortalComponent::ActiveAllPortal()
 			CreatePortal(RLGameInstance->GetConnectedDir());
 		}
 	}
-	
-	
 	
 	for (auto PortalInfo : Portals)
 	{
@@ -136,5 +108,63 @@ void UPortalComponent::CreateCenterPortal()
 			Portal->SetCenterPortal();
 		}
 	}
-	
+}
+
+void UPortalComponent::DestroyPortal()
+{
+	for (auto Portal : Portals)
+	{
+		Portal.Portal->Destroy();
+	}
+}
+
+FVector UPortalComponent::GetArrowLocation(int32 Dir)
+{
+	FVector SpawnLocation;
+	switch (Dir)
+	{
+	case 0:
+		Dir = 1;
+		SpawnLocation = CalcLocation(Dir) + FVector(200.f, 0.f, 0.f);
+		break;
+	case 1:
+		Dir = 0;
+		SpawnLocation = CalcLocation(Dir) + FVector(-200.f, 0.f, 0.f);
+		break;
+	case 2:
+		Dir = 3;
+		SpawnLocation = CalcLocation(Dir) + FVector(0.f, 200.f, 0.f);
+		break;
+	case 3:
+		Dir = 2;
+		SpawnLocation = CalcLocation(Dir) + FVector(0.f, -200.f, 0.f);
+		break;
+	}
+
+	return SpawnLocation;
+}
+
+FVector UPortalComponent::CalcLocation(int32 Dir)
+{
+	TArray<UArrowComponent*> ArrowComponents;
+	GetOwner()->GetComponents(ArrowComponents);
+
+	for (auto Arrow : ArrowComponents)
+	{
+		UArrowComponent* ArrowComp = Cast<UArrowComponent>(Arrow);
+		if (ArrowComp)
+		{
+			TArray<FName> TPTag = ArrowComp->ComponentTags;
+			if (TPTag.IsValidIndex(0))
+			{
+				FString Str = TPTag[0].ToString();
+				int32 StrToInt = FCString::Atoi(*Str);
+				if (Dir == StrToInt)
+				{
+					return ArrowComp->GetComponentLocation();
+				}
+			}
+		}
+	}
+	return FVector::ZeroVector;
 }

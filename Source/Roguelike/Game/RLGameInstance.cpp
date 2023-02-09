@@ -4,6 +4,8 @@
 #include "RLGameInstance.h"
 #include "Roguelike/Map/DFSAgrt.h"
 #include "Roguelike/PlayerController/RLPlayerController.h"
+#include "RLGameStateBase.h"
+#include "Kismet/GameplayStatics.h"
 
 URLGameInstance::URLGameInstance()
 {
@@ -39,6 +41,7 @@ void URLGameInstance::Initialize()
 	CombatManage = FCombatManage();
 
 	Buff = 0;
+	RLGameState = Cast<ARLGameStateBase>(UGameplayStatics::GetGameState(this));
 }
 
 void URLGameInstance::GenerateMap()
@@ -57,12 +60,11 @@ void URLGameInstance::GenerateMap()
 	}
 	ClearCount = 0;
 	bIsDiscoverdBoss = false;
-	PlayerSpawnLoc = FVector::ZeroVector;
 }
 
 void URLGameInstance::TestPrintMap()
 {
-	for (int32 i = 0; i < Board.Num(); ++i)
+	/*for (int32 i = 0; i < Board.Num(); ++i)
 	{
 		for (int32 j = 0; j < Board[i].Status.Num(); ++j)
 		{
@@ -72,7 +74,9 @@ void URLGameInstance::TestPrintMap()
 
 	UE_LOG(LogTemp, Warning, TEXT("CurrentCell : %d"), PlayerCurrentCell);
 	UE_LOG(LogTemp, Warning, TEXT("TotalCellNum : %d"), TotalCellNum);
-	UE_LOG(LogTemp, Warning, TEXT("BossCell : %d"), BossCell);
+	UE_LOG(LogTemp, Warning, TEXT("BossCell : %d"), BossCell);*/
+
+	ClearStage();
 }
 
 void URLGameInstance::RequestInfo()
@@ -118,7 +122,7 @@ TArray<int32> URLGameInstance::GetConnectedDir()
 	return Ret;
 }
 
-void URLGameInstance::RequestMove(int32 Dir, const FVector& OtherSide) //0,1,2,3중 하나로 넘어옴
+void URLGameInstance::RequestMove(int32 Dir) //0,1,2,3중 하나로 넘어옴
 {
 	int32 NextCell = CalcNextCell(Dir);
 	if (NextCell == BossCell) //가려는 셀이 보스셀일 때
@@ -138,36 +142,19 @@ void URLGameInstance::RequestMove(int32 Dir, const FVector& OtherSide) //0,1,2,3
 	}
 
 	Board[PlayerCurrentCell].CellState = ECellState::CLEAR;
-	UE_LOG(LogTemp, Warning, TEXT("CurrentCell : %d"), PlayerCurrentCell);
 	PlayerCurrentCell = NextCell;
-	UE_LOG(LogTemp, Warning, TEXT("NextCell : %d"), PlayerCurrentCell);
 	Board[PlayerCurrentCell].CellState = ECellState::IN_PLAYER;
 
-	PlayerSpawnLoc = OtherSide;
-	OnMoveMap.ExecuteIfBound(); //매니저 받아오기
+	RLGameState = RLGameState == nullptr ? Cast<ARLGameStateBase>(UGameplayStatics::GetGameState(this)) : RLGameState;
+	if (RLGameState)
+	{
+		RLGameState->ReconstructCuzMove(Dir, StageLevel, Board[PlayerCurrentCell]);
+	}
+	
 	if (Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld())))
 	{
 		Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld()))->RemoveMinimapWidget();
-		if (PlayerCurrentCell == StartCell)
-		{
-			FTimerHandle MoveStageTimerHandle;
-			FTimerDelegate MoveStageTimerDelegate;
-			FString MapName = TEXT("/Game/Maps/StartMap");
-
-			MoveStageTimerDelegate.BindUFunction(this, FName("MoveNextStage"), MapName);
-			GetWorld()->GetTimerManager().SetTimer(MoveStageTimerHandle, MoveStageTimerDelegate, 1.5f, false);
-			//GetFirstLocalPlayerController(GetWorld())->ClientTravel("/Game/Maps/StartMap", ETravelType::TRAVEL_Relative, true);
-		}
-		else
-		{
-			FTimerHandle MoveStageTimerHandle;
-			FTimerDelegate MoveStageTimerDelegate;
-			FString MapName = TEXT("/Game/Maps/GameMap2");
-
-			MoveStageTimerDelegate.BindUFunction(this, FName("MoveNextStage"), MapName);
-			GetWorld()->GetTimerManager().SetTimer(MoveStageTimerHandle, MoveStageTimerDelegate, 1.5f, false);
-			//GetFirstLocalPlayerController(GetWorld())->ClientTravel("/Game/Maps/GameMap2", ETravelType::TRAVEL_Relative, true);
-		}
+		Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld()))->SetMapInfo(MapSize, Board, PlayerCurrentCell);
 	}
 }
 
@@ -193,27 +180,34 @@ void URLGameInstance::ClearThisCell()
 	ClearCount++;
 }
 
-void URLGameInstance::ClearStage()
+void URLGameInstance::AteHealThisCell()
+{
+	Board[PlayerCurrentCell].IsCleared = true;
+}
+
+void URLGameInstance::RequestMoveNextStage()
 {
 	StageLevel++;
 	GenerateMap();
 	
-	OnMoveMap.ExecuteIfBound(); 
+	//OnMoveMap.ExecuteIfBound(); 
 
-	Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld()))->RemoveMinimapWidget();
-
-	FTimerHandle MoveStageTimerHandle;
-	FTimerDelegate MoveStageTimerDelegate;
-	FString MapName = TEXT("");
-
-	MoveStageTimerDelegate.BindUFunction(this, FName("MoveNextStage"), MapName);
-	GetWorld()->GetTimerManager().SetTimer(MoveStageTimerHandle, MoveStageTimerDelegate, 1.5f, false);
+	
 }
 
 void URLGameInstance::MoveNextStage(const FString& MapName)
 {
-	if (Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld())))
+	/*if (Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld())))
 	{
 		GetFirstLocalPlayerController(GetWorld())->ClientTravel(MapName, ETravelType::TRAVEL_Relative, true);
+	}*/
+}
+
+void URLGameInstance::ClearStage()
+{
+	if (Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld())))
+	{
+		Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld()))->RemoveMinimapWidget();
+		Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld()))->ShowSelectItemWidget();
 	}
 }

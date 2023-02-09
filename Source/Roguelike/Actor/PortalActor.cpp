@@ -14,7 +14,6 @@ APortalActor::APortalActor()
 	PrimaryActorTick.bCanEverTick = false;
 
 	SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
-	OtherSide = FVector(0.f, 0.f, 0.f);
 	SphereComp->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
 	SphereComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	SphereComp->SetCollisionResponseToChannel(ECC_Player_Portal, ECollisionResponse::ECR_Overlap);
@@ -48,11 +47,11 @@ void APortalActor::BeginOverlapped(UPrimitiveComponent* OverlappedComponent, AAc
 		{
 			if (!IsCenterPortal)
 			{
-				Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this))->RequestMove(Dir, OtherSide);
+				Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this))->RequestMove(Dir);
 			}
 			else
 			{
-				Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this))->ClearStage();
+				Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this))->RequestMoveNextStage();
 			}
 		}
 	}
@@ -63,7 +62,7 @@ void APortalActor::SetCenterPortal()
 	if (CenterPortalCreateParticle && CenterPortalParticle && GetWorld())
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), CenterPortalCreateParticle, GetActorTransform());
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), CenterPortalParticle, GetActorTransform());
+		CenterPortalParticleComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), CenterPortalParticle, GetActorTransform());
 	}
 	PortalParticleVisible(true);
 	IsCenterPortal = true;
@@ -73,9 +72,21 @@ void APortalActor::SetSidePortal()
 {
 	if (PortalParticle && GetWorld())
 	{
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PortalParticle, GetActorTransform());
+		PortalParticleComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PortalParticle, GetActorTransform());
 	}
 	PortalParticleVisible(true);
 	IsCenterPortal = false;
 }
 
+void APortalActor::Destroyed()
+{
+	if (PortalParticleComp)
+	{
+		PortalParticleComp->DestroyComponent();
+	}
+
+	if (CenterPortalParticleComp)
+	{
+		CenterPortalParticleComp->DestroyComponent();
+	}
+}

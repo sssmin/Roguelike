@@ -4,9 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "Engine/DataTable.h"
+#include "Roguelike/Type/Item.h"
 #include "Roguelike/Type/Manage.h"
 #include "RLGameModeBase.generated.h"
+
+class UTexture2D;
+class AMonsterCharacter;
+class AElementItem;
+class AHealItem;
+class ACellActor;
+
 
 USTRUCT(BlueprintType)
 struct FMonsterStatTable : public FTableRowBase
@@ -21,9 +28,9 @@ struct FMonsterStatTable : public FTableRowBase
 
 };
 
-class AMonsterCharacter;
-class AElementItem;
-class AHealItem;
+
+
+
 
 UCLASS()
 class ROGUELIKE_API ARLGameModeBase : public AGameModeBase
@@ -35,22 +42,33 @@ public:
 	virtual void BeginPlay() override;
 	void SpawnMob(int32 StageLevel, int32 MobCount);
 	void SpawnBoss(int32 StageLevel);
+	void SpawnCell(int32 CellIndex, uint8 TempWall, int32 Dir = -1);
 	void SpawnHealItem();
+	void CreateSidePortal();
+	void CreateCenterPortal();
+	TArray<FAllItemTable> CreateRandItem();
 
 private:
+	TArray<FVector> MobSpawnPoints;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AMonsterCharacter> NormalMonsterClass;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AMonsterCharacter> EliteMonsterClass;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AMonsterCharacter> BossMonsterClass;
-	TArray<FVector> MobSpawnPoints;
-	void SpawnCounterElementItem(EElement Element);
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TArray<TSubclassOf<ACellActor>> CellClasses;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AElementItem> ElementItemClass;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AHealItem> HealItemClass;
-	FCombatManage& SetRandomElement(int32 StageLevel, FCombatManage& CombatManage);
+	UPROPERTY() 
+	AHealItem* SpawnedHealItem;
+	UPROPERTY()
+	ACellActor* SpawnedCell;
 
+
+	FCombatManage& SetRandomElement(int32 StageLevel, FCombatManage& CombatManage);
+	void SpawnCounterElementItem(EElement Element);
 	void SetMonsterManage(int32 StageLevel, OUT FHealthManage& HealthManage, OUT FCombatManage& CombatManage);
 };

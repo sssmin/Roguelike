@@ -48,6 +48,7 @@ void DFSAgrt::Init()
 		CellCount += CellCount / 2;
 
 	BonusCellNum = FMath::RandRange(1, Parts);
+	TotalCellNum -= BonusCellNum;
 
 	//CellCount = 2;
 	//Parts = 1; 
@@ -80,6 +81,15 @@ void DFSAgrt::MazeGenerator()
 		Board[CurrentCell].Visited = true;
 		Board[CurrentCell].CellState = ECellState::NORMAL;
 		Board[CurrentCell].CellType = ECellType::MOBS;
+		Board[CurrentCell].CellClass = FMath::RandRange(2, 3);
+		for (int32 i = 0; i < 8; ++i)
+		{
+			bool Rand = FMath::RandBool();
+			if (Rand)
+			{
+				Board[CurrentCell].TempWall |= 1 << i;
+			}
+		}
 		
 		if (CreatedCellCount == CellCount) break;
 
@@ -142,9 +152,12 @@ void DFSAgrt::MazeGenerator()
 		BossCell = CurrentCell;
 		Board[BossCell].CellState = ECellState::DONT_FIND_BOSS;
 		Board[BossCell].CellType = ECellType::BOSS;
+		Board[BossCell].CellClass = 1;
 		Board[StartCell].CellState = ECellState::IN_PLAYER;
 		Board[StartCell].CellType = ECellType::START;
 		Board[StartCell].IsCleared = true;
+		Board[StartCell].TempWall = static_cast<uint8>(ETempWall::NONE);
+		Board[StartCell].CellClass = 0;
 	}
 }
 
@@ -160,6 +173,8 @@ void DFSAgrt::MakeBonusCell()
 		{
 			Board[RandCellIdx].CellState = ECellState::BONUS;
 			Board[RandCellIdx].CellType = ECellType::BONUS;
+			Board[RandCellIdx].TempWall = static_cast<uint8>(ETempWall::NONE);
+			Board[RandCellIdx].CellClass = 0;
 			MakedBonusCell++;
 		}
 	}

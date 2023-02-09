@@ -9,6 +9,8 @@
 #include "RLGameInstance.generated.h"
 
 class DFSAgrt;
+class ARLGameStateBase;
+
 DECLARE_DELEGATE(FOnMoveMap);
 
 UCLASS()
@@ -18,20 +20,26 @@ class ROGUELIKE_API URLGameInstance : public UGameInstance
 	
 public:
 	URLGameInstance();
+	virtual void Init() override;
 	UFUNCTION(BlueprintCallable)
 	void NewGame();
 	void Initialize();
 	void GenerateMap();
-	void TestPrintMap();
-	virtual void Init() override;
 	void RequestInfo();
-	void RequestMove(int32 Dir, const FVector& OtherSide);
+	void RequestMove(int32 Dir);
+	void RequestMoveNextStage();
 	TArray<int32> GetConnectedDir();
 	void ClearThisCell();
-	FOnMoveMap OnMoveMap;
+	void AteHealThisCell();
 	void ClearStage();
+
+
+	FOnMoveMap OnMoveMap;
+	void TestPrintMap();
 private:
 	TSharedPtr<DFSAgrt> DFS;
+	UPROPERTY()
+	ARLGameStateBase* RLGameState;
 
 	FVector2Int MapSize;
 	int32 ClearCount; //방 클리어 갯수
@@ -44,8 +52,6 @@ private:
 	int32 BossPrevCell; //플레이어가 여기 위치하면 BossCell 발견
 	bool bIsDiscoverdBoss; //BossPrevCell에 도착하면 true. 
 	int32 TotalCellNum; // 방 총개수. 시작지점 미포함. Total - 1 == ClearCount면 보스 입장 가능
-	
-	FVector PlayerSpawnLoc;
 	
 	//아이템 정보, 플레이어 정보도 저장해야함.
 	FHealthManage HealthManage;
@@ -75,5 +81,4 @@ public:
 	}
 	int32 GetStageLevel() const { return StageLevel; }
 	FCell GetCellInfo() const { return Board[PlayerCurrentCell]; }
-	FVector GetPlayerSpawnLoc() const { return PlayerSpawnLoc; }
 };

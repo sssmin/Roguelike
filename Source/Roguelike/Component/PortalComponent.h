@@ -31,7 +31,10 @@ class ROGUELIKE_API UPortalComponent : public UActorComponent
 public:	
 	UPortalComponent();
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	
+	void CreateSidePortal();
+	void CreateCenterPortal();
+	void DestroyPortal();
+	FVector GetArrowLocation(int32 Dir);
 protected:
 	virtual void BeginPlay() override;
 	virtual void InitializeComponent() override;
@@ -42,7 +45,7 @@ private:
 	TSubclassOf<APortalActor> PortalActorClass;
 	void SetLocationPotal();
 	void CreatePortal(TArray<int32> Dirs);
+	FVector CalcLocation(int32 Dir);
 public:
-	void ActiveAllPortal();
-	void CreateCenterPortal();
+	
 };
