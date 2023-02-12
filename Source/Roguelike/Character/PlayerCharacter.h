@@ -9,6 +9,7 @@
 class USphereComponent;
 class UCameraComponent;
 class USpringArmComponent;
+class UItemComponent;
 
 DECLARE_DELEGATE_OneParam(FOnPressedFreeCam, bool);
 
@@ -21,12 +22,14 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	FOnPressedFreeCam OnPressedFreeCam;
-	void GetElementFromItem(int32 ConvertElement);
+	void GetElementFromItem(EElement Element);
 	void IncreaseMovementSpeed();
 	void DecreaseMovementSpeed();
 	void HealByHit();
 	void HealByItem();
-
+	void RequestItemSwap(const FItemInfoTable* OldItem, const FItemInfoTable* NewItem);
+	UFUNCTION(BlueprintImplementableEvent)
+	void ApplyElementParticle();
 protected:
 	void MoveForward(float Value);
 	void MoveRight(float Value);
@@ -38,19 +41,23 @@ private:
 	APlayerController* PC;
 	FRotator LookRot;
 
-	void TestIncreaseKillCount();
-	void TestKillMe();
-	void TestPrintMap();
+	UPROPERTY()
+	UItemComponent* ItemComponent;
+	void Test1();
+	void Test2();
+	void Test3();
 
 	void Interact();
 	void PressedFreeCam();
 	void ReleasedFreeCam();
 
 	bool bPressedAttackButton;
-	float AttackDelay;
+	FItemManager GetItemManager() const;
 
+	void AttackReleased();
 public:
 	FRotator GetLookRot() const { return LookRot; }
 	void SetLookRot(FRotator Rot) { LookRot = Rot; }
+	UItemComponent* GetItemComp() const { return ItemComponent; }
 	
 };

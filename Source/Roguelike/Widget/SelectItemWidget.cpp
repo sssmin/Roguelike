@@ -12,15 +12,19 @@ void USelectItemWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	HaveEverPressed = false;
+	if (ShowAnim)
+	{
+		PlayAnimation(ShowAnim);
+	}
 }
 
-void USelectItemWidget::Init(const TArray<FAllItemTable> Items)
+void USelectItemWidget::Init(const TArray<FItemInfoTable> Items)
 {
 	ItemInfo = Items;
 	if (F5Button && ExitButton)
 	{
-		F5Button->OnClicked.AddDynamic(this, &ThisClass::F5ButtonClick);
-		ExitButton->OnClicked.AddDynamic(this, &ThisClass::ExitButtonClick);
+		F5Button->OnClicked.AddUniqueDynamic(this, &ThisClass::F5ButtonClick);
+		ExitButton->OnClicked.AddUniqueDynamic(this, &ThisClass::ExitButtonClick);
 	}
 }
 
@@ -34,10 +38,10 @@ void USelectItemWidget::CreateCellWidget()
 		}
 		CreatedCellWidgets.Empty();
 	}
-	
-	for (int32 i = 0; i < ItemInfo.Num(); ++i)
+
+	if (SelectItemCellWidgetClass && LeftItemBox && RightItemBox)
 	{
-		if (SelectItemCellWidgetClass)
+		for (int32 i = 0; i < ItemInfo.Num(); ++i)
 		{
 			USelectItemCellWidget* CellWidget = CreateWidget<USelectItemCellWidget>(this, SelectItemCellWidgetClass);
 			if (CellWidget)
@@ -45,11 +49,8 @@ void USelectItemWidget::CreateCellWidget()
 				CellWidget->Init(&ItemInfo[i]);
 				CreatedCellWidgets.Add(CellWidget);
 			}
-		}
 
-		if (i == 0)
-		{
-			if (LeftItemBox)
+			if (i == 0)
 			{
 				if (CreatedCellWidgets.IsValidIndex(i))
 				{
@@ -60,10 +61,7 @@ void USelectItemWidget::CreateCellWidget()
 					}
 				}
 			}
-		}
-		else
-		{
-			if (RightItemBox)
+			else
 			{
 				if (CreatedCellWidgets.IsValidIndex(i))
 				{
@@ -73,6 +71,7 @@ void USelectItemWidget::CreateCellWidget()
 						BoxSlot->Size = FSlateChildSize();
 					}
 				}
+
 			}
 		}
 	}
@@ -80,18 +79,16 @@ void USelectItemWidget::CreateCellWidget()
 
 void USelectItemWidget::F5ButtonClick()
 {
-	if (!HaveEverPressed)
+	ARLPlayerController* PC = Cast<ARLPlayerController>(GetOwningPlayer());
+	if (PC)
 	{
-		if (CreateRandItem.IsBound())
+		PC->DeactiveOnceItemListWidget();
+		if (!HaveEverPressed)
 		{
 			HaveEverPressed = true;
-			Init(CreateRandItem.Execute());
+			Init(PC->GetRandItem());
 			CreateCellWidget();
 		}
-	}
-	else
-	{
-		return;
 	}
 }
 
@@ -102,5 +99,6 @@ void USelectItemWidget::ExitButtonClick()
 	if (PC)
 	{
 		PC->ResumeController();
+		PC->DeactiveOnceItemListWidget();
 	}
 }

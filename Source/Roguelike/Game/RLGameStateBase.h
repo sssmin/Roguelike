@@ -24,6 +24,8 @@ public:
 	void SpawnCell(int32 Dir);
 	void AteHealThisCell();
 	void ReconstructCuzMove(int32 Dir, int32 Level, const FCell& Info);
+	UFUNCTION(BlueprintCallable)
+	void Init();
 private:
 	/* 셀 목표 */
 	int32 ObjectiveNum; //목표 킬수
@@ -35,7 +37,6 @@ private:
 
 	UPROPERTY()
 	ARLGameModeBase* RLGameMode;
-
 
 	void ClearThisCell();
 	void SetObjective();

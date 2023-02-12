@@ -5,7 +5,8 @@
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "Roguelike/Type/DFSInterface.h"
-#include "Roguelike/Type/Manage.h"
+#include "Roguelike/Type/StatManage.h"
+#include "Roguelike/Type/ItemManage.h"
 #include "RLGameInstance.generated.h"
 
 class DFSAgrt;
@@ -54,9 +55,9 @@ private:
 	int32 TotalCellNum; // 방 총개수. 시작지점 미포함. Total - 1 == ClearCount면 보스 입장 가능
 	
 	//아이템 정보, 플레이어 정보도 저장해야함.
-	FHealthManage HealthManage;
-	FCombatManage CombatManage;
-	FItemManage ItemManage;
+	FHealthManager HealthManager;
+	FCombatManager CombatManager;
+	FItemManager ItemManager;
 	uint8 Buff;
 	uint8 EquipItem;
 
@@ -64,19 +65,17 @@ private:
 	UFUNCTION()
 	void MoveNextStage(const FString& MapName);
 public:
-	void GetManager(OUT FHealthManage& OutHealthManage, OUT FCombatManage& OutCombatManage, OUT FItemManage& OutItemManage, OUT uint8& OutBuff)
+	void GetManager(OUT FHealthManager& OutHealthManager, OUT FCombatManager& OutCombatManager, OUT uint8& OutBuff)
 	{ 
-		OutHealthManage = HealthManage;
-		OutCombatManage = CombatManage;
-		OutItemManage = ItemManage;
+		OutHealthManager = HealthManager;
+		OutCombatManager = CombatManager;
 		OutBuff = Buff;
 		
 	}
-	void SetManager(FHealthManage& InHealthManage, FCombatManage& InCombatManage, FItemManage& InItemManage, uint8& InBuff)
+	void SetManager(FHealthManager& InHealthManager, FCombatManager& InCombatManager, uint8& InBuff)
 	{
-		HealthManage = InHealthManage;
-		CombatManage = InCombatManage;
-		ItemManage = InItemManage;
+		HealthManager = InHealthManager;
+		CombatManager = InCombatManager;
 		Buff = InBuff;
 	}
 	int32 GetStageLevel() const { return StageLevel; }

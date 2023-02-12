@@ -5,13 +5,15 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "Roguelike/Type/DFSInterface.h"
-#include "Roguelike/Type/Item.h"
+#include "Roguelike/Type/ItemManage.h"
 #include "RLPlayerController.generated.h"
 
 
 class UMinimapWidget;
 class APlayersCamera;
 class USelectItemWidget;
+class UMainUIWidget;
+class UNoticeWidget;
 class APlayerCharacter;
 
 UCLASS()
@@ -19,16 +21,28 @@ class ROGUELIKE_API ARLPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 public:
-	virtual void SetupInputComponent() override;
-	virtual void BeginPlay() override;
-	void SetMapInfo(FVector2Int MapSize, TArray<FCell> Board, int32 PlayerCurrentCell);
+	/* widget */
 	void RemoveMinimapWidget();
-	void ShowNoticeWidget();
+	void ShowNoticeWidget(const FString& Notice);
 	void ShowGameOverWidget();
 	void ShowSelectItemWidget();
-	virtual void PlayerTick(float DeltaTime);
-	void ResumeController();
+	void ActiveOnceItemListWidget(FItemInfoTable* SelectItem);
+	void DeactiveOnceItemListWidget();
 	void RemoveSelectWidget();
+	void MoveMapFade();
+
+	UFUNCTION(BlueprintCallable)
+	void Init();
+	virtual void SetupInputComponent() override;
+	virtual void BeginPlay() override;
+	virtual void PlayerTick(float DeltaTime);
+
+	void SetMapInfo(FVector2Int MapSize, TArray<FCell> Board, int32 PlayerCurrentCell);
+	void ResumeController();
+	
+	void RegisterItemEmptySlot(FItemInfoTable* Item);
+	void RequestItemSwap(const FItemInfoTable* OldItem, const FItemInfoTable* NewItem);
+	TArray<FItemInfoTable> GetRandItem();
 protected:
 	virtual void OnPossess(APawn* aPawn) override;
 private:
@@ -48,19 +62,27 @@ private:
 	void LookAtCursor();
 	FRotator LookRot;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<UUserWidget> NoticeWidgetClass;
+	TSubclassOf<UNoticeWidget> NoticeWidgetClass;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UUserWidget> GameOverWidgetClass;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<USelectItemWidget> SelectItemWidgetClass;
 	UPROPERTY()
 	USelectItemWidget* CreatedSelectItemWidget;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UMainUIWidget> MainUIWidgetClass;
+	UPROPERTY()
+	UMainUIWidget* MainUIWidget;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UUserWidget> FadeWidgetClass;
 
-	TArray<FAllItemTable> GetRandItem();
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<APlayersCamera> PlayersCameraClass;
 	UPROPERTY()
 	APlayerCharacter* PlayerCharacter;
+	UPROPERTY()
+	APlayersCamera* CurrentPlayersCamera;
+
 public:
 	
 };

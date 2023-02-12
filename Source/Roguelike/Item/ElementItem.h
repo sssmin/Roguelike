@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "BaseItem.h"
 #include "Engine/DataTable.h"
-#include "Roguelike/Type/Manage.h"
+#include "Roguelike/Type/StatManage.h"
 #include "ElementItem.generated.h"
 
 class UParticleSystem;
@@ -33,8 +33,6 @@ protected:
 private:
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess ="true"))
 	EElement Element;
-
-	int32 ConvertElement();
 	
 public:
 	void SetElement(EElement InElement) { Element = InElement; }

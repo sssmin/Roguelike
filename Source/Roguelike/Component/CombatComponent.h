@@ -4,12 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Roguelike/Type/Manage.h"
+#include "Roguelike/Type/StatManage.h"
+#include "Roguelike/Type/ItemManage.h"
 #include "CombatComponent.generated.h"
 
 
-DECLARE_DELEGATE_RetVal(FCombatManage, FGetCombatManage);
-DECLARE_DELEGATE_RetVal(FItemManage, FGetItemManage);
+DECLARE_DELEGATE_RetVal(FCombatManager, FGetCombatManager);
+DECLARE_DELEGATE_RetVal(FItemManager, FGetItemManager);
 
 class ABaseProjectile;
 
@@ -22,17 +23,26 @@ public:
 	UCombatComponent();
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	void ReadyToFire();
-	FGetCombatManage GetCombatManage;
-	FGetItemManage GetItemManage;
+	void ReadyToFire(bool bPressed);
+	FGetCombatManager GetCombatManager;
+	FGetItemManager GetItemManager;
 
-	bool HaveItem(const FItemManage& Manage, EOnceEquippedItem ItemType);
+	bool HaveItem(const FItemManager& Manager, EOnceEquippedItem ItemType);
 private:
 	TSubclassOf<ABaseProjectile> ProjectileClass;
 	UFUNCTION()
-	void Fire(const FCombatManage& CombatManage, const FItemManage& ItemManage);
+	void Fire(const FCombatManager& CombatManager, const FItemManager& ItemManager);
+	void Fire(const FCombatManager& CombatManager);
 	FTimerHandle MultiShotTimerHandle;
 	float MutliShotTime;
+
+	bool bFireCooldown;
+	bool bAttackPressed;
+	float Delay;
+
+	void StartFireTimer();
+	FTimerHandle FireTimerHandle;
+	void FireTimerFinished();
 public:	
 	void SetProjectileClass(TSubclassOf<ABaseProjectile> Class) { ProjectileClass = Class;  }
 	

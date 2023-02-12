@@ -17,8 +17,8 @@ public:
 	
 	
 private:
-	EOnceEquipItem OnceEquipItemType;
+	//EOnceEquipItem OnceEquipItemType;
 
 public:
-	void SetEquipItemType(EOnceEquipItem EquipItemType) { OnceEquipItemType = EquipItemType;  }
+	//void SetEquipItemType(EOnceEquipItem EquipItemType) { OnceEquipItemType = EquipItemType;  }
 };

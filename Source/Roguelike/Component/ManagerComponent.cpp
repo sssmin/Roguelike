@@ -7,15 +7,16 @@
 #include "Roguelike/PlayerController/RLPlayerController.h"
 #include "Roguelike/Character/PlayerCharacter.h"
 #include "Roguelike/Character/BossMonsterCharacter.h"
+#include "Particles/ParticleSystemComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "ItemComponent.h"
 
 UManagerComponent::UManagerComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
-	HealthManager = FHealthManage();
-	CombatManager = FCombatManage();
-	ItemManager = FItemManage();
+	HealthManager = FHealthManager();
+	CombatManager = FCombatManager();
 	CurrentState = 0;
 	CurrentBuff = 0;
 	CCStack = 0;
@@ -38,11 +39,10 @@ void UManagerComponent::BeginPlay()
 	URLGameInstance* GI = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
 	if (GI && Cast<APlayerCharacter>(GetOwner()))
 	{
-		GI->GetManager(HealthManager, CombatManager, ItemManager, CurrentBuff);
+		GI->GetManager(HealthManager, CombatManager, CurrentBuff);
 		GI->OnMoveMap.BindUObject(this, &ThisClass::SendManager);
 		ApplyBuff(CurrentBuff);
 		//아이템 장착
-		ApplyItem();
 	}
 }
 
@@ -86,22 +86,35 @@ void UManagerComponent::SendManager()
 	URLGameInstance* GI = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
 	if (GI)
 	{
-		GI->SetManager(HealthManager, CombatManager, ItemManager, CurrentBuff);
+		GI->SetManager(HealthManager, CombatManager, CurrentBuff);
 	}
 }
 
-void UManagerComponent::ReceiveDamage(const FCombatManage& EnemyCombatManage, const FItemManage& EnemyItemManage)
+void UManagerComponent::ReceiveDamage(const FCombatManager& EnemyCombatManager, const FItemManager& EnemyItemManager)
 {
 	if (CheckState(static_cast<uint8>(EState::DEAD))) return;
 
-	CalcCC(EnemyCombatManage);
+	float RiskReturn = 1.f;
+	if (ItemComponent)
+	{
+		if (ItemComponent->CheckOnceItem(static_cast<uint8>(EOnceEquippedItem::RISK_RETURN)))
+		{
+			RiskReturn = 3.f;
+		}
+		if (ItemComponent->CheckOnceItem(static_cast<uint8>(EOnceEquippedItem::DODGE)))
+		{
+			if (IsDodge()) return;
+		}
+	}
 
-	const float Coefficient = CalcCounter(EnemyCombatManage.Element); //계수
-	const float EnemyATK = EnemyCombatManage.ATK;
-	const float RiskReturn = CheckItem(static_cast<uint8>(EOnceEquippedItem::RISK_RETURN)) ? 3.f : 1.f; //받는 대미지 증가
+	CalcCC(EnemyCombatManager);
 
-	const float Result = FMath::Clamp((EnemyATK * Coefficient) * FMath::RandRange(0.9, 1.1) * (RiskReturn), 0.f, TNumericLimits<int32>::Max());
-	HealthManager.CurrentHP = FMath::Clamp(HealthManager.CurrentHP - Result, 0.f, TNumericLimits<int32>::Max());
+	const float Coefficient = CalcCounter(EnemyCombatManager.Element); //계수
+	const float EnemyATK = EnemyCombatManager.ATK;
+	const float CriticalPer = CalcCritical(EnemyCombatManager);
+	
+	const float Result = FMath::Clamp((EnemyATK * Coefficient) * FMath::RandRange(0.9, 1.1) * (RiskReturn) * CriticalPer, 0.f, TNumericLimits<int32>::Max());
+	UpdateCurrentHP(-Result);
 
 	if (HealthManager.CurrentHP <= 0.f)
 	{
@@ -153,21 +166,6 @@ void UManagerComponent::RemoveBuff(uint8 Buff)
 			Cast<APlayerCharacter>(GetOwner())->DecreaseMovementSpeed();
 		}
 	}
-}
-
-bool UManagerComponent::CheckItem(uint8 Item)
-{
-	return ItemManager.OnceEquipedItem & Item;
-}
-
-void UManagerComponent::ApplyItem(uint8 Item)
-{
-	ItemManager.OnceEquipedItem |= Item;
-}
-
-void UManagerComponent::RemoveItem(uint8 Item)
-{
-	ItemManager.OnceEquipedItem ^= Item;
 }
 
 float UManagerComponent::CalcCounter(EElement EnemyElement)//상성. 받을 대미지 계수
@@ -223,6 +221,16 @@ float UManagerComponent::CalcCounter(EElement EnemyElement)//상성. 받을 대미지 �
 		break;
 	}
 	return Ret;
+}
+
+float UManagerComponent::CalcCritical(const FCombatManager& EnemyCombatManage)
+{
+	if (EnemyCombatManage.Critical <= 0.f) return 1.f;
+
+	const float RandValue = FMath::RandRange(1.f, 100.f);
+
+	if (EnemyCombatManage.Critical >= RandValue) return 2.f;
+	return 1.f;
 }
 
 void UManagerComponent::Dead()
@@ -301,40 +309,37 @@ void UManagerComponent::TestHurt()
 {
 	HealthManager.CurrentHP = FMath::Clamp(HealthManager.CurrentHP - 30.f, 0.f, TNumericLimits<int32>::Max());
 	CombatManager.ATK++;
-	//CurrentBuff = 1;
 }
 
-void UManagerComponent::ApplyPlayerElement(int32 ConvertElement)
+void UManagerComponent::ApplyPlayerElement(EElement Element)
 {
-	CovertElementFromInt(ConvertElement);
+	InitElemBuff();
+	
+	CombatManager.Element = Element;
+
+	switch (CombatManager.Element)
+	{
+	case EElement::FIRE:
+		break;
+	case EElement::WATER:
+		break;
+	case EElement::EARTH:
+		ApplyBuff(static_cast<uint8>(EBuff::MOVEMENT_BUFF));
+		break;
+	case EElement::DARKNESS:
+		break;
+	case EElement::LIGHT:
+		ApplyBuff(static_cast<uint8>(EBuff::HEAL_BUFF));
+		break;
+	}
+	if (Cast<APlayerCharacter>(GetOwner()))
+	{
+		Cast<APlayerCharacter>(GetOwner())->ApplyElementParticle();
+	}
 	
 }
 
-void UManagerComponent::CovertElementFromInt(int32 ConvertElement)
-{
-	InitElemBuff();
 
-	switch (ConvertElement)
-	{
-		case 0:
-			CombatManager.Element = EElement::FIRE;
-			break;
-		case 1:
-			CombatManager.Element = EElement::WATER;
-			break;
-		case 2:
-			CombatManager.Element = EElement::EARTH;
-			ApplyBuff(static_cast<uint8>(EBuff::MOVEMENT_BUFF));
-			break;
-		case 3:
-			CombatManager.Element = EElement::DARKNESS;
-			break;
-		case 4:
-			CombatManager.Element = EElement::LIGHT;
-			ApplyBuff(static_cast<uint8>(EBuff::HEAL_BUFF));
-			break;
-	}
-}
 
 void UManagerComponent::InitElemBuff()
 {
@@ -371,9 +376,9 @@ void UManagerComponent::ManageStack(float DeltaTime)
 	}
 }
 
-void UManagerComponent::CalcCC(const FCombatManage& EnemyCombatManage)
+void UManagerComponent::CalcCC(const FCombatManager& EnemyCombatManager)
 {
-	switch (EnemyCombatManage.Element)
+	switch (EnemyCombatManager.Element)
 	{
 		case EElement::FIRE:
 			if (CheckState(static_cast<uint8>(EState::BURN)))
@@ -462,8 +467,53 @@ bool UManagerComponent::CanMove()
 	return !CheckState(static_cast<uint8>(EState::FROZEN));
 }
 
-void UManagerComponent::ApplyItem()
-{
 
+void UManagerComponent::UpdateMaxHP(float Value)
+{
+	if (Value != 0.f)
+	{
+		HealthManager.MaxHP = FMath::Clamp(HealthManager.MaxHP + Value, HealthManager.MaxHP, TNumericLimits<int32>::Max());
+	}
 }
 
+void UManagerComponent::UpdateCurrentHP(float Value)
+{
+	if (Value != 0.f)
+	{
+		HealthManager.CurrentHP = FMath::Clamp(HealthManager.CurrentHP + Value, 0, HealthManager.MaxHP);
+	}
+}
+
+void UManagerComponent::UpdateCurrentAtk(float Value)
+{
+	if (Value != 0.f)
+	{
+		CombatManager.ATK = FMath::Clamp(CombatManager.ATK + Value, 0, TNumericLimits<int32>::Max());
+	}
+}
+
+void UManagerComponent::UpdateCurrentCritical(float Value)
+{
+	if (Value != 0.f)
+	{
+		CombatManager.Critical = FMath::Clamp(CombatManager.Critical + Value, 0.f, 10.f);
+	}
+}
+
+void UManagerComponent::UpdateCurrentRange(float Value)
+{
+	if (Value != 0.f)
+	{
+		CombatManager.Range = FMath::Clamp(CombatManager.Range + Value, 900.f, 1400.f);
+	}
+}
+
+bool UManagerComponent::IsDodge()
+{
+	float RandValue = FMath::Rand() % 100 + 1;
+	if (RandValue <= 10.f)
+	{
+		return true;
+	}
+	return false;
+}

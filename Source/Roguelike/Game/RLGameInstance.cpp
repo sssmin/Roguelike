@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "RLGameInstance.h"
@@ -31,14 +31,14 @@ void URLGameInstance::Initialize()
 	StartPos = FVector::ZeroVector;
 	StartCell = 0;
 	PlayerCurrentCell = 0;
-	StageLevel = 1;
+	StageLevel = 2;
 	BossCell = 0;
 	BossPrevCell = 0;
 
 	TotalCellNum = 0;
 
-	HealthManage = FHealthManage();
-	CombatManage = FCombatManage();
+	HealthManager = FHealthManager();
+	CombatManager = FCombatManager();
 
 	Buff = 0;
 	RLGameState = Cast<ARLGameStateBase>(UGameplayStatics::GetGameState(this));
@@ -90,28 +90,28 @@ void URLGameInstance::RequestInfo()
 TArray<int32> URLGameInstance::GetConnectedDir()
 {
 	TArray<int32> Ret;
-	if (PlayerCurrentCell - MapSize.Y >= 0) //À§¿¡ ¼¿ÀÌ ÀÖ´Ù.
+	if (PlayerCurrentCell - MapSize.Y >= 0) //ìœ„ì— ì…€ì´ ìˆë‹¤.
 	{
 		if (Board[PlayerCurrentCell].Status[0] && Board[PlayerCurrentCell - MapSize.Y].Status[1])
 		{
 			Ret.Add(0);
 		}
 	}
-	if (PlayerCurrentCell + MapSize.Y < Board.Num()) //¾Æ·¡ ¼¿ÀÌ ÀÖ´Ù.
+	if (PlayerCurrentCell + MapSize.Y < Board.Num()) //ì•„ë˜ ì…€ì´ ìˆë‹¤.
 	{
 		if (Board[PlayerCurrentCell].Status[1] && Board[PlayerCurrentCell + MapSize.Y].Status[0])
 		{
 			Ret.Add(1);
 		}
 	}
-	if ((PlayerCurrentCell + 1) % MapSize.Y != 0) //¿À¸¥ÂÊ ¼¿ÀÌ ÀÖ´Ù
+	if ((PlayerCurrentCell + 1) % MapSize.Y != 0) //ì˜¤ë¥¸ìª½ ì…€ì´ ìˆë‹¤
 	{
 		if (Board[PlayerCurrentCell].Status[2] && Board[PlayerCurrentCell + 1].Status[3])
 		{
 			Ret.Add(2);
 		}
 	}
-	if (PlayerCurrentCell % MapSize.X != 0) //¿ŞÂÊ ¼¿ÀÌ ÀÖ´Ù.
+	if (PlayerCurrentCell % MapSize.X != 0) //ì™¼ìª½ ì…€ì´ ìˆë‹¤.
 	{
 		if (Board[PlayerCurrentCell].Status[3] && Board[PlayerCurrentCell - 1].Status[2])
 		{
@@ -122,16 +122,16 @@ TArray<int32> URLGameInstance::GetConnectedDir()
 	return Ret;
 }
 
-void URLGameInstance::RequestMove(int32 Dir) //0,1,2,3Áß ÇÏ³ª·Î ³Ñ¾î¿È
+void URLGameInstance::RequestMove(int32 Dir) //0,1,2,3ì¤‘ í•˜ë‚˜ë¡œ ë„˜ì–´ì˜´
 {
 	int32 NextCell = CalcNextCell(Dir);
-	if (NextCell == BossCell) //°¡·Á´Â ¼¿ÀÌ º¸½º¼¿ÀÏ ¶§
+	if (NextCell == BossCell) //ê°€ë ¤ëŠ” ì…€ì´ ë³´ìŠ¤ì…€ì¼ ë•Œ
 	{
-		if (TotalCellNum - 1 != ClearCount) //¹İ´ëÆí ¼¿À» ¸ğµÎ Å¬¸®¾îÇÏÁö ¾Ê¾ÒÀ¸¸é
+		if (TotalCellNum - 1 != ClearCount) //ë°˜ëŒ€í¸ ì…€ì„ ëª¨ë‘ í´ë¦¬ì–´í•˜ì§€ ì•Šì•˜ìœ¼ë©´
 		{
 			if (Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld())))
 			{
-				Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld()))->ShowNoticeWidget();
+				Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld()))->ShowNoticeWidget(TEXT("ë‹¤ë¥¸ ë°©ì„ í´ë¦¬ì–´í•´ì•¼ í•´ìš”."));
 			}
 			return;
 		}
@@ -145,16 +145,15 @@ void URLGameInstance::RequestMove(int32 Dir) //0,1,2,3Áß ÇÏ³ª·Î ³Ñ¾î¿È
 	PlayerCurrentCell = NextCell;
 	Board[PlayerCurrentCell].CellState = ECellState::IN_PLAYER;
 
-	RLGameState = RLGameState == nullptr ? Cast<ARLGameStateBase>(UGameplayStatics::GetGameState(this)) : RLGameState;
-	if (RLGameState)
-	{
-		RLGameState->ReconstructCuzMove(Dir, StageLevel, Board[PlayerCurrentCell]);
-	}
-	
 	if (Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld())))
 	{
 		Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld()))->RemoveMinimapWidget();
 		Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld()))->SetMapInfo(MapSize, Board, PlayerCurrentCell);
+	}
+	RLGameState = RLGameState == nullptr ? Cast<ARLGameStateBase>(UGameplayStatics::GetGameState(this)) : RLGameState;
+	if (RLGameState)
+	{
+		RLGameState->ReconstructCuzMove(Dir, StageLevel, Board[PlayerCurrentCell]);
 	}
 }
 

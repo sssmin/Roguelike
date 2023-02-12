@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Roguelike/Type/Item.h"
+#include "Roguelike/Type/ItemManage.h"
 #include "SelectItemWidget.generated.h"
 
 class UWidgetAnimation;
@@ -12,7 +12,6 @@ class UVerticalBox;
 class USelectItemCellWidget;
 class UButton;
 
-DECLARE_DELEGATE_RetVal(TArray<FAllItemTable>, FCreateRandItem);
 
 
 UCLASS()
@@ -20,8 +19,7 @@ class ROGUELIKE_API USelectItemWidget : public UUserWidget
 {
 	GENERATED_BODY()
 public:
-	void Init(const TArray<FAllItemTable> SelectedItems);
-	FCreateRandItem CreateRandItem;
+	void Init(const TArray<FItemInfoTable> SelectedItems);
 	virtual void NativeConstruct() override;
 	void CreateCellWidget();
 private:
@@ -48,9 +46,8 @@ private:
 	UFUNCTION()
 	void ExitButtonClick();
 	
-
 	bool HaveEverPressed;
 
 	TArray<USelectItemCellWidget*> CreatedCellWidgets;
-	TArray<FAllItemTable> ItemInfo;
+	TArray<FItemInfoTable> ItemInfo;
 };

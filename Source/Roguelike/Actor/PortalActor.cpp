@@ -18,6 +18,7 @@ APortalActor::APortalActor()
 	SphereComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	SphereComp->SetCollisionResponseToChannel(ECC_Player_Portal, ECollisionResponse::ECR_Overlap);
 	IsCenterPortal = false;
+	SetRootComponent(SphereComp);
 }
 
 void APortalActor::BeginPlay()

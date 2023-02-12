@@ -6,7 +6,9 @@
 #include "Roguelike/Game/RLGameInstance.h"
 #include "Roguelike/Game/RLGameModeBase.h"
 #include "Roguelike/Widget/MinimapWidget.h"
+#include "Roguelike/Widget/MainUIWidget.h"
 #include "Roguelike/Widget/SelectItemWidget.h"
+#include "Roguelike/Widget/NoticeWidget.h"
 #include "Roguelike/Actor/PlayersCamera.h"
 #include "Roguelike/Character/PlayerCharacter.h"
 #include "Kismet/GameplayStatics.h"
@@ -16,6 +18,7 @@
 void ARLPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
+	SetActorTickEnabled(false);
 
 }
 
@@ -23,6 +26,10 @@ void ARLPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
+}
+
+void ARLPlayerController::Init()
+{
 	bShowMouseCursor = true;
 	FVector PlayerLocation = GetPawn()->GetActorLocation();
 	FTransform SpawnTransform = FTransform(FRotator::ZeroRotator, GetPawn()->GetActorLocation(), FVector(1.f, 1.f, 1.f));
@@ -30,13 +37,23 @@ void ARLPlayerController::BeginPlay()
 	Params.Owner = GetPawn();
 	if (PlayersCameraClass && GetWorld())
 	{
-		APlayersCamera* PlayersCamera = GetWorld()->SpawnActor<APlayersCamera>(PlayersCameraClass, SpawnTransform, Params);
-		if (PlayersCamera)
+		CurrentPlayersCamera = GetWorld()->SpawnActor<APlayersCamera>(PlayersCameraClass, SpawnTransform, Params);
+		if (CurrentPlayersCamera)
 		{
-			SetViewTargetWithBlend(PlayersCamera);
+			SetViewTargetWithBlend(CurrentPlayersCamera, 0.5f);
 		}
 	}
 	PlayerCharacter = Cast<APlayerCharacter>(GetPawn());
+
+	if (MainUIWidgetClass)
+	{
+		MainUIWidget = CreateWidget<UMainUIWidget>(GetWorld(), MainUIWidgetClass);
+		if (MainUIWidget)
+		{
+			MainUIWidget->AddToViewport();
+		}
+	}
+	SetActorTickEnabled(true);
 }
 
 void ARLPlayerController::PlayerTick(float DeltaTime)
@@ -59,6 +76,25 @@ void ARLPlayerController::SetMapInfo(FVector2Int Size, TArray<FCell> InBoard, in
 	Board = InBoard;
 	PlayerCell = PlayerCurrentCell;
 	DrawMap();
+
+	if (CurrentPlayersCamera)
+	{
+		CurrentPlayersCamera->Destroy();
+	}
+	FVector PlayerLocation = GetPawn()->GetActorLocation();
+	FTransform SpawnTransform = FTransform(FRotator::ZeroRotator, GetPawn()->GetActorLocation(), FVector(1.f, 1.f, 1.f));
+	FActorSpawnParameters Params;
+	Params.Owner = GetPawn();
+	if (PlayersCameraClass && GetWorld())
+	{
+		CurrentPlayersCamera = GetWorld()->SpawnActor<APlayersCamera>(PlayersCameraClass, SpawnTransform, Params);
+		if (CurrentPlayersCamera)
+		{
+			SetViewTargetWithBlend(CurrentPlayersCamera, 0.7f);
+		}
+	}
+	
+
 }
 
 void ARLPlayerController::DrawMap()
@@ -82,14 +118,15 @@ void ARLPlayerController::RemoveMinimapWidget()
 	}
 }
 
-void ARLPlayerController::ShowNoticeWidget()
+void ARLPlayerController::ShowNoticeWidget(const FString& Notice)
 {
 	if (NoticeWidgetClass && GetWorld())
 	{
-		UUserWidget* NoticeWidget = CreateWidget<UUserWidget>(GetWorld(), NoticeWidgetClass);
+		UNoticeWidget* NoticeWidget = CreateWidget<UNoticeWidget>(GetWorld(), NoticeWidgetClass);
 		if (NoticeWidget)
 		{
 			NoticeWidget->AddToViewport();
+			NoticeWidget->SetText(Notice);
 		}
 	}
 }
@@ -116,15 +153,13 @@ void ARLPlayerController::ShowSelectItemWidget()
 {
 	SetActorTickEnabled(false);
 	
-	TArray<FAllItemTable> SelectedItems = GetRandItem();
+	TArray<FItemInfoTable> SelectedItems = GetRandItem();
 		
 	if (SelectItemWidgetClass && GetWorld())
 	{
 		CreatedSelectItemWidget = CreateWidget<USelectItemWidget>(GetWorld(), SelectItemWidgetClass);
 		if (CreatedSelectItemWidget)
 		{
-			ensureMsgf(CreatedSelectItemWidget, TEXT("SelectItemWidget No Exist"));
-			CreatedSelectItemWidget->CreateRandItem.BindUObject(this, &ThisClass::GetRandItem);
 			FInputModeUIOnly InputModeData;
 			InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::LockInFullscreen);
 			SetInputMode(InputModeData);
@@ -137,9 +172,9 @@ void ARLPlayerController::ShowSelectItemWidget()
 	
 }
 
-TArray<FAllItemTable> ARLPlayerController::GetRandItem()
+TArray<FItemInfoTable> ARLPlayerController::GetRandItem()
 {
-	TArray<FAllItemTable> RandItem;
+	TArray<FItemInfoTable> RandItem;
 	ARLGameModeBase* GM = Cast<ARLGameModeBase>(UGameplayStatics::GetGameMode(this));
 	if (GM)
 	{
@@ -165,7 +200,6 @@ void ARLPlayerController::LookAtCursor()
 		LookRot = UKismetMathLibrary::FindLookAtRotation(Start, Target);
 		PlayerCharacter->SetLookRot(LookRot);
 		PlayerCharacter->SetActorRotation(FRotator(0.f, LookRot.Yaw, 0.f));
-		
 	}
 	
 }
@@ -183,5 +217,45 @@ void ARLPlayerController::RemoveSelectWidget()
 	if (CreatedSelectItemWidget)
 	{
 		CreatedSelectItemWidget->RemoveFromViewport();
+	}
+}
+
+void ARLPlayerController::ActiveOnceItemListWidget(FItemInfoTable* SelectItem)
+{
+	if (MainUIWidget)
+	{
+		MainUIWidget->ItemListAnimPlay(SelectItem);
+	}
+}
+
+void ARLPlayerController::RegisterItemEmptySlot(FItemInfoTable* Item)
+{
+	if (MainUIWidget)
+	{
+		MainUIWidget->RegisterItemEmptySlot(Item);
+	}
+}
+
+void ARLPlayerController::DeactiveOnceItemListWidget()
+{
+	if (MainUIWidget)
+	{
+		MainUIWidget->DeactiveOnceItemListWidget();
+	}
+}
+
+void ARLPlayerController::RequestItemSwap(const FItemInfoTable* OldItem, const FItemInfoTable* NewItem)
+{
+	if (PlayerCharacter)
+	{
+		PlayerCharacter->RequestItemSwap(OldItem, NewItem);
+	}
+}
+
+void ARLPlayerController::MoveMapFade()
+{
+	if (FadeWidgetClass && GetWorld())
+	{
+		CreateWidget<UUserWidget>(GetWorld(), FadeWidgetClass);
 	}
 }

@@ -13,13 +13,15 @@
 #include "Roguelike/Game/RLGameInstance.h"
 #include "Roguelike/Game/RLGameStateBase.h"
 #include "Roguelike/PlayerController/RLPlayerController.h"
-#include "Roguelike/Type/Manage.h"
+#include "Roguelike/Type/ItemManage.h"
 
-#include "Roguelike/Component/ManagerComponent.h" //Test
+#include "Roguelike/Component/ManagerComponent.h"
+#include "Roguelike/Component/ItemComponent.h"
+#include "Roguelike/Component/CombatComponent.h"
 
 APlayerCharacter::APlayerCharacter()
 {
-	
+	PrimaryActorTick.bCanEverTick = false;
 	
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
@@ -40,13 +42,14 @@ APlayerCharacter::APlayerCharacter()
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Player_Portal"));
 
 	bPressedAttackButton = false;
+
+	ItemComponent = CreateDefaultSubobject<UItemComponent>(TEXT("ItemComp"));
 }
 
 
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
 	
 	if (GetWorld())
 	{
@@ -59,6 +62,17 @@ void APlayerCharacter::BeginPlay()
 		InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::LockInFullscreen);
 		PC->SetInputMode(InputModeData);
 	}
+	if (CombatComponent)
+	{
+		CombatComponent->GetItemManager.BindUObject(this, &ThisClass::GetItemManager);
+	}
+
+	if (ManagerComponent && ItemComponent)
+	{
+		ManagerComponent->SetItemComp(ItemComponent);
+		ItemComponent->SetManagerComp(ManagerComponent);
+	}
+	
 }
 
 void APlayerCharacter::Tick(float DeltaTime)
@@ -72,10 +86,12 @@ void APlayerCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 	check(PlayerInputComponent);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
-	PlayerInputComponent->BindAction("TestLevelMove", IE_Pressed, this, &ThisClass::TestKillMe);
-	PlayerInputComponent->BindAction("TestIncreaseKillCount", IE_Pressed, this, &ThisClass::TestIncreaseKillCount);
-	PlayerInputComponent->BindAction("TestPrintMap", IE_Pressed, this, &ThisClass::TestPrintMap);
+	PlayerInputComponent->BindAction("Test1", IE_Pressed, this, &ThisClass::Test1);
+	PlayerInputComponent->BindAction("Test2", IE_Pressed, this, &ThisClass::Test2);
+	PlayerInputComponent->BindAction("Test3", IE_Pressed, this, &ThisClass::Test3);
+
 	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &ThisClass::Attack);
+	PlayerInputComponent->BindAction("Attack", IE_Released, this, &ThisClass::AttackReleased);
 
 	PlayerInputComponent->BindAction("FreeCam", IE_Pressed, this, &ThisClass::PressedFreeCam);
 	PlayerInputComponent->BindAction("FreeCam", IE_Released, this, &ThisClass::ReleasedFreeCam);
@@ -122,7 +138,7 @@ void APlayerCharacter::ReleasedFreeCam()
 /****************************************
 	Test Function
 */
-void APlayerCharacter::TestIncreaseKillCount()
+void APlayerCharacter::Test1()
 {
 	ARLGameStateBase* GSB = Cast<ARLGameStateBase>(UGameplayStatics::GetGameState(this));
 	if (GSB)
@@ -132,21 +148,25 @@ void APlayerCharacter::TestIncreaseKillCount()
 
 }
 
-void APlayerCharacter::TestKillMe()
+void APlayerCharacter::Test2()
 {
-	if (ManagerComp)
+	if (PC)
 	{
-		ManagerComp->TestDead();
+		PC->SetPause(true);
 	}
 }
 
-void APlayerCharacter::TestPrintMap()
+void APlayerCharacter::Test3()
 {
-	if (GetWorld() && Cast<URLGameInstance>(GetWorld()->GetGameInstance()))
+	/*if (GetWorld() && Cast<URLGameInstance>(GetWorld()->GetGameInstance()))
 	{
 		Cast<URLGameInstance>(GetWorld()->GetGameInstance())->TestPrintMap();
-	}
+	}*/
 }
+
+/****************************************/
+	
+
 
 
 void APlayerCharacter::Interact()
@@ -160,11 +180,19 @@ void APlayerCharacter::Attack()
 	Super::Attack();
 }
 
-void APlayerCharacter::GetElementFromItem(int32 ConvertElement)
+void APlayerCharacter::AttackReleased()
 {
-	if (ManagerComp)
+	if (CombatComponent)
 	{
-		ManagerComp->ApplyPlayerElement(ConvertElement);
+		CombatComponent->ReadyToFire(false);
+	}
+}
+
+void APlayerCharacter::GetElementFromItem(EElement Element)
+{
+	if (ManagerComponent)
+	{
+		ManagerComponent->ApplyPlayerElement(Element);
 	}
 }
 
@@ -186,21 +214,38 @@ void APlayerCharacter::DecreaseMovementSpeed()
 
 void APlayerCharacter::HealByHit()
 {
-	if (ManagerComp)
+	if (ManagerComponent)
 	{
-		ManagerComp->Heal(7.5f);
+		ManagerComponent->Heal(7.5f);
 	}
 }
 
 void APlayerCharacter::HealByItem()
 {
-	if (ManagerComp)
+	if (ManagerComponent)
 	{
-		ManagerComp->Heal(30.f);
+		ManagerComponent->Heal(30.f);
 	}
 	ARLGameStateBase* GSB = Cast<ARLGameStateBase>(UGameplayStatics::GetGameState(this));
 	if (GSB)
 	{
 		GSB->AteHealThisCell();
+	}
+}
+
+FItemManager APlayerCharacter::GetItemManager() const
+{
+	if (ItemComponent)
+	{
+		return ItemComponent->GetItemManager();
+	}
+	return FItemManager();
+}
+
+void APlayerCharacter::RequestItemSwap(const FItemInfoTable* OldItem, const FItemInfoTable* NewItem)
+{
+	if (ItemComponent)
+	{
+		return ItemComponent->ItemSwap(OldItem, NewItem);
 	}
 }

@@ -81,11 +81,11 @@ void DFSAgrt::MazeGenerator()
 		Board[CurrentCell].Visited = true;
 		Board[CurrentCell].CellState = ECellState::NORMAL;
 		Board[CurrentCell].CellType = ECellType::MOBS;
-		Board[CurrentCell].CellClass = FMath::RandRange(2, 3);
+		Board[CurrentCell].CellClass = FMath::RandRange(2, 4);
 		for (int32 i = 0; i < 8; ++i)
 		{
-			bool Rand = FMath::RandBool();
-			if (Rand)
+			int32 Rand = FMath::RandRange(1, 4);
+			if (Rand == 1)
 			{
 				Board[CurrentCell].TempWall |= 1 << i;
 			}

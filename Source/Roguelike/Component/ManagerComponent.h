@@ -4,8 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Roguelike/Type/Manage.h"
+#include "Roguelike/Type/StatManage.h"
+#include "Roguelike/Type/ItemManage.h"
 #include "ManagerComponent.generated.h"
+
+class UItemComponent;
+class UParticleSystem;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class ROGUELIKE_API UManagerComponent : public UActorComponent
@@ -15,11 +19,16 @@ class ROGUELIKE_API UManagerComponent : public UActorComponent
 public:	
 	UManagerComponent();
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	void ReceiveDamage(const FCombatManage& EnemyCombatManage, const FItemManage& EnemyItemManage);
-	void ApplyPlayerElement(int32 ConvertElement);
+	void ReceiveDamage(const FCombatManager& EnemyCombatManager, const FItemManager& EnemyItemManager);
+	void ApplyPlayerElement(EElement Element);
 	void Heal(float Rate);
 	bool CanAttack();
 	bool CanMove();
+	void UpdateMaxHP(float Value);
+	void UpdateCurrentHP(float Value);
+	void UpdateCurrentAtk(float Value);
+	void UpdateCurrentCritical(float Value);
+	void UpdateCurrentRange(float Value);
 
 	void TestDead();
 	void TestHurt();
@@ -27,20 +36,22 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
-	FHealthManage HealthManager;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	FHealthManager HealthManager;
 
-	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
-	FCombatManage CombatManager;
-
-	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
-	FItemManage ItemManager;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	FCombatManager CombatManager;
 
 	UPROPERTY(Meta = (Bitmask, BitmaskEnum = EState))
 	uint8 CurrentState;
 
 	UPROPERTY(Meta = (Bitmask, BitmaskEnum = EBuff))
 	uint8 CurrentBuff;
+
+	UPROPERTY()
+	UItemComponent* ItemComponent;
+
+
 
 	void SendManager();
 	float CalcCounter(EElement EnemyElement);
@@ -49,21 +60,17 @@ private:
 	void RemoveState(uint8 State);
 	bool CheckBuff(uint8 Buff);
 	void ApplyBuff(uint8 Buff);
-	void RemoveBuff(uint8 Buff);
-	bool CheckItem(uint8 Item);
-	void ApplyItem(uint8 Item);
-	void RemoveItem(uint8 Item);
-
+	void RemoveBuff(uint8 Buff);;
+	
 	bool HaveAnyState();
 	void ApplyBurnDamage();
-	void ApplyItem();
-	void CovertElementFromInt(int32 ConvertElement);
 	void InitElemBuff();
 	void ManageStack(float DeltaTime);
-	void CalcCC(const FCombatManage& EnemyCombatManage);
+	void CalcCC(const FCombatManager& EnemyCombatManage);
 	void ApplyCC();
 	void CancelCC();
-	
+	bool IsDodge();
+	float CalcCritical(const FCombatManager& EnemyCombatManage);
 
 	int32 CCStack;
 	float CCStackDuration; //스택 지속시간
@@ -75,12 +82,12 @@ private:
 
 	void Dead();
 public:
-	void SetManager(const FHealthManage& InHealthManager, const FCombatManage& InCombatManager )
+	void SetManager(const FHealthManager& InHealthManager, const FCombatManager& InCombatManager )
 	{
 		HealthManager = InHealthManager; 
 		CombatManager = InCombatManager;
 	}
-	FCombatManage GetCombatManage() const { return CombatManager;  }
-	FItemManage GetItemManage() const { return ItemManager;  }
+	FCombatManager GetCombatManager() const { return CombatManager;  }
+	void SetItemComp(UItemComponent* Comp) { ItemComponent = Comp; }
 	
 };

@@ -10,9 +10,8 @@
 
 ABaseCharacter::ABaseCharacter()
 {
-	CombatComp = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComp"));
-	ManagerComp = CreateDefaultSubobject<UManagerComponent>(TEXT("ManagerComp"));
-
+	CombatComponent = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComp"));
+	ManagerComponent = CreateDefaultSubobject<UManagerComponent>(TEXT("ManagerComp"));
 
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	GetMesh()->SetCollisionProfileName(TEXT("CharacterBlockProjectile"));
@@ -22,54 +21,42 @@ void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	if (CombatComp && ProjectileClass)
+	if (CombatComponent && ProjectileClass)
 	{
-		CombatComp->SetProjectileClass(ProjectileClass);
-		CombatComp->GetCombatManage.BindUObject(this, &ThisClass::GetCombatManage);
-		CombatComp->GetItemManage.BindUObject(this, &ThisClass::GetItemManage);
-		
+		CombatComponent->SetProjectileClass(ProjectileClass);
+		CombatComponent->GetCombatManager.BindUObject(this, &ThisClass::GetCombatManager);
 	}
 }
 
 void ABaseCharacter::Tick(float DeltaTime)
 {
-	
-	
 }
 
 void ABaseCharacter::Attack()
 {
-	if (CombatComp)
+	if (CombatComponent)
 	{
-		CombatComp->ReadyToFire();
+		CombatComponent->ReadyToFire(true);
 	}
 }
 
-void ABaseCharacter::OnHit(AActor* Attacker, const FCombatManage& EnemyCombatManage, const FItemManage& EnemyItemManage)
+void ABaseCharacter::OnHit(AActor* Attacker, const FCombatManager& EnemyCombatManager, const FItemManager& EnemyItemManager)
 {
-	if (ManagerComp)
+	if (ManagerComponent)
 	{
-		ManagerComp->ReceiveDamage(EnemyCombatManage, EnemyItemManage);
+		ManagerComponent->ReceiveDamage(EnemyCombatManager, EnemyItemManager);
 	}
 }
 
-FCombatManage ABaseCharacter::GetCombatManage() const
+FCombatManager ABaseCharacter::GetCombatManager() const
 {
-	if (ManagerComp)
+	if (ManagerComponent)
 	{
-		return ManagerComp->GetCombatManage();
+		return ManagerComponent->GetCombatManager();
 	}
-	return FCombatManage();
+	return FCombatManager();
 }
 
-FItemManage ABaseCharacter::GetItemManage() const
-{
-	if (ManagerComp)
-	{
-		return ManagerComp->GetItemManage();
-	}
-	return FItemManage();
-}
 
 void ABaseCharacter::Dead()
 {

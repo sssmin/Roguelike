@@ -24,8 +24,9 @@ ABaseProjectile::ABaseProjectile()
 	PMC = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("PMC"));
 	if (PMC)
 	{
-		PMC->InitialSpeed = 5000.f;
-		PMC->MaxSpeed = 5000.f;
+		PMC->InitialSpeed = 3000.f;
+		PMC->MaxSpeed = 3000.f;
+		PMC->ProjectileGravityScale = 0.f;
 		PMC->bRotationFollowsVelocity = true;
 		PMC->bShouldBounce = false;
 	}
@@ -37,8 +38,7 @@ void ABaseProjectile::BeginPlay()
 	
 	if (!ProjectileParticles.IsEmpty())
 	{
-		UParticleSystem* Particle = nullptr;
-		switch (CombatManage.Element)
+		switch (CombatManager.Element)
 		{
 			case EElement::NONE:
 				Particle = ProjectileParticles[0];
@@ -96,7 +96,7 @@ void ABaseProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UP
 {
 	if (OtherActor && Cast<ABaseCharacter>(OtherActor) && (OtherActor != GetOwner()))
 	{
-		Cast<ABaseCharacter>(OtherActor)->OnHit(GetOwner(), CombatManage, ItemManage);
+		Cast<ABaseCharacter>(OtherActor)->OnHit(GetOwner(), CombatManager, ItemManager);
 		PlayHitEffect();
 		CheckAttackerBeHealed(OtherActor, Cast<APlayerCharacter>(GetOwner()));
 	}
@@ -127,7 +127,7 @@ void ABaseProjectile::Destroyed()
 void ABaseProjectile::CheckAttackerBeHealed(AActor* Other, APlayerCharacter* Player)
 {
 	
-	if ((CombatManage.Element == EElement::LIGHT) && Cast<AMonsterCharacter>(Other) && Player)
+	if ((CombatManager.Element == EElement::LIGHT) && Cast<AMonsterCharacter>(Other) && Player)
 	{
 		if (FMath::RandRange(1, 100) < 8)
 		{

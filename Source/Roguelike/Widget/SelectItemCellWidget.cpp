@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "SelectItemCellWidget.h"
@@ -10,58 +10,87 @@
 #include "Roguelike/PlayerController/RLPlayerController.h"
 #include "Roguelike/Character/PlayerCharacter.h"
 #include "Roguelike/Component/ManagerComponent.h"
+#include "Roguelike/Component/ItemComponent.h"
 
-void USelectItemCellWidget::Init(FAllItemTable* Item)
+void USelectItemCellWidget::Init(FItemInfoTable* Item)
 {
-	ItemInfo = *Item;
+	ItemInfo = Item;
 
-	if (ItemButton && ItemDesc && ItemName)
+	if (ItemButton && ItemDesc && ItemName && ItemInfo)
 	{
-		ItemDesc->SetText(FText::FromString(ItemInfo.ItemDesc));
-		ItemName->SetText(FText::FromString(ItemInfo.ItemName));
+		ItemDesc->SetText(FText::FromString(ItemInfo->ItemDesc));
+		ItemName->SetText(FText::FromString(ItemInfo->ItemName));
 		ItemButton->OnClicked.AddDynamic(this, &ThisClass::SelectItem);
 		FButtonStyle ButtonStyle;
-		ButtonStyle.Normal.SetResourceObject(ItemInfo.ItemIcon);
+		ButtonStyle.Normal.SetResourceObject(ItemInfo->ItemIcon);
 		ButtonStyle.Normal.SetImageSize(FVector2D(256.f, 256.f));
-		ButtonStyle.Hovered.SetResourceObject(ItemInfo.ItemIcon);
+		ButtonStyle.Hovered.SetResourceObject(ItemInfo->ItemIcon);
 		ButtonStyle.Hovered.TintColor = FSlateColor(FLinearColor(1.f, 1.f, 1.f, 0.5f));
 		ButtonStyle.Hovered.SetImageSize(FVector2D(256.f, 256.f));
-		ButtonStyle.Pressed.SetResourceObject(ItemInfo.ItemIcon);
+		ButtonStyle.Pressed.SetResourceObject(ItemInfo->ItemIcon);
 		ButtonStyle.Pressed.TintColor = FSlateColor(FLinearColor(0.1f, 0.1f, 0.1f, 0.9f));
 		ButtonStyle.Pressed.SetImageSize(FVector2D(256.f, 256.f));
 
 		ItemButton->SetStyle(ButtonStyle);
 	}
-
 }
 
 void USelectItemCellWidget::SelectItem()
 {
 	ARLPlayerController* PC = Cast<ARLPlayerController>(GetOwningPlayer());
-	if (PC)
+	if (PC && ItemInfo)
 	{
+		PC->DeactiveOnceItemListWidget();
 		APlayerCharacter* Character = Cast<APlayerCharacter>(PC->GetCharacter());
-		if (Character && Character->GetManagerComp())
+		if (Character && Character->GetItemComp() && Character->GetManagerComp())
 		{
-			switch (ItemInfo.ItemType)
+			switch (ItemInfo->ItemType)
 			{
-			case EItemType::INF_STACK_ITEM:
-				ItemInfo.EnumNum
-				break;
-			case EItemType::FIX_MAX_STACK_ITEM:
-
-				break;
-			case EItemType::ONCE_EQUIP_ITEM:
-
-				break;
+				case EItemType::INF_STACK_ITEM:
+					Character->GetItemComp()->ApplyInfItem(ItemInfo->DetailType.INFStackItem);
+					PC->RemoveSelectWidget();
+					PC->ResumeController();
+					//ì´í™íŠ¸, ì†Œë¦¬
+					break;
+				case EItemType::FIX_MAX_STACK_ITEM:
+				{
+					bool Ret = Character->GetItemComp()->ApplyFixMaxItem(ItemInfo->DetailType.FixMaxStackItem);
+					if (!Ret)
+					{
+						PC->ShowNoticeWidget(TEXT("ì´ë¯¸ 10ë²ˆ ì¦ê°€í•œ ìŠ¤íƒ¯ì´ì—ìš”."));
+						return;
+					}
+					PC->RemoveSelectWidget();
+					PC->ResumeController();
+					break;
+				}
+				case EItemType::ONCE_EQUIP_ITEM:
+				{
+					EOnceEquipItemFlag Flag;
+					bool Ret = Character->GetItemComp()->ApplyOnceEquipItem(ItemInfo, Flag);
+					if (Ret)
+					{
+						switch (Flag)
+						{
+							case EOnceEquipItemFlag::SUCCESS:
+								PC->RemoveSelectWidget();
+								PC->ResumeController();
+								PC->RegisterItemEmptySlot(ItemInfo);
+								break;
+							case EOnceEquipItemFlag::EQUIPPED_ALREADY_THIS_ITEM:
+							{
+								PC->ShowNoticeWidget(TEXT("ì´ë¯¸ ì¥ì°©ë˜ì–´ ìˆëŠ” ì•„ì´í…œì´ì—ìš”."));
+								break;
+							}
+						}
+					}
+					else
+					{
+						PC->ActiveOnceItemListWidget(ItemInfo);
+					}
+					break;
+				}
 			}
 		}
-		
-		
-		PC->RemoveSelectWidget();
-		PC->ResumeController();
 	}
-	
-	//ÀÌ À§Á¬ÀÌ ¾Æ´Ï¶ó ¾ê¸¦ °¡Áø À§Á¬ÀÌ Áö¿öÁ®¾ßÇÔ
-	//¸Å´ÏÀúÄÄÆ÷³ÍÆ®¿¡°Ô ¼±ÅÃÇÏ·Á´Â ¾ÆÀÌÅÛÀ» ³Ñ±â°í, °á°ú¸¦ ¹Ş¾Æ¾ßÇÔ.
 }

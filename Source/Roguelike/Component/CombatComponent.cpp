@@ -7,7 +7,10 @@
 UCombatComponent::UCombatComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	MutliShotTime = 0.5f;
+	MutliShotTime = 0.1f;
+	bFireCooldown = false;
+	bAttackPressed = false;
+	Delay = 0.5f;
 }
 
 
@@ -25,41 +28,53 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 }
 
-bool UCombatComponent::HaveItem(const FItemManage& Manage, EOnceEquippedItem ItemType)
+bool UCombatComponent::HaveItem(const FItemManager& Manage, EOnceEquippedItem ItemType)
 {
-	return Manage.OnceEquipedItem & static_cast<uint8>(ItemType);
+	return Manage.OnceEquippedItem & static_cast<uint8>(ItemType);
 }
 
-void UCombatComponent::ReadyToFire()
+void UCombatComponent::ReadyToFire(bool bPressed)
 {
-	if (GetCombatManage.IsBound())
+	bAttackPressed = bPressed;
+
+	if (!bAttackPressed) return;
+
+	if (GetCombatManager.IsBound())
 	{
-		FCombatManage CombatManage = GetCombatManage.Execute();
-		const FItemManage ItemManage = GetItemManage.Execute();
+		FCombatManager CombatManager = GetCombatManager.Execute();
 
-		if (ItemManage.EquippedItemCount > 0) //뭔가 아이템이 있다.
+		if (GetItemManager.IsBound())
 		{
-			if (HaveItem(ItemManage, EOnceEquippedItem::RISK_RETURN))
+			const FItemManager ItemManager = GetItemManager.Execute();
+
+			if (ItemManager.EquippedItemCount > 0) //OnceEquipItem
 			{
-				CombatManage.ATK *= 2.f;
+				if (HaveItem(ItemManager, EOnceEquippedItem::RISK_RETURN))
+				{
+					CombatManager.ATK *= 2.f;
+				}
+				if (HaveItem(ItemManager, EOnceEquippedItem::MULTI_SHOT))
+				{
+					FTimerDelegate MultiShotTimerDelegate;
+					MultiShotTimerDelegate.BindUFunction(this, FName("Fire"), CombatManager, ItemManager);
+					GetWorld()->GetTimerManager().SetTimer(MultiShotTimerHandle, MultiShotTimerDelegate, MutliShotTime, false);
+				}
 			}
-			if (HaveItem(ItemManage, EOnceEquippedItem::MULTI_SHOT))
-			{
-				FTimerDelegate MultiShotTimerDelegate; 
-				MultiShotTimerDelegate.BindUFunction(this, FName("Fire"), CombatManage, ItemManage);
-				GetWorld()->GetTimerManager().SetTimer(MultiShotTimerHandle, MultiShotTimerDelegate, MutliShotTime, false);
-			}
+
+			Fire(CombatManager, ItemManager); //Player
 		}
-
-		Fire(CombatManage, ItemManage);
-
+		else
+		{
+			Fire(CombatManager); //Monster
+		}
 	}
 }
 
-
-void UCombatComponent::Fire(const FCombatManage& CombatManage, const FItemManage& ItemManage)
+void UCombatComponent::Fire(const FCombatManager& CombatManager, const FItemManager& ItemManager)
 {
+	if (bFireCooldown) return;
 	FActorSpawnParameters Params;
+	bFireCooldown = true;
 	
 	Params.Owner = GetOwner();
 	if (ProjectileClass && GetWorld())
@@ -74,8 +89,46 @@ void UCombatComponent::Fire(const FCombatManage& CombatManage, const FItemManage
 		{
 			SpawnedProjectile->SetVelocity(GetOwner()->GetActorForwardVector());
 
-			SpawnedProjectile->SetCombatManage(CombatManage);
-			SpawnedProjectile->SetItemManage(ItemManage);
+			SpawnedProjectile->SetCombatManage(CombatManager);
+			SpawnedProjectile->SetItemManager(ItemManager);
 		}
+		StartFireTimer();
+	}
+}
+
+void UCombatComponent::Fire(const FCombatManager& CombatManager)
+{
+	FActorSpawnParameters Params;
+
+	Params.Owner = GetOwner();
+	if (ProjectileClass && GetWorld())
+	{
+		ABaseProjectile* SpawnedProjectile =
+			GetWorld()->SpawnActor<ABaseProjectile>(
+				ProjectileClass,
+				GetOwner()->GetActorLocation() + GetOwner()->GetActorForwardVector() * 100.f,
+				GetOwner()->GetActorRotation(),
+				Params);
+		if (SpawnedProjectile)
+		{
+			SpawnedProjectile->SetVelocity(GetOwner()->GetActorForwardVector());
+
+			SpawnedProjectile->SetCombatManage(CombatManager);
+		}
+	}
+}
+
+void UCombatComponent::StartFireTimer()
+{
+	GetWorld()->GetTimerManager().SetTimer(FireTimerHandle, this, &ThisClass::FireTimerFinished, Delay);
+}
+
+void UCombatComponent::FireTimerFinished()
+{
+	bFireCooldown = false;
+
+	if (bAttackPressed)
+	{
+		ReadyToFire(bAttackPressed);
 	}
 }

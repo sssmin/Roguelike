@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Roguelike/Type/Item.h"
+#include "Roguelike/Type/ItemManage.h"
 #include "SelectItemCellWidget.generated.h"
 
 
@@ -16,7 +16,7 @@ class ROGUELIKE_API USelectItemCellWidget : public UUserWidget
 {
 	GENERATED_BODY()
 public:
-	void Init(FAllItemTable* Item);
+	void Init(FItemInfoTable* Item);
 private:
 	UPROPERTY(Meta = (BindWidget))
 	UButton* ItemButton;
@@ -26,8 +26,13 @@ private:
 	UPROPERTY(Meta = (BindWidget))
 	UTextBlock* ItemName;
 
-	FAllItemTable ItemInfo;
+	FItemInfoTable* ItemInfo;
+
+
 
 	UFUNCTION()
 	void SelectItem();
+
+public:
+	FItemInfoTable* GetItemInfo() const { return ItemInfo; }
 };

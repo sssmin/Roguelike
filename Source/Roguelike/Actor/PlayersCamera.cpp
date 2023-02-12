@@ -14,7 +14,7 @@ APlayersCamera::APlayersCamera()
 	PrimaryActorTick.bCanEverTick = true;
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
-	SpringArm->SetupAttachment(RootComponent);
+	RootComponent = SpringArm;
 	SpringArm->TargetArmLength = 2000.f;
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
@@ -67,7 +67,6 @@ void APlayersCamera::Tick(float DeltaTime)
 			FollowPlayer();
 		}
 	}
-
 }
 
 void APlayersCamera::FollowPlayer()
@@ -107,7 +106,6 @@ void APlayersCamera::MoveCam()
 	const FVector2D MousePos = UWidgetLayoutLibrary::GetMousePositionOnViewport(this);
 	const float ViewportScale = UWidgetLayoutLibrary::GetViewportScale(this);
 	const FVector2D ViewportSize = UWidgetLayoutLibrary::GetViewportSize(this);
-
 
 	if (SubLoc.X <= 500.f) //뷰포트 상단 500까지 갈 수 있음
 	{

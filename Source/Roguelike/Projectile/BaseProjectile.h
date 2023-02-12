@@ -4,7 +4,8 @@
 
 #include "Roguelike/Roguelike.h"
 #include "GameFramework/Actor.h"
-#include "Roguelike/Type/Manage.h"
+#include "Roguelike/Type/StatManage.h"
+#include "Roguelike/Type/ItemManage.h"
 #include "BaseProjectile.generated.h"
 
 class UProjectileMovementComponent;
@@ -44,11 +45,13 @@ private:
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
-	FCombatManage CombatManage; //공격자의 공격력과 속성 들어있음.
-	FItemManage ItemManage; //공격자의 아이템
+	FCombatManager CombatManager; //공격자의 공격력과 속성 들어있음.
+	FItemManager ItemManager; //공격자의 아이템
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* Particle;
 public:
 	void SetVelocity(const FVector& Dir);
-	void SetCombatManage(FCombatManage InManage) { CombatManage = InManage; }
-	void SetItemManage(FItemManage InManage) { ItemManage = InManage; }
+	void SetCombatManage(FCombatManager InManager) { CombatManager = InManager; }
+	void SetItemManager(FItemManager InManager) { ItemManager = InManager; }
 };

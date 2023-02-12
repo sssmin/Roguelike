@@ -7,7 +7,7 @@
 
 AElementItem::AElementItem()
 {
-	SetItemType(EItemType::ELEMENT);
+	
 }
 
 void AElementItem::BeginPlay()
@@ -16,24 +16,7 @@ void AElementItem::BeginPlay()
 	Super::BeginPlay();
 }
 
-int32 AElementItem::ConvertElement()
-{
-	switch (Element)
-	{
-	case EElement::FIRE:
-		return 0;
-	case EElement::WATER:
-		return 1;
-	case EElement::EARTH:
-		return 2;
-	case EElement::DARKNESS:
-		return 3;
-	case EElement::LIGHT:
-		return 4;
-	}
 
-	return 0;
-}
 
 void AElementItem::SetParticle()
 {
@@ -42,7 +25,7 @@ void AElementItem::SetParticle()
 	if (ElementParticleTableObject)
 	{
 		FElementParticleTable* Row = nullptr;
-		Row = ElementParticleTableObject->FindRow<FElementParticleTable>(FName(FString::FromInt(ConvertElement())), TEXT(""));
+		Row = ElementParticleTableObject->FindRow<FElementParticleTable>(FName(FString::FromInt(static_cast<int32>(Element))), TEXT(""));
 		if (Row)
 		{
 			ItemParticle = Row->Particle;
@@ -66,7 +49,7 @@ void AElementItem::ItemInteract(UPrimitiveComponent* OverlappedComponent, AActor
 
 	if (Cast<APlayerCharacter>(OtherActor))
 	{
-		Cast<APlayerCharacter>(OtherActor)->GetElementFromItem(ConvertElement());
+		Cast<APlayerCharacter>(OtherActor)->GetElementFromItem(Element);
 		Destroy();
 	}
 }

@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Roguelike/Type/Item.h"
 #include "BaseItem.generated.h"
 
 
@@ -31,9 +30,7 @@ protected:
 	USphereComponent* ItemSphere;
 
 private:	
-	EItemType ItemType;
 	
 
 public:
-	void SetItemType(EItemType Type) { ItemType = Type; }
 };

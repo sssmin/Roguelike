@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "Roguelike/Type/Item.h"
-#include "Roguelike/Type/Manage.h"
+#include "Roguelike/Type/StatManage.h"
+#include "Roguelike/Type/ItemManage.h"
 #include "RLGameModeBase.generated.h"
 
 class UTexture2D;
@@ -46,7 +46,7 @@ public:
 	void SpawnHealItem();
 	void CreateSidePortal();
 	void CreateCenterPortal();
-	TArray<FAllItemTable> CreateRandItem();
+	TArray<FItemInfoTable> CreateRandItem();
 
 private:
 	TArray<FVector> MobSpawnPoints;
@@ -66,9 +66,10 @@ private:
 	AHealItem* SpawnedHealItem;
 	UPROPERTY()
 	ACellActor* SpawnedCell;
+	UPROPERTY()
+	AElementItem* SpawnedElementItem;
 
-
-	FCombatManage& SetRandomElement(int32 StageLevel, FCombatManage& CombatManage);
+	FCombatManager& SetRandomElement(int32 StageLevel, FCombatManager& CombatManager);
 	void SpawnCounterElementItem(EElement Element);
-	void SetMonsterManage(int32 StageLevel, OUT FHealthManage& HealthManage, OUT FCombatManage& CombatManage);
+	void SetMonsterManager(int32 StageLevel, OUT FHealthManager& HealthManager, OUT FCombatManager& CombatManager);
 };
