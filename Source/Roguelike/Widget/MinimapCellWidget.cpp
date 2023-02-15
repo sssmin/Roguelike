@@ -39,6 +39,7 @@ void UMinimapCellWidget::Init(ECellState CellState)
 			break;
 
 		}
+		Cell->SetRenderOpacity(0.7f);
 	}
 }
 

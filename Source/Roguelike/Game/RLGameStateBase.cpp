@@ -16,19 +16,6 @@ ARLGameStateBase::ARLGameStateBase()
 void ARLGameStateBase::BeginPlay()
 {
 	Super::BeginPlay();
-
-	//RLGameMode = Cast<ARLGameModeBase>(UGameplayStatics::GetGameMode(this));
-	//if (GetWorld())
-	//{
-	//	URLGameInstance* RLGameInstance = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	//	if (RLGameInstance)
-	//	{
-	//		StageLevel = RLGameInstance->GetStageLevel();
-	//		CellInfo = RLGameInstance->GetCellInfo();
-	//		RLGameMode->SpawnCell(CellInfo.CellClass, CellInfo.TempWall);
-	//		SetObjective();
-	//	}
-	//}
 }
 
 void ARLGameStateBase::Init()
@@ -41,7 +28,6 @@ void ARLGameStateBase::Init()
 		{
 			StageLevel = RLGameInstance->GetStageLevel();
 			CellInfo = RLGameInstance->GetCellInfo();
-			UE_LOG(LogTemp, Warning, TEXT("Init Func : %d"), CellInfo.TempWall);
 			RLGameMode->SpawnCell(CellInfo.CellClass, CellInfo.TempWall);
 			SetObjective();
 		}
@@ -161,5 +147,13 @@ void ARLGameStateBase::CreateCenterPortal()
 	if (RLGameMode)
 	{
 		RLGameMode->CreateCenterPortal();
+	}
+}
+
+void ARLGameStateBase::SpawnPrevBossPortal()
+{
+	if (RLGameMode)
+	{
+		RLGameMode->CreatePrevBossPortal();
 	}
 }

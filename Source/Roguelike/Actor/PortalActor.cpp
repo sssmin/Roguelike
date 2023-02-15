@@ -17,7 +17,6 @@ APortalActor::APortalActor()
 	SphereComp->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
 	SphereComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	SphereComp->SetCollisionResponseToChannel(ECC_Player_Portal, ECollisionResponse::ECR_Overlap);
-	IsCenterPortal = false;
 	SetRootComponent(SphereComp);
 }
 
@@ -35,7 +34,7 @@ void APortalActor::PortalParticleVisible(bool IsActive)
 {
 	if (SphereComp)
 	{
-		SphereComp->OnComponentBeginOverlap.AddDynamic(this, &APortalActor::BeginOverlapped);
+		SphereComp->OnComponentBeginOverlap.AddUniqueDynamic(this, &APortalActor::BeginOverlapped);
 		SphereComp->Activate();
 	}
 }
@@ -46,13 +45,18 @@ void APortalActor::BeginOverlapped(UPrimitiveComponent* OverlappedComponent, AAc
 	{
 		if (Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this)))
 		{
-			if (!IsCenterPortal)
+			switch (PortalType)
 			{
+			case EPortalType::SIDE:
 				Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this))->RequestMove(Dir);
-			}
-			else
-			{
+				break;
+			case EPortalType::CENTER:
 				Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this))->RequestMoveNextStage();
+				break;
+			case EPortalType::PREV_BOSS:
+				Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this))->RequestMovePrevBossCell();
+				break;
+			
 			}
 		}
 	}
@@ -66,7 +70,7 @@ void APortalActor::SetCenterPortal()
 		CenterPortalParticleComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), CenterPortalParticle, GetActorTransform());
 	}
 	PortalParticleVisible(true);
-	IsCenterPortal = true;
+	PortalType = EPortalType::CENTER;
 }
 
 void APortalActor::SetSidePortal()
@@ -76,7 +80,18 @@ void APortalActor::SetSidePortal()
 		PortalParticleComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PortalParticle, GetActorTransform());
 	}
 	PortalParticleVisible(true);
-	IsCenterPortal = false;
+	PortalType = EPortalType::SIDE;
+}
+
+void APortalActor::SetPrevBossPortal()
+{
+	if (CenterPortalCreateParticle && CenterPortalParticle && GetWorld())
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), CenterPortalCreateParticle, GetActorTransform());
+		CenterPortalParticleComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), CenterPortalParticle, GetActorTransform());
+	}
+	PortalParticleVisible(true);
+	PortalType = EPortalType::PREV_BOSS;
 }
 
 void APortalActor::Destroyed()

@@ -11,7 +11,7 @@ class UWidgetAnimation;
 class UVerticalBox;
 class USelectItemCellWidget;
 class UButton;
-
+class UItemComponent;
 
 
 UCLASS()
@@ -19,7 +19,7 @@ class ROGUELIKE_API USelectItemWidget : public UUserWidget
 {
 	GENERATED_BODY()
 public:
-	void Init(const TArray<FItemInfoTable> SelectedItems);
+	void Init(const TArray<UItemInfo*> SelectedItems);
 	virtual void NativeConstruct() override;
 	void CreateCellWidget();
 private:
@@ -45,9 +45,11 @@ private:
 	void F5ButtonClick();
 	UFUNCTION()
 	void ExitButtonClick();
+
+	void Refresh();
 	
 	bool HaveEverPressed;
 
 	TArray<USelectItemCellWidget*> CreatedCellWidgets;
-	TArray<FItemInfoTable> ItemInfo;
+	TArray<UItemInfo*> ItemInfo;
 };

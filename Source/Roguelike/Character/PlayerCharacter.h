@@ -27,12 +27,11 @@ public:
 	void DecreaseMovementSpeed();
 	void HealByHit();
 	void HealByItem();
-	void RequestItemSwap(const FItemInfoTable* OldItem, const FItemInfoTable* NewItem);
+	void RequestItemSwap(const UItemInfo* OldItem, const UItemInfo* NewItem);
 	UFUNCTION(BlueprintImplementableEvent)
 	void ApplyElementParticle();
 protected:
-	void MoveForward(float Value);
-	void MoveRight(float Value);
+
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void Attack() override;
 
@@ -41,8 +40,8 @@ private:
 	APlayerController* PC;
 	FRotator LookRot;
 
-	UPROPERTY()
-	UItemComponent* ItemComponent;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UItemComponent* ItemComp;
 	void Test1();
 	void Test2();
 	void Test3();
@@ -50,6 +49,7 @@ private:
 	void Interact();
 	void PressedFreeCam();
 	void ReleasedFreeCam();
+	void Recall();
 
 	bool bPressedAttackButton;
 	FItemManager GetItemManager() const;
@@ -58,6 +58,7 @@ private:
 public:
 	FRotator GetLookRot() const { return LookRot; }
 	void SetLookRot(FRotator Rot) { LookRot = Rot; }
-	UItemComponent* GetItemComp() const { return ItemComponent; }
+	UItemComponent* GetItemComp() const { return ItemComp; }
+	void StopFire();
 	
 };

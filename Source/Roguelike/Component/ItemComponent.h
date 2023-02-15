@@ -8,6 +8,7 @@
 #include "ItemComponent.generated.h"
 
 class UManagerComponent;
+class ARLPlayerController;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class ROGUELIKE_API UItemComponent : public UActorComponent
@@ -19,9 +20,12 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	void ApplyInfItem(EINFStackItem Item);
 	bool ApplyFixMaxItem(EFixMaxStackItem Item);
-	bool ApplyOnceEquipItem(FItemInfoTable* Item, OUT EOnceEquipItemFlag& Flag);
+	bool ApplyOnceEquipItem(const UItemInfo* Item, OUT EOnceEquipItemFlag& Flag);
 	bool CheckOnceItem(uint8 Item);
-	void ItemSwap(const FItemInfoTable* OldItem, const FItemInfoTable* NewItem);
+	void ItemSwap(const UItemInfo* OldItem, const UItemInfo* NewItem);
+	UFUNCTION()
+	void SelectItem(UItemInfo* Item);
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -41,7 +45,11 @@ private:
 	float IncreaseAtkValue;
 	float IncreaseMaxHpValue;
 	TMap<uint8, uint8> FixMaxNum;
-	
+	TMap<uint8, UTexture2D*> ItemIcons;
+
+
+	void SendManager();
+	void ResumeController(ARLPlayerController* RLPC);
 public:
 	FItemManager GetItemManager() const { return ItemManager; }
 	void SetManagerComp(UManagerComponent* Comp) { ManagerComp = Comp; }

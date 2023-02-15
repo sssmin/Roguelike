@@ -6,6 +6,7 @@
 #include "Components/VerticalBox.h"
 #include "Components/VerticalBoxSlot.h"
 #include "SelectItemCellWidget.h"
+
 #include "Roguelike/PlayerController/RLPlayerController.h"
 
 void USelectItemWidget::NativeConstruct()
@@ -18,7 +19,7 @@ void USelectItemWidget::NativeConstruct()
 	}
 }
 
-void USelectItemWidget::Init(const TArray<FItemInfoTable> Items)
+void USelectItemWidget::Init(const TArray<UItemInfo*> Items)
 {
 	ItemInfo = Items;
 	if (F5Button && ExitButton)
@@ -30,15 +31,6 @@ void USelectItemWidget::Init(const TArray<FItemInfoTable> Items)
 
 void USelectItemWidget::CreateCellWidget()
 {
-	if (!CreatedCellWidgets.IsEmpty())
-	{
-		for (auto Widget : CreatedCellWidgets)
-		{
-			Widget->RemoveFromParent();
-		}
-		CreatedCellWidgets.Empty();
-	}
-
 	if (SelectItemCellWidgetClass && LeftItemBox && RightItemBox)
 	{
 		for (int32 i = 0; i < ItemInfo.Num(); ++i)
@@ -46,7 +38,8 @@ void USelectItemWidget::CreateCellWidget()
 			USelectItemCellWidget* CellWidget = CreateWidget<USelectItemCellWidget>(this, SelectItemCellWidgetClass);
 			if (CellWidget)
 			{
-				CellWidget->Init(&ItemInfo[i]);
+				CellWidget->Init(ItemInfo[i]);
+				
 				CreatedCellWidgets.Add(CellWidget);
 			}
 
@@ -71,7 +64,6 @@ void USelectItemWidget::CreateCellWidget()
 						BoxSlot->Size = FSlateChildSize();
 					}
 				}
-
 			}
 		}
 	}
@@ -87,7 +79,7 @@ void USelectItemWidget::F5ButtonClick()
 		{
 			HaveEverPressed = true;
 			Init(PC->GetRandItem());
-			CreateCellWidget();
+			Refresh();
 		}
 	}
 }
@@ -100,5 +92,16 @@ void USelectItemWidget::ExitButtonClick()
 	{
 		PC->ResumeController();
 		PC->DeactiveOnceItemListWidget();
+	}
+}
+
+void USelectItemWidget::Refresh()
+{
+	if (!CreatedCellWidgets.IsEmpty())
+	{
+		for (int32 i = 0; i < ItemInfo.Num(); ++i)
+		{
+			CreatedCellWidgets[i]->Init(ItemInfo[i]);
+		}
 	}
 }

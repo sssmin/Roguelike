@@ -9,17 +9,24 @@
 #include "Roguelike/Widget/MainUIWidget.h"
 #include "Roguelike/Widget/SelectItemWidget.h"
 #include "Roguelike/Widget/NoticeWidget.h"
+#include "Roguelike/Widget/RecallBarWidget.h"
 #include "Roguelike/Actor/PlayersCamera.h"
 #include "Roguelike/Character/PlayerCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Particles/ParticleSystemComponent.h"
 
 
 void ARLPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 	SetActorTickEnabled(false);
-
+	check(InputComponent);
+	InputComponent->BindAction("ToggleMap", IE_Pressed, this, &ThisClass::ToggleMap);
+	InputComponent->BindAxis("MoveForward", this, &ThisClass::MoveForward);
+	InputComponent->BindAxis("MoveRight", this, &ThisClass::MoveRight);
+	RecallTime = 5.f;
+	bVisibleMap = false;
 }
 
 void ARLPlayerController::BeginPlay()
@@ -51,6 +58,7 @@ void ARLPlayerController::Init()
 		if (MainUIWidget)
 		{
 			MainUIWidget->AddToViewport();
+			MainUIWidget->SetOwner(GetPawn());
 		}
 	}
 	SetActorTickEnabled(true);
@@ -70,13 +78,44 @@ void ARLPlayerController::OnPossess(APawn* aPawn)
 	Cast<URLGameInstance>(GetGameInstance())->RequestInfo();
 }
 
+void ARLPlayerController::MoveForward(float Value)
+{
+	if (Value != 0.0f)
+	{
+		const FRotator Rotation = GetControlRotation();
+		const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		GetPawn()->AddMovementInput(Direction, Value);
+		if (GetWorld()->GetTimerManager().IsTimerActive(RecallTimerHandle))
+		{
+			RecallCancel();
+		}
+	}
+}
+
+void ARLPlayerController::MoveRight(float Value)
+{
+	if (Value != 0.0f)
+	{
+		const FRotator Rotation = GetControlRotation();
+		const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		GetPawn()->AddMovementInput(Direction, Value);
+		if (GetWorld()->GetTimerManager().IsTimerActive(RecallTimerHandle))
+		{
+			RecallCancel();
+		}
+	}
+}
+
 void ARLPlayerController::SetMapInfo(FVector2Int Size, TArray<FCell> InBoard, int32 PlayerCurrentCell)
 {
 	MapSize = Size;
 	Board = InBoard;
 	PlayerCell = PlayerCurrentCell;
 	DrawMap();
-
 	if (CurrentPlayersCamera)
 	{
 		CurrentPlayersCamera->Destroy();
@@ -93,8 +132,6 @@ void ARLPlayerController::SetMapInfo(FVector2Int Size, TArray<FCell> InBoard, in
 			SetViewTargetWithBlend(CurrentPlayersCamera, 0.7f);
 		}
 	}
-	
-
 }
 
 void ARLPlayerController::DrawMap()
@@ -106,6 +143,24 @@ void ARLPlayerController::DrawMap()
 		{
 			MinimapWidget->Init(MapSize.X, MapSize.Y, Board);
 			MinimapWidget->AddToViewport();
+			bVisibleMap ? MinimapWidget->SetVisibility(ESlateVisibility::Visible) : MinimapWidget->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+}
+
+void ARLPlayerController::ToggleMap()
+{
+	if (MinimapWidget)
+	{
+		if (bVisibleMap)
+		{
+			MinimapWidget->SetVisibility(ESlateVisibility::Hidden);
+			bVisibleMap = false;
+		}
+		else
+		{
+			MinimapWidget->SetVisibility(ESlateVisibility::Visible);
+			bVisibleMap = true;
 		}
 	}
 }
@@ -134,6 +189,7 @@ void ARLPlayerController::ShowNoticeWidget(const FString& Notice)
 void ARLPlayerController::ShowGameOverWidget()
 {
 	SetActorTickEnabled(false);
+	StopFire();
 	
 	if (GameOverWidgetClass && GetWorld())
 	{
@@ -152,8 +208,8 @@ void ARLPlayerController::ShowGameOverWidget()
 void ARLPlayerController::ShowSelectItemWidget()
 {
 	SetActorTickEnabled(false);
-	
-	TArray<FItemInfoTable> SelectedItems = GetRandItem();
+	StopFire();
+	TArray<UItemInfo*> SelectedItems = GetRandItem();
 		
 	if (SelectItemWidgetClass && GetWorld())
 	{
@@ -161,7 +217,6 @@ void ARLPlayerController::ShowSelectItemWidget()
 		if (CreatedSelectItemWidget)
 		{
 			FInputModeUIOnly InputModeData;
-			InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::LockInFullscreen);
 			SetInputMode(InputModeData);
 
 			CreatedSelectItemWidget->AddToViewport();
@@ -169,12 +224,12 @@ void ARLPlayerController::ShowSelectItemWidget()
 			CreatedSelectItemWidget->CreateCellWidget();
 		}
 	}
-	
+	PlayerInput->FlushPressedKeys();
 }
 
-TArray<FItemInfoTable> ARLPlayerController::GetRandItem()
+TArray<UItemInfo*> ARLPlayerController::GetRandItem()
 {
-	TArray<FItemInfoTable> RandItem;
+	TArray<UItemInfo*> RandItem;
 	ARLGameModeBase* GM = Cast<ARLGameModeBase>(UGameplayStatics::GetGameMode(this));
 	if (GM)
 	{
@@ -195,13 +250,11 @@ void ARLPlayerController::LookAtCursor()
 		if (Hit.bBlockingHit)
 		{
 			Target = Hit.ImpactPoint;
+			LookRot = UKismetMathLibrary::FindLookAtRotation(Start, Target);
+			PlayerCharacter->SetLookRot(LookRot);
+			PlayerCharacter->SetActorRotation(FRotator(0.f, LookRot.Yaw, 0.f));
 		}
-
-		LookRot = UKismetMathLibrary::FindLookAtRotation(Start, Target);
-		PlayerCharacter->SetLookRot(LookRot);
-		PlayerCharacter->SetActorRotation(FRotator(0.f, LookRot.Yaw, 0.f));
 	}
-	
 }
 
 void ARLPlayerController::ResumeController()
@@ -220,15 +273,15 @@ void ARLPlayerController::RemoveSelectWidget()
 	}
 }
 
-void ARLPlayerController::ActiveOnceItemListWidget(FItemInfoTable* SelectItem)
+void ARLPlayerController::ActiveOnceItemListWidget(UItemInfo* SelectItem) const
 {
-	if (MainUIWidget)
+	if (MainUIWidget && SelectItem)
 	{
 		MainUIWidget->ItemListAnimPlay(SelectItem);
 	}
 }
 
-void ARLPlayerController::RegisterItemEmptySlot(FItemInfoTable* Item)
+void ARLPlayerController::RegisterItemEmptySlot(UItemInfo* Item) const
 {
 	if (MainUIWidget)
 	{
@@ -244,7 +297,7 @@ void ARLPlayerController::DeactiveOnceItemListWidget()
 	}
 }
 
-void ARLPlayerController::RequestItemSwap(const FItemInfoTable* OldItem, const FItemInfoTable* NewItem)
+void ARLPlayerController::RequestItemSwap(const UItemInfo* OldItem, const UItemInfo* NewItem)
 {
 	if (PlayerCharacter)
 	{
@@ -257,5 +310,64 @@ void ARLPlayerController::MoveMapFade()
 	if (FadeWidgetClass && GetWorld())
 	{
 		CreateWidget<UUserWidget>(GetWorld(), FadeWidgetClass);
+	}
+}
+
+void ARLPlayerController::StopFire()
+{
+	if (PlayerCharacter)
+	{
+		PlayerCharacter->StopFire();
+	}
+}
+
+void ARLPlayerController::RecallStart()
+{
+	if (GetWorld()->GetTimerManager().IsTimerActive(RecallTimerHandle))
+	{
+		return;
+	}
+	
+	if (RecallWidgetClass)
+	{
+		RecallBarWidget = CreateWidget<URecallBarWidget>(GetWorld(), RecallWidgetClass);
+		if (RecallBarWidget)
+		{
+			GetWorld()->GetTimerManager().ClearTimer(RecallTimerHandle);
+			GetWorld()->GetTimerManager().SetTimer(RecallTimerHandle, this, &ThisClass::RecallTimerFinished, RecallTime, false);
+			RecallBarWidget->AddToViewport();
+		}
+	}
+	if (RecallStartParticle)
+	{
+		RecallStartParticleComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RecallStartParticle, GetPawn()->GetActorTransform());
+	}
+}
+
+void ARLPlayerController::RecallTimerFinished()
+{
+	RecallCompleteSuccessfully.ExecuteIfBound();
+	RecallEnd();
+}
+
+void ARLPlayerController::RecallCancel()
+{
+	if (RecallBarWidget)
+	{
+		RecallBarWidget->RemoveFromParent();
+		GetWorld()->GetTimerManager().ClearTimer(RecallTimerHandle);
+	}
+	if (RecallStartParticleComp)
+	{
+		RecallStartParticleComp->DestroyComponent();
+	}
+}
+
+void ARLPlayerController::RecallEnd()
+{
+	RecallCancel();
+	if (RecallEndParticle)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RecallEndParticle, GetPawn()->GetActorTransform());
 	}
 }

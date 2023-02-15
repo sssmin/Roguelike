@@ -106,6 +106,20 @@ void UPortalComponent::CreateCenterPortal()
 		if (Portal)
 		{
 			Portal->SetCenterPortal();
+			Portals.Add(FPortalInfo(-1, Portal));
+		}
+	}
+}
+
+void UPortalComponent::CreatePrevBossPortal()
+{
+	if (GetWorld())
+	{
+		APortalActor* Portal = Cast<APortalActor>(GetWorld()->SpawnActor(PortalActorClass));
+		if (Portal)
+		{
+			Portal->SetPrevBossPortal();
+			Portals.Add(FPortalInfo(-1, Portal));
 		}
 	}
 }

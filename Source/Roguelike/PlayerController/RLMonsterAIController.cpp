@@ -6,6 +6,8 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BehaviorTree.h"
+#include "Roguelike/Character/MonsterCharacter.h"
+#include "Roguelike/Widget/HPBarWidget.h"
 
 ARLMonsterAIController::ARLMonsterAIController()
 {
@@ -17,10 +19,15 @@ void ARLMonsterAIController::OnPossess(APawn* InPawn)
 {
     Super::OnPossess(InPawn);
 
-    /* if (InPawn)
+     if (InPawn)
      {
-         EnemyCharacter = Cast<AEnemyCharacter>(InPawn);
-         if (EnemyCharacter)
+         Monster = Cast<AMonsterCharacter>(InPawn);
+         if (Monster && HPBarWidgetClass)
+         {
+             Monster->SetHPBarWidget(HPBarWidgetClass);
+             
+         }
+         /*if (EnemyCharacter)
          {
              if (EnemyCharacter->GetBT() && BBComp)
              {
@@ -31,6 +38,6 @@ void ARLMonsterAIController::OnPossess(APawn* InPawn)
                  BBComp->SetValueAsBool("SpecialReady", true);
                  BBComp->SetValueAsBool("SpecialComplete", true);
              }
-         }
-     }*/
+         }*/
+     }
 }

@@ -57,6 +57,14 @@ void ACellActor::CreateCenterPortal()
 	}
 }
 
+void ACellActor::CreatePrevBossPortal()
+{
+	if (PortalComp)
+	{
+		PortalComp->CreatePrevBossPortal();
+	}
+}
+
 FVector ACellActor::GetPlayerSpawnLocation(int32 Dir)
 {
 	if (PortalComp)
@@ -101,18 +109,12 @@ void ACellActor::CreateWall()
 					Walls.Add(WallActor);
 					WallActor->SetSM(CellClass);
 				}
-				
 			}
-			
-			
 		}
 	}
-
 }
 
 bool ACellActor::IsExistWall(uint8 Wall)
 {
-	UE_LOG(LogTemp, Warning, TEXT("IsExistWall Func : %d"), Wall);
-	UE_LOG(LogTemp, Warning, TEXT("IsExistWall Func TempWall : %d"), TempWall);
 	return TempWall & 1 << Wall;
 }

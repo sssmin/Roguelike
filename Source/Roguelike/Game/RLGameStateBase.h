@@ -26,6 +26,7 @@ public:
 	void ReconstructCuzMove(int32 Dir, int32 Level, const FCell& Info);
 	UFUNCTION(BlueprintCallable)
 	void Init();
+	void SpawnPrevBossPortal();
 private:
 	/* 셀 목표 */
 	int32 ObjectiveNum; //목표 킬수

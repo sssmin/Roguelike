@@ -8,6 +8,8 @@
 #include "Roguelike/Type/ItemManage.h"
 #include "ManagerComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUpdateCurrentHP, float, CurrentHP, float, MaxHP);
+
 class UItemComponent;
 class UParticleSystem;
 
@@ -29,6 +31,7 @@ public:
 	void UpdateCurrentAtk(float Value);
 	void UpdateCurrentCritical(float Value);
 	void UpdateCurrentRange(float Value);
+	FOnUpdateCurrentHP OnUpdateCurrentHP;
 
 	void TestDead();
 	void TestHurt();

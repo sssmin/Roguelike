@@ -8,19 +8,22 @@
 #include "MainUIWidget.generated.h"
 
 class UOnceItemListWidget;
-struct FItemInfoTable;
+class UHPBarWidget;
+class UItemInfo;
 
 UCLASS()
 class ROGUELIKE_API UMainUIWidget : public UUserWidget
 {
 	GENERATED_BODY()
 public:
-	void ItemListAnimPlay(FItemInfoTable* Item);
-	void RegisterItemEmptySlot(FItemInfoTable* Item);
+	void ItemListAnimPlay(UItemInfo* Item);
+	void RegisterItemEmptySlot(UItemInfo* Item);
 	void DeactiveOnceItemListWidget();
+	void SetOwner(APawn* OwnerPawn);
 private:
 	UPROPERTY(Meta = (BindWidget))
 	UOnceItemListWidget* OnceItemListWidget;
-
+	UPROPERTY(Meta = (BindWidget))
+	UHPBarWidget* HPBarWidget;
 
 };

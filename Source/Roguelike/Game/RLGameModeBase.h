@@ -46,9 +46,13 @@ public:
 	void SpawnHealItem();
 	void CreateSidePortal();
 	void CreateCenterPortal();
-	TArray<FItemInfoTable> CreateRandItem();
+	void CreatePrevBossPortal();
+	TArray<UItemInfo*> CreateRandItem();
 
 private:
+	UPROPERTY()
+	TArray<UItemInfo*> SelectedItem;
+	UPROPERTY()
 	TArray<FVector> MobSpawnPoints;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AMonsterCharacter> NormalMonsterClass;
@@ -72,4 +76,5 @@ private:
 	FCombatManager& SetRandomElement(int32 StageLevel, FCombatManager& CombatManager);
 	void SpawnCounterElementItem(EElement Element);
 	void SetMonsterManager(int32 StageLevel, OUT FHealthManager& HealthManager, OUT FCombatManager& CombatManager);
+	void SetPlayerLocation(int32 Dir);
 };

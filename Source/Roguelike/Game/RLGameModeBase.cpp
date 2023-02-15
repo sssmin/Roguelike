@@ -89,15 +89,19 @@ void ARLGameModeBase::SpawnCell(int32 CellIndex, uint8 TempWall, int32 Dir)
 	if (SpawnedElementItem)
 	{
 		SpawnedElementItem->Destroy();
+		SpawnedElementItem = nullptr;
 	}
 	if (SpawnedCell)
 	{
 		SpawnedCell->Destroy();
+		SpawnedCell = nullptr;
 	}
 	if (SpawnedHealItem)
 	{
 		SpawnedHealItem->Destroy();
+		SpawnedHealItem = nullptr;
 	}
+
 	if (CellClasses.IsValidIndex(CellIndex))
 	{
 		SpawnedCell = GetWorld()->SpawnActor<ACellActor>(CellClasses[CellIndex], FVector::ZeroVector, FRotator::ZeroRotator);
@@ -105,14 +109,24 @@ void ARLGameModeBase::SpawnCell(int32 CellIndex, uint8 TempWall, int32 Dir)
 		{
 			SpawnedCell->SetTempWall(CellIndex, TempWall);
 			SpawnedCell->CreateWall();
-			FVector PlayerLocation{ FVector::ZeroVector };
-			if (Dir != -1)
-			{
-				PlayerLocation = SpawnedCell->GetPlayerSpawnLocation(Dir);
-			}
-			FVector PlayerLoc = UGameplayStatics::GetPlayerCharacter(this, 0)->GetActorLocation();
-			UGameplayStatics::GetPlayerCharacter(this, 0)->SetActorLocation(FVector(PlayerLocation.X, PlayerLocation.Y, PlayerLoc.Z));
+
+			SetPlayerLocation(Dir);
 		}
+	}
+}
+
+void ARLGameModeBase::SetPlayerLocation(int32 Dir)
+{
+	FVector PlayerLocation{ FVector::ZeroVector };
+	if (Dir != -1)
+	{
+		PlayerLocation = SpawnedCell->GetPlayerSpawnLocation(Dir);
+	}
+	ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(this, 0);
+	if (PlayerCharacter)
+	{
+		FVector PlayerLoc = PlayerCharacter->GetActorLocation();
+		PlayerCharacter->SetActorLocation(FVector(PlayerLocation.X, PlayerLocation.Y, PlayerLoc.Z));
 	}
 }
 
@@ -205,9 +219,17 @@ void ARLGameModeBase::CreateCenterPortal()
 	}
 }
 
-TArray<FItemInfoTable> ARLGameModeBase::CreateRandItem()
+void ARLGameModeBase::CreatePrevBossPortal()
 {
-	TArray<FItemInfoTable> SelectedItem;
+	if (SpawnedCell)
+	{
+		SpawnedCell->CreatePrevBossPortal();
+	}
+}
+
+TArray<UItemInfo*> ARLGameModeBase::CreateRandItem()
+{
+	SelectedItem.Empty();
 	FString ItemInfoTablePath = FString(TEXT("/Game/DataTable/ItemInfo"));
 	UDataTable* ItemInfoTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *ItemInfoTablePath));
 	if (ItemInfoTableObject)
@@ -217,20 +239,23 @@ TArray<FItemInfoTable> ARLGameModeBase::CreateRandItem()
 		if (!Items.IsEmpty())
 		{
 			int32 ItemNum = Items.Num();
-			
+			UItemInfo* NewItemInfo = nullptr;
 			while (true)
 			{
 				int32 Rand = FMath::RandRange(0, ItemNum - 1);
+				
 				if (!SelectedItem.IsEmpty())
 				{
-					if (SelectedItem[0].ItemName != (*Items[Rand]->ItemName))
+					if (SelectedItem[0]->ItemName != (Items[Rand]->ItemName))
 					{
-						SelectedItem.Add(*Items[Rand]);
+						NewItemInfo = UItemInfo::ConstructItemInfo(Items[Rand]->ItemType, Items[Rand]->DetailType, Items[Rand]->ItemName, Items[Rand]->ItemDesc, Items[Rand]->ItemIcon);
+						SelectedItem.Add(NewItemInfo);
 						break;
 					}
 					continue;
 				}
-				SelectedItem.Add(*Items[Rand]);
+				NewItemInfo = UItemInfo::ConstructItemInfo(Items[Rand]->ItemType, Items[Rand]->DetailType, Items[Rand]->ItemName, Items[Rand]->ItemDesc, Items[Rand]->ItemIcon);
+				SelectedItem.Add(NewItemInfo);
 			}
 		}
 	}

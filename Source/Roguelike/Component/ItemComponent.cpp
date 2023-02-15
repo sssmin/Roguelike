@@ -3,7 +3,10 @@
 
 #include "ItemComponent.h"
 #include "ManagerComponent.h"
+#include "Roguelike/Game/RLGameInstance.h"
 #include "Roguelike/PlayerController/RLPlayerController.h"
+#include "Roguelike/Game/RLListenerManager.h"
+#include "Kismet/GameplayStatics.h"
 
 UItemComponent::UItemComponent()
 {
@@ -19,7 +22,14 @@ void UItemComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	
+	URLGameInstance* GI = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
+	if (GI)
+	{
+		GI->GetManager(ItemManager, FixMaxNum);
+		GI->OnMoveMap.AddUObject(this, &ThisClass::SendManager);
+		//아이템 적용
+		URLGameInstance::GetLisnterManager()->OnSelectItem.AddDynamic(this, &ThisClass::SelectItem);
+	}
 }
 
 void UItemComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -65,57 +75,61 @@ bool UItemComponent::ApplyFixMaxItem(EFixMaxStackItem Item)
 	{
 		switch (Item)
 		{
-			case EFixMaxStackItem::INCREASE_RANGE:
+		case EFixMaxStackItem::INCREASE_RANGE:
+		{
+			uint8 Value = GetFixMaxStack(EFixMaxStackItem::INCREASE_RANGE);
+			if (Value < FIX_MAX_STACK)
 			{
-				uint8 Value = GetFixMaxStack(EFixMaxStackItem::INCREASE_RANGE);
-				if (Value < FIX_MAX_STACK)
-				{
-					IncreaseFixMaxStack(EFixMaxStackItem::INCREASE_RANGE);
-					ManagerComp->UpdateCurrentRange(50.f);
-					return true;
-				}
-				return false;
+				IncreaseFixMaxStack(EFixMaxStackItem::INCREASE_RANGE);
+				ManagerComp->UpdateCurrentRange(50.f);
+				return true;
 			}
-			case EFixMaxStackItem::INCREASE_CRITICAL_PER:
+			return false;
+		}
+		case EFixMaxStackItem::INCREASE_CRITICAL_PER:
+		{
+			uint8 Value = GetFixMaxStack(EFixMaxStackItem::INCREASE_CRITICAL_PER);
+			if (Value < FIX_MAX_STACK)
 			{
-				uint8 Value = GetFixMaxStack(EFixMaxStackItem::INCREASE_CRITICAL_PER);
-				if (Value < FIX_MAX_STACK)
-				{
-					IncreaseFixMaxStack(EFixMaxStackItem::INCREASE_CRITICAL_PER);
-					ManagerComp->UpdateCurrentCritical(1.f);
-					return true;
-				}
-				return false;
+				IncreaseFixMaxStack(EFixMaxStackItem::INCREASE_CRITICAL_PER);
+				ManagerComp->UpdateCurrentCritical(1.f);
+				return true;
 			}
+			return false;
+		}
 		}
 	}
 	return false;
 }
 
-bool UItemComponent::ApplyOnceEquipItem(FItemInfoTable* Item, OUT EOnceEquipItemFlag& Flag)
+bool UItemComponent::ApplyOnceEquipItem(const UItemInfo* Item, OUT EOnceEquipItemFlag& Flag)
 {
-	
-	if (CheckOnceItem(static_cast<uint8>(Item->DetailType.OnceEquipItem)))
+	if (Item)
 	{
-		Flag = EOnceEquipItemFlag::EQUIPPED_ALREADY_THIS_ITEM;
-		return true;
-	}
-	else
-	{
-		if (ItemManager.EquippedItemCount < 2)
+		if (CheckOnceItem(static_cast<uint8>(Item->DetailType.OnceEquipItem)))
 		{
-			ApplyOnceItem(static_cast<uint8>(Item->DetailType.OnceEquipItem));
-			ItemManager.EquippedItemCount++;
-			Flag = EOnceEquipItemFlag::SUCCESS;
+			Flag = EOnceEquipItemFlag::EQUIPPED_ALREADY_THIS_ITEM;
 			return true;
 		}
 		else
 		{
-			Flag = EOnceEquipItemFlag::EQUIPPED_TWO_OTHER_ITEMS;
-			
-			return false;
+			if (ItemManager.EquippedItemCount < 2)
+			{
+				ApplyOnceItem(static_cast<uint8>(Item->DetailType.OnceEquipItem));
+				ItemIcons.Add(static_cast<uint8>(Item->DetailType.OnceEquipItem), Item->ItemIcon);
+				ItemManager.EquippedItemCount++;
+				Flag = EOnceEquipItemFlag::SUCCESS;
+				return true;
+			}
+			else
+			{
+				Flag = EOnceEquipItemFlag::EQUIPPED_TWO_OTHER_ITEMS;
+
+				return false;
+			}
 		}
 	}
+
 	return false;
 }
 
@@ -142,11 +156,84 @@ void UItemComponent::IncreaseFixMaxStack(EFixMaxStackItem Item)
 	}
 }
 
-void UItemComponent::ItemSwap(const FItemInfoTable* OldItem, const FItemInfoTable* NewItem)
+void UItemComponent::ItemSwap(const UItemInfo* OldItem, const UItemInfo* NewItem)
 {
 	if (OldItem && NewItem)
 	{
 		RemoveOnceItem(static_cast<uint8>(OldItem->DetailType.OnceEquipItem));
 		ApplyOnceItem(static_cast<uint8>(NewItem->DetailType.OnceEquipItem));
+		ItemIcons.Remove(static_cast<uint8>(OldItem->DetailType.OnceEquipItem));
+		ItemIcons.Add(static_cast<uint8>(NewItem->DetailType.OnceEquipItem), NewItem->ItemIcon);
+	}
+}
+
+void UItemComponent::SendManager()
+{
+	URLGameInstance* GI = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
+	if (GI)
+	{
+		GI->SetManager(ItemManager, FixMaxNum);
+	}
+}
+
+void UItemComponent::ResumeController(ARLPlayerController* RLPC)
+{
+	if (RLPC)
+	{
+		RLPC->RemoveSelectWidget();
+		RLPC->ResumeController();
+	}
+}
+
+void UItemComponent::SelectItem(UItemInfo* Item)
+{
+	ARLPlayerController* RLPC = Cast<ARLPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+	check(RLPC);
+	check(Item);
+
+	RLPC->DeactiveOnceItemListWidget();
+	switch (Item->ItemType)
+	{
+		case EItemType::INF_STACK_ITEM:
+		{
+			ApplyInfItem(Item->DetailType.INFStackItem);
+			ResumeController(RLPC);
+			//이펙트, 소리
+			break;
+		}
+		case EItemType::FIX_MAX_STACK_ITEM:
+		{
+			bool Ret = ApplyFixMaxItem(Item->DetailType.FixMaxStackItem);
+			if (!Ret)
+			{
+				RLPC->ShowNoticeWidget(TEXT("이미 10번 증가한 스탯이에요."));
+				return;
+			}
+			ResumeController(RLPC);
+			break;
+		}
+		case EItemType::ONCE_EQUIP_ITEM:
+		{
+			EOnceEquipItemFlag Flag;
+			bool Ret = ApplyOnceEquipItem(Item, Flag);
+			if (Ret)
+			{
+				switch (Flag)
+				{
+				case EOnceEquipItemFlag::SUCCESS:
+					ResumeController(RLPC);
+					RLPC->RegisterItemEmptySlot(Item);
+					break;
+				case EOnceEquipItemFlag::EQUIPPED_ALREADY_THIS_ITEM:
+					RLPC->ShowNoticeWidget(TEXT("이미 장착되어 있는 아이템이에요."));
+					break;
+				}
+			}
+			else //아이템 창 2개 중 선택
+			{
+				RLPC->ActiveOnceItemListWidget(Item);
+			}
+			break;
+		}
 	}
 }

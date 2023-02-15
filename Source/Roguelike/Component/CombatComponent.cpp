@@ -7,7 +7,7 @@
 UCombatComponent::UCombatComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	MutliShotTime = 0.1f;
+	MutliShotTime = 0.2f;
 	bFireCooldown = false;
 	bAttackPressed = false;
 	Delay = 0.5f;
@@ -55,8 +55,9 @@ void UCombatComponent::ReadyToFire(bool bPressed)
 				}
 				if (HaveItem(ItemManager, EOnceEquippedItem::MULTI_SHOT))
 				{
+					UE_LOG(LogTemp, Warning, TEXT("Multishot"));
 					FTimerDelegate MultiShotTimerDelegate;
-					MultiShotTimerDelegate.BindUFunction(this, FName("Fire"), CombatManager, ItemManager);
+					MultiShotTimerDelegate.BindUFunction(this, FName("MultishotFire"), CombatManager, ItemManager);
 					GetWorld()->GetTimerManager().SetTimer(MultiShotTimerHandle, MultiShotTimerDelegate, MutliShotTime, false);
 				}
 			}
@@ -90,11 +91,40 @@ void UCombatComponent::Fire(const FCombatManager& CombatManager, const FItemMana
 			SpawnedProjectile->SetVelocity(GetOwner()->GetActorForwardVector());
 
 			SpawnedProjectile->SetCombatManage(CombatManager);
+			SpawnedProjectile->SetRange(CombatManager.Range);
 			SpawnedProjectile->SetItemManager(ItemManager);
 		}
 		StartFireTimer();
 	}
 }
+
+void UCombatComponent::MultishotFire(const FCombatManager& CombatManager, const FItemManager& ItemManager)
+{
+	FActorSpawnParameters Params;
+
+	
+	Params.Owner = GetOwner();
+	if (ProjectileClass && GetWorld())
+	{
+		ABaseProjectile* SpawnedProjectile =
+			GetWorld()->SpawnActor<ABaseProjectile>(
+				ProjectileClass,
+				GetOwner()->GetActorLocation() + GetOwner()->GetActorForwardVector() * 100.f,
+				GetOwner()->GetActorRotation(),
+				Params);
+		if (SpawnedProjectile)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Multishot Fire call"));
+			SpawnedProjectile->SetVelocity(GetOwner()->GetActorForwardVector());
+
+			SpawnedProjectile->SetCombatManage(CombatManager);
+			SpawnedProjectile->SetRange(CombatManager.Range);
+			SpawnedProjectile->SetItemManager(ItemManager);
+		}
+	}
+}
+
+
 
 void UCombatComponent::Fire(const FCombatManager& CombatManager)
 {

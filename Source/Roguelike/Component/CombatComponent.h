@@ -32,6 +32,8 @@ private:
 	TSubclassOf<ABaseProjectile> ProjectileClass;
 	UFUNCTION()
 	void Fire(const FCombatManager& CombatManager, const FItemManager& ItemManager);
+	UFUNCTION()
+	void MultishotFire(const FCombatManager& CombatManager, const FItemManager& ItemManager);
 	void Fire(const FCombatManager& CombatManager);
 	FTimerHandle MultiShotTimerHandle;
 	float MutliShotTime;

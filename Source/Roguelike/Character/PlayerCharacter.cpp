@@ -43,7 +43,9 @@ APlayerCharacter::APlayerCharacter()
 
 	bPressedAttackButton = false;
 
-	ItemComponent = CreateDefaultSubobject<UItemComponent>(TEXT("ItemComp"));
+	ItemComp = CreateDefaultSubobject<UItemComponent>(TEXT("ItemComponent"));
+	float a = 1;
+	
 }
 
 
@@ -67,10 +69,10 @@ void APlayerCharacter::BeginPlay()
 		CombatComponent->GetItemManager.BindUObject(this, &ThisClass::GetItemManager);
 	}
 
-	if (ManagerComponent && ItemComponent)
+	if (ManagerComponent && ItemComp)
 	{
-		ManagerComponent->SetItemComp(ItemComponent);
-		ItemComponent->SetManagerComp(ManagerComponent);
+		ManagerComponent->SetItemComp(ItemComp);
+		ItemComp->SetManagerComp(ManagerComponent);
 	}
 	
 }
@@ -90,38 +92,14 @@ void APlayerCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 	PlayerInputComponent->BindAction("Test2", IE_Pressed, this, &ThisClass::Test2);
 	PlayerInputComponent->BindAction("Test3", IE_Pressed, this, &ThisClass::Test3);
 
+	PlayerInputComponent->BindAction("Recall", IE_Pressed, this, &ThisClass::Recall);
+
 	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &ThisClass::Attack);
 	PlayerInputComponent->BindAction("Attack", IE_Released, this, &ThisClass::AttackReleased);
 
 	PlayerInputComponent->BindAction("FreeCam", IE_Pressed, this, &ThisClass::PressedFreeCam);
 	PlayerInputComponent->BindAction("FreeCam", IE_Released, this, &ThisClass::ReleasedFreeCam);
 
-	PlayerInputComponent->BindAxis("Move Forward / Backward", this, &ThisClass::MoveForward);
-	PlayerInputComponent->BindAxis("Move Right / Left", this, &ThisClass::MoveRight);
-}
-
-void APlayerCharacter::MoveForward(float Value)
-{
-	if ((Controller != nullptr) && (Value != 0.0f))
-	{
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-		AddMovementInput(Direction, Value);
-	}
-}
-
-void APlayerCharacter::MoveRight(float Value)
-{
-	if ((Controller != nullptr) && (Value != 0.0f))
-	{
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-		AddMovementInput(Direction, Value);
-	}
 }
 
 void APlayerCharacter::PressedFreeCam()
@@ -150,18 +128,22 @@ void APlayerCharacter::Test1()
 
 void APlayerCharacter::Test2()
 {
-	if (PC)
+	/*if (GetWorld() && Cast<URLGameInstance>(GetWorld()->GetGameInstance()))
 	{
-		PC->SetPause(true);
+		Cast<URLGameInstance>(GetWorld()->GetGameInstance())->TestPrintMap();
+	}*/
+	if (Cast<ARLPlayerController>(GetController()))
+	{
+		Cast<ARLPlayerController>(GetController())->ShowSelectItemWidget();
 	}
 }
 
 void APlayerCharacter::Test3()
 {
-	/*if (GetWorld() && Cast<URLGameInstance>(GetWorld()->GetGameInstance()))
+	if (GetWorld() && Cast<URLGameInstance>(GetWorld()->GetGameInstance()))
 	{
-		Cast<URLGameInstance>(GetWorld()->GetGameInstance())->TestPrintMap();
-	}*/
+		Cast<URLGameInstance>(GetWorld()->GetGameInstance())->RequestMoveNextStage();
+	}
 }
 
 /****************************************/
@@ -186,6 +168,11 @@ void APlayerCharacter::AttackReleased()
 	{
 		CombatComponent->ReadyToFire(false);
 	}
+}
+
+void APlayerCharacter::StopFire()
+{
+	AttackReleased();
 }
 
 void APlayerCharacter::GetElementFromItem(EElement Element)
@@ -235,17 +222,25 @@ void APlayerCharacter::HealByItem()
 
 FItemManager APlayerCharacter::GetItemManager() const
 {
-	if (ItemComponent)
+	if (ItemComp)
 	{
-		return ItemComponent->GetItemManager();
+		return ItemComp->GetItemManager();
 	}
 	return FItemManager();
 }
 
-void APlayerCharacter::RequestItemSwap(const FItemInfoTable* OldItem, const FItemInfoTable* NewItem)
+void APlayerCharacter::RequestItemSwap(const UItemInfo* OldItem, const UItemInfo* NewItem)
 {
-	if (ItemComponent)
+	if (ItemComp)
 	{
-		return ItemComponent->ItemSwap(OldItem, NewItem);
+		return ItemComp->ItemSwap(OldItem, NewItem);
+	}
+}
+
+void APlayerCharacter::Recall()
+{
+	if (GetWorld() && Cast<URLGameInstance>(GetWorld()->GetGameInstance()))
+	{
+		Cast<URLGameInstance>(GetWorld()->GetGameInstance())->ReadyToRecall();
 	}
 }

@@ -3,18 +3,19 @@
 
 #include "MainUIWidget.h"
 #include "OnceItemListWidget.h"
+#include "HPBarWidget.h"
 
-void UMainUIWidget::ItemListAnimPlay(FItemInfoTable* Item)
+void UMainUIWidget::ItemListAnimPlay(UItemInfo* Item)
 {
-	if (OnceItemListWidget)
+	if (OnceItemListWidget && Item) 
 	{
 		OnceItemListWidget->ItemListAnimPlay(Item);
 	}
 }
 
-void UMainUIWidget::RegisterItemEmptySlot(FItemInfoTable* Item)
+void UMainUIWidget::RegisterItemEmptySlot(UItemInfo* Item)
 {
-	if (OnceItemListWidget)
+	if (OnceItemListWidget && Item)
 	{
 		OnceItemListWidget->RegisterItem(Item);
 	}
@@ -25,5 +26,13 @@ void UMainUIWidget::DeactiveOnceItemListWidget()
 	if (OnceItemListWidget)
 	{
 		OnceItemListWidget->DeactiveItemList();
+	}
+}
+
+void UMainUIWidget::SetOwner(APawn* OwnerPawn)
+{
+	if (HPBarWidget && OwnerPawn)
+	{
+		HPBarWidget->SetOwnerPlayer(OwnerPawn);
 	}
 }

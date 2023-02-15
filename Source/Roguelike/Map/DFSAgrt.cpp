@@ -33,6 +33,7 @@ void DFSAgrt::ValueInit()
 	StartPostion = FVector::ZeroVector;
 	TotalCellNum = 0;
 	BonusCellNum = 0;
+	CreatedBossCell = false;
 }
 
 void DFSAgrt::Init()
@@ -50,9 +51,9 @@ void DFSAgrt::Init()
 	BonusCellNum = FMath::RandRange(1, Parts);
 	TotalCellNum -= BonusCellNum;
 
-	//CellCount = 2;
-	//Parts = 1; 
-	//BonusCellNum = 0; //test
+	//CellCount = 3;
+	//Parts = 2; 
+	//BonusCellNum = 1; //test
 
 	int32 Length = Size.X / 2;
 	int32 Breadth = Size.Y / 2;
@@ -141,6 +142,16 @@ void DFSAgrt::MazeGenerator()
 			break;
 		}
 	}
+
+	if (!CreatedBossCell)
+	{
+		CreatedBossCell = true;
+		BossPrevCell = BeforeCell;
+		BossCell = CurrentCell;
+		Board[BossCell].CellState = ECellState::DONT_FIND_BOSS;
+		Board[BossCell].CellType = ECellType::BOSS;
+		Board[BossCell].CellClass = 1;
+	}
 	
 	if (++CreatedPart != Parts)
 	{
@@ -148,11 +159,6 @@ void DFSAgrt::MazeGenerator()
 	}
 	else
 	{
-		BossPrevCell = BeforeCell;
-		BossCell = CurrentCell;
-		Board[BossCell].CellState = ECellState::DONT_FIND_BOSS;
-		Board[BossCell].CellType = ECellType::BOSS;
-		Board[BossCell].CellClass = 1;
 		Board[StartCell].CellState = ECellState::IN_PLAYER;
 		Board[StartCell].CellType = ECellType::START;
 		Board[StartCell].IsCleared = true;

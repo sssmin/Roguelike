@@ -8,13 +8,15 @@
 
 class UBlackboardComponent;
 class UBehaviorTreeComponent;
+class AMonsterCharacter;
+class UHPBarWidget;
 
 UCLASS()
 class ROGUELIKE_API ARLMonsterAIController : public AAIController
 {
 	GENERATED_BODY()
 	public:
-		ARLMonsterAIController();
+	ARLMonsterAIController();
 	virtual void OnPossess(APawn* InPawn) override;
 
 private:
@@ -23,5 +25,13 @@ private:
 
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UBehaviorTreeComponent* BTComp;
+
+	UPROPERTY()
+	AMonsterCharacter* Monster;
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UHPBarWidget> HPBarWidgetClass;
+	UPROPERTY()
+	UHPBarWidget* HPBarWidget;
 	
 };

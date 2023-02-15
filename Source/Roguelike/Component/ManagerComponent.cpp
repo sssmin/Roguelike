@@ -37,12 +37,11 @@ void UManagerComponent::BeginPlay()
 
 	
 	URLGameInstance* GI = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
-	if (GI && Cast<APlayerCharacter>(GetOwner()))
+	if (GI)
 	{
 		GI->GetManager(HealthManager, CombatManager, CurrentBuff);
-		GI->OnMoveMap.BindUObject(this, &ThisClass::SendManager);
+		GI->OnMoveMap.AddUObject(this, &ThisClass::SendManager);
 		ApplyBuff(CurrentBuff);
-		//æ∆¿Ã≈€ ¿Â¬¯
 	}
 }
 
@@ -83,6 +82,7 @@ void UManagerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 
 void UManagerComponent::SendManager()
 {
+	UE_LOG(LogTemp, Warning, TEXT("ManagerComp SendManager."));
 	URLGameInstance* GI = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
 	if (GI)
 	{
@@ -307,8 +307,7 @@ void UManagerComponent::TestDead()
 
 void UManagerComponent::TestHurt()
 {
-	HealthManager.CurrentHP = FMath::Clamp(HealthManager.CurrentHP - 30.f, 0.f, TNumericLimits<int32>::Max());
-	CombatManager.ATK++;
+	UpdateCurrentHP(-10.f);
 }
 
 void UManagerComponent::ApplyPlayerElement(EElement Element)
@@ -336,10 +335,7 @@ void UManagerComponent::ApplyPlayerElement(EElement Element)
 	{
 		Cast<APlayerCharacter>(GetOwner())->ApplyElementParticle();
 	}
-	
 }
-
-
 
 void UManagerComponent::InitElemBuff()
 {
@@ -357,7 +353,7 @@ void UManagerComponent::Heal(float Rate)
 {
 	float CurrentHP = HealthManager.CurrentHP;
 	float ToAddHP = HealthManager.MaxHP * Rate * 0.01f;
-	HealthManager.CurrentHP = FMath::Clamp(CurrentHP + ToAddHP, CurrentHP, HealthManager.MaxHP);
+	UpdateCurrentHP(CurrentHP + ToAddHP);
 }
 
 void UManagerComponent::ManageStack(float DeltaTime)
@@ -473,7 +469,12 @@ void UManagerComponent::UpdateMaxHP(float Value)
 	if (Value != 0.f)
 	{
 		HealthManager.MaxHP = FMath::Clamp(HealthManager.MaxHP + Value, HealthManager.MaxHP, TNumericLimits<int32>::Max());
+		if (OnUpdateCurrentHP.IsBound())
+		{
+			OnUpdateCurrentHP.Broadcast(HealthManager.CurrentHP, HealthManager.MaxHP);
+		}
 	}
+	
 }
 
 void UManagerComponent::UpdateCurrentHP(float Value)
@@ -481,6 +482,10 @@ void UManagerComponent::UpdateCurrentHP(float Value)
 	if (Value != 0.f)
 	{
 		HealthManager.CurrentHP = FMath::Clamp(HealthManager.CurrentHP + Value, 0, HealthManager.MaxHP);
+		if (OnUpdateCurrentHP.IsBound())
+		{
+			OnUpdateCurrentHP.Broadcast(HealthManager.CurrentHP, HealthManager.MaxHP);
+		}
 	}
 }
 

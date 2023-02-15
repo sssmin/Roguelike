@@ -5,7 +5,6 @@
 
 void UMinimapWidget::Init(int32 MapSizeX, int32 MapSizeY, TArray<FCell> Board)
 {
-	
 	if (MapGrid && MinimapCellWidgetClass && GetWorld())
 	{
 		for (int i = 0; i < MapSizeX; i++)
@@ -19,14 +18,7 @@ void UMinimapWidget::Init(int32 MapSizeX, int32 MapSizeY, TArray<FCell> Board)
 				MapGrid->AddChildToUniformGrid(CellWidgets[CurrentIndex], i, j);
 				CellWidgets[CurrentIndex]->SetVisibility(ESlateVisibility::Visible);
 				CellWidgets[CurrentIndex]->Init(Board[CurrentIndex].CellState);
-				
-				/*UMinimapCellWidget* CellWidget = CreateWidget<UMinimapCellWidget>(GetWorld(), MinimapCellWidgetClass);
-				MapGrid->AddChildToUniformGrid(CellWidget, i, j);
-				CellWidget->Init(Board[CurrentIndex].CellState);
-				CellWidget->SetVisibility(ESlateVisibility::Visible);*/
-
 			}
 		}
-
 	}
 }

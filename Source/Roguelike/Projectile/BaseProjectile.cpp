@@ -10,7 +10,7 @@
 
 ABaseProjectile::ABaseProjectile()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	Sphere = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
 	RootComponent = Sphere;
@@ -20,6 +20,7 @@ ABaseProjectile::ABaseProjectile()
 	Sphere->SetCollisionResponseToChannel(ECC_CharacterBlockProjectile, ECollisionResponse::ECR_Block);
 	Sphere->SetCollisionResponseToChannel(ECC_WallBlockProjectile, ECollisionResponse::ECR_Block);
 	Sphere->SetCollisionResponseToChannel(ECC_WorldStatic, ECollisionResponse::ECR_Block);
+	Sphere->SetSphereRadius(64.f);
 
 	PMC = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("PMC"));
 	if (PMC)
@@ -30,11 +31,15 @@ ABaseProjectile::ABaseProjectile()
 		PMC->bRotationFollowsVelocity = true;
 		PMC->bShouldBounce = false;
 	}
+
+	Range = 0;
 }
 
 void ABaseProjectile::BeginPlay()
 {
 	Super::BeginPlay();
+
+	StartLocation = GetActorLocation();
 	
 	if (!ProjectileParticles.IsEmpty())
 	{
@@ -74,13 +79,18 @@ void ABaseProjectile::BeginPlay()
 	if (Sphere)
 	{
 		Sphere->OnComponentHit.AddDynamic(this, &ThisClass::OnHit);
-	}
-		
+	}	
 }
 
 void ABaseProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	float Dist = FVector::Distance(StartLocation, GetActorLocation());
+	if (Range <= Dist)
+	{
+		Destroy();
+	}
 
 }
 
@@ -97,8 +107,8 @@ void ABaseProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UP
 	if (OtherActor && Cast<ABaseCharacter>(OtherActor) && (OtherActor != GetOwner()))
 	{
 		Cast<ABaseCharacter>(OtherActor)->OnHit(GetOwner(), CombatManager, ItemManager);
-		PlayHitEffect();
 		CheckAttackerBeHealed(OtherActor, Cast<APlayerCharacter>(GetOwner()));
+		PlayHitEffect();
 	}
 	else
 	{
@@ -126,7 +136,6 @@ void ABaseProjectile::Destroyed()
 
 void ABaseProjectile::CheckAttackerBeHealed(AActor* Other, APlayerCharacter* Player)
 {
-	
 	if ((CombatManager.Element == EElement::LIGHT) && Cast<AMonsterCharacter>(Other) && Player)
 	{
 		if (FMath::RandRange(1, 100) < 8)

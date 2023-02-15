@@ -31,6 +31,7 @@ private:
 	int32 TotalCellNum;
 	int32 BonusCellNum; //Ãß°¡
 	void ValueInit();
+	bool CreatedBossCell;
 	
 public:
 	FVector GetStartPostion() const { return StartPostion; }

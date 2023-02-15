@@ -50,8 +50,12 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* Particle;
+
+	FVector StartLocation;
+	float Range;
 public:
 	void SetVelocity(const FVector& Dir);
-	void SetCombatManage(FCombatManager InManager) { CombatManager = InManager; }
+	void SetCombatManage(const FCombatManager& InManager) { CombatManager = InManager; }
 	void SetItemManager(FItemManager InManager) { ItemManager = InManager; }
+	void SetRange(float InRange) { Range = InRange;  }
 };

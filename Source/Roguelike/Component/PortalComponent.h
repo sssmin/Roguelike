@@ -33,6 +33,7 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	void CreateSidePortal();
 	void CreateCenterPortal();
+	void CreatePrevBossPortal();
 	void DestroyPortal();
 	FVector GetArrowLocation(int32 Dir);
 protected:

@@ -11,8 +11,8 @@ void UOnceItemListWidget::NativeConstruct()
 
 	if (FirstItemButton && SecondItemButton)
 	{
-		FirstItemButton->OnClicked.AddDynamic(this, &ThisClass::FirstItemButtonClick);
-		SecondItemButton->OnClicked.AddDynamic(this, &ThisClass::SecondItemButtonClick);
+		FirstItemButton->OnClicked.AddUniqueDynamic(this, &ThisClass::FirstItemButtonClick);
+		SecondItemButton->OnClicked.AddUniqueDynamic(this, &ThisClass::SecondItemButtonClick);
 	}
 	bIsEnabled = false;
 
@@ -20,9 +20,10 @@ void UOnceItemListWidget::NativeConstruct()
 	
 }
 
-void UOnceItemListWidget::ItemListAnimPlay(FItemInfoTable* ItemInfo)
+void UOnceItemListWidget::ItemListAnimPlay(UItemInfo* ItemInfo)
 {
 	TempSelectItem = ItemInfo;
+
 	if (FlikerFirstItem && FlikerSecondItem && FirstItemButton && SecondItemButton)
 	{
 		FirstItemButton->SetIsEnabled(true);
@@ -34,11 +35,12 @@ void UOnceItemListWidget::ItemListAnimPlay(FItemInfoTable* ItemInfo)
 	
 }
 
-void UOnceItemListWidget::RegisterItem(FItemInfoTable* ItemInfo)
+void UOnceItemListWidget::RegisterItem(UItemInfo* ItemInfo)
 {
 	if (!FirstItem)
 	{
 		FirstItem = ItemInfo;
+	
 		if (FirstItemButton && FirstItem)
 		{
 			SetButtonStyle(FirstItem, FirstItemButton);
@@ -54,8 +56,8 @@ void UOnceItemListWidget::RegisterItem(FItemInfoTable* ItemInfo)
 	}
 }
 
-void UOnceItemListWidget::SetButtonStyle(FItemInfoTable* Item, UButton* Btn)
-{
+void UOnceItemListWidget::SetButtonStyle(const UItemInfo* Item, UButton* Btn)
+{	
 	FButtonStyle ButtonStyle;
 	ButtonStyle.Normal.SetResourceObject(Item->ItemIcon);
 	ButtonStyle.Normal.SetImageSize(FVector2D(256.f, 256.f));
@@ -75,7 +77,7 @@ void UOnceItemListWidget::FirstItemButtonClick()
 		RequestItemSwap(FirstItem, TempSelectItem);
 		FirstItem = TempSelectItem;
 		SetButtonStyle(FirstItem, FirstItemButton);
-		DeactiveItemList();
+		DeactiveItemList();                        
 		RestorePC();
 	}
 }
@@ -84,6 +86,7 @@ void UOnceItemListWidget::SecondItemButtonClick()
 {
 	if (SecondItemButton && SecondItem && TempSelectItem)
 	{
+		
 		RequestItemSwap(SecondItem, TempSelectItem);
 		SecondItem = TempSelectItem;
 		SetButtonStyle(SecondItem, SecondItemButton);
@@ -112,7 +115,7 @@ void UOnceItemListWidget::RestorePC()
 	}
 }
 
-void UOnceItemListWidget::RequestItemSwap(const FItemInfoTable* OldItem, const FItemInfoTable* NewItem)
+void UOnceItemListWidget::RequestItemSwap(const UItemInfo* OldItem, const UItemInfo* NewItem)
 {
 	if (PC)
 	{

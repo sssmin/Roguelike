@@ -20,6 +20,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	void CreateSidePortal();
 	void CreateCenterPortal();
+	void CreatePrevBossPortal();
 	FVector GetPlayerSpawnLocation(int32 Dir);
 	void CreateWall();
 protected:

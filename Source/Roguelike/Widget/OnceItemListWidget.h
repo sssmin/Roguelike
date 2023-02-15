@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -18,8 +18,8 @@ class ROGUELIKE_API UOnceItemListWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	void ItemListAnimPlay(FItemInfoTable* ItemInfo);
-	void RegisterItem(FItemInfoTable* ItemInfo);
+	void ItemListAnimPlay(UItemInfo* ItemInfo);
+	void RegisterItem(UItemInfo* ItemInfo);
 	virtual void NativeConstruct() override;
 	void DeactiveItemList();
 private:
@@ -32,9 +32,9 @@ private:
 	UPROPERTY(Transient, Meta = (BindWidgetAnim))
 	UWidgetAnimation* FlikerSecondItem;
 
-	FItemInfoTable* FirstItem;
-	FItemInfoTable* SecondItem;
-	FItemInfoTable* TempSelectItem;
+	UItemInfo* FirstItem;
+	UItemInfo* SecondItem;
+	UItemInfo* TempSelectItem;
 
 	UPROPERTY()
 	ARLPlayerController* PC;
@@ -43,10 +43,10 @@ private:
 	void FirstItemButtonClick();
 	UFUNCTION()
 	void SecondItemButtonClick();
-	void SetButtonStyle(FItemInfoTable* Item, UButton* Btn);
+	void SetButtonStyle(const UItemInfo* Item, UButton* Btn);
 
 	void RestorePC();
-	void RequestItemSwap(const FItemInfoTable* OldItem, const FItemInfoTable* NewItem);
+	void RequestItemSwap(const UItemInfo* OldItem, const UItemInfo* NewItem);
 public:
 	bool ExistFirstItem() { return FirstItem != nullptr; }
 	bool ExistSecondItem() { return SecondItem != nullptr; }

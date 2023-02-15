@@ -16,7 +16,7 @@ class ROGUELIKE_API USelectItemCellWidget : public UUserWidget
 {
 	GENERATED_BODY()
 public:
-	void Init(FItemInfoTable* Item);
+	void Init(UItemInfo* Item);
 private:
 	UPROPERTY(Meta = (BindWidget))
 	UButton* ItemButton;
@@ -26,13 +26,10 @@ private:
 	UPROPERTY(Meta = (BindWidget))
 	UTextBlock* ItemName;
 
-	FItemInfoTable* ItemInfo;
-
-
+	UItemInfo* ItemInfo;
 
 	UFUNCTION()
 	void SelectItem();
-
 public:
-	FItemInfoTable* GetItemInfo() const { return ItemInfo; }
+	UItemInfo* GetItemInfo() const { return ItemInfo; }
 };

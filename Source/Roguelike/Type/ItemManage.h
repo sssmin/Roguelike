@@ -73,6 +73,42 @@ struct FItemManager
 	int8 EquippedItemCount; //2개까지
 };
 
+UCLASS()
+class UItemInfo : public UObject
+{
+	GENERATED_BODY()
+public:
+	UItemInfo() {}
+	
+	EItemType ItemType;
+
+	FItemType DetailType;
+
+	FString ItemName;
+
+	FString ItemDesc;
+
+	UPROPERTY()
+	UTexture2D* ItemIcon;
+
+	static UItemInfo* ConstructItemInfo(EItemType InItemType, FItemType InDetailType, FString InItemName, FString InItemDesc, UTexture2D* InItemIcon)
+	{
+		UItemInfo* Info = NewObject<UItemInfo>();
+		Info->Init(InItemType, InDetailType, InItemName, InItemDesc, InItemIcon);
+		return Info;
+	}
+
+private:
+	void Init(EItemType InItemType, FItemType InDetailType, FString InItemName, FString InItemDesc, UTexture2D* InItemIcon)
+	{
+		ItemType = InItemType;
+		DetailType = InDetailType;
+		ItemName = InItemName;
+		ItemDesc = InItemDesc;
+		ItemIcon = InItemIcon;
+	}
+};
+
 
 
 USTRUCT(BlueprintType)
@@ -91,7 +127,6 @@ struct FItemInfoTable : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString ItemDesc;
-
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UTexture2D* ItemIcon;

@@ -9,6 +9,14 @@
 class USphereComponent;
 class UParticleSystem;
 
+enum class EPortalType : uint8
+{
+	NONE,
+	SIDE,
+	CENTER,
+	PREV_BOSS
+};
+
 UCLASS()
 class ROGUELIKE_API APortalActor : public AActor
 {
@@ -18,6 +26,7 @@ public:
 	APortalActor();
 	void SetCenterPortal();
 	void SetSidePortal();
+	void SetPrevBossPortal();
 protected:
 	virtual void BeginPlay() override;
 	virtual void Destroyed() override;
@@ -45,9 +54,8 @@ private:
 	UFUNCTION()
 	void BeginOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	
-	
+	EPortalType PortalType;
 
-	bool IsCenterPortal;
 
 public:
 	void PortalParticleVisible(bool IsActive);

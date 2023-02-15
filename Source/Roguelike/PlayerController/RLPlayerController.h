@@ -9,12 +9,16 @@
 #include "RLPlayerController.generated.h"
 
 
-class UMinimapWidget;
+DECLARE_DELEGATE(FRecallCompleteSuccessfully)
+
 class APlayersCamera;
+class UMinimapWidget;
 class USelectItemWidget;
 class UMainUIWidget;
 class UNoticeWidget;
+class URecallBarWidget;
 class APlayerCharacter;
+class UItemComponent;
 
 UCLASS()
 class ROGUELIKE_API ARLPlayerController : public APlayerController
@@ -26,7 +30,7 @@ public:
 	void ShowNoticeWidget(const FString& Notice);
 	void ShowGameOverWidget();
 	void ShowSelectItemWidget();
-	void ActiveOnceItemListWidget(FItemInfoTable* SelectItem);
+	void ActiveOnceItemListWidget(UItemInfo* SelectItem) const;
 	void DeactiveOnceItemListWidget();
 	void RemoveSelectWidget();
 	void MoveMapFade();
@@ -39,19 +43,26 @@ public:
 
 	void SetMapInfo(FVector2Int MapSize, TArray<FCell> Board, int32 PlayerCurrentCell);
 	void ResumeController();
+	void StopFire();
 	
-	void RegisterItemEmptySlot(FItemInfoTable* Item);
-	void RequestItemSwap(const FItemInfoTable* OldItem, const FItemInfoTable* NewItem);
-	TArray<FItemInfoTable> GetRandItem();
+	void RegisterItemEmptySlot(UItemInfo* Item) const;
+	void RequestItemSwap(const UItemInfo* OldItem, const UItemInfo* NewItem);
+	TArray<UItemInfo*> GetRandItem();
+
+	void RecallStart();
+	FRecallCompleteSuccessfully RecallCompleteSuccessfully;
 protected:
 	virtual void OnPossess(APawn* aPawn) override;
+	void MoveForward(float Value);
+	void MoveRight(float Value);
 private:
 	/* Map */
 	TArray<FCell> Board;
 	FVector2Int MapSize;
 	int32 PlayerCell;
 	void DrawMap();
-	
+	void ToggleMap();
+	bool bVisibleMap;
 
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UMinimapWidget> MinimapWidgetClass;
@@ -82,6 +93,26 @@ private:
 	APlayerCharacter* PlayerCharacter;
 	UPROPERTY()
 	APlayersCamera* CurrentPlayersCamera;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Meta = (AllowPrivateAccess = "true"))
+	FTimerHandle RecallTimerHandle;
+	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Meta = (AllowPrivateAccess = "true"))
+	float RecallTime;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<URecallBarWidget> RecallWidgetClass;
+	UPROPERTY()
+	URecallBarWidget* RecallBarWidget;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* RecallStartParticle;
+	UPROPERTY()
+	UParticleSystemComponent* RecallStartParticleComp;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* RecallEndParticle;
+
+	UFUNCTION()
+	void RecallTimerFinished();
+	void RecallCancel();
+	void RecallEnd();
 
 public:
 	
