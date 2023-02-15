@@ -3,9 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Roguelike/Type/ItemManage.h"
 #include "RLListenerManager.generated.h"
 
+class UItemInfo;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSelectItem, UItemInfo*, ItemInfo);
 
