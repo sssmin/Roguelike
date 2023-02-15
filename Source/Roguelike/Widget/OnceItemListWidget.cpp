@@ -86,7 +86,6 @@ void UOnceItemListWidget::SecondItemButtonClick()
 {
 	if (SecondItemButton && SecondItem && TempSelectItem)
 	{
-		
 		RequestItemSwap(SecondItem, TempSelectItem);
 		SecondItem = TempSelectItem;
 		SetButtonStyle(SecondItem, SecondItemButton);

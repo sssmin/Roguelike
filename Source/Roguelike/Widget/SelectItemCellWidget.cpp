@@ -38,5 +38,4 @@ void USelectItemCellWidget::Init(UItemInfo* Item)
 void USelectItemCellWidget::SelectItem()
 {
 	URLGameInstance::GetLisnterManager()->SelectItem(ItemInfo);
-	
 }

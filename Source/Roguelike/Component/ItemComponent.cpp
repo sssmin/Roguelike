@@ -75,28 +75,28 @@ bool UItemComponent::ApplyFixMaxItem(EFixMaxStackItem Item)
 	{
 		switch (Item)
 		{
-		case EFixMaxStackItem::INCREASE_RANGE:
-		{
-			uint8 Value = GetFixMaxStack(EFixMaxStackItem::INCREASE_RANGE);
-			if (Value < FIX_MAX_STACK)
+			case EFixMaxStackItem::INCREASE_RANGE:
 			{
-				IncreaseFixMaxStack(EFixMaxStackItem::INCREASE_RANGE);
-				ManagerComp->UpdateCurrentRange(50.f);
-				return true;
+				uint8 Value = GetFixMaxStack(EFixMaxStackItem::INCREASE_RANGE);
+				if (Value < FIX_MAX_STACK)
+				{
+					IncreaseFixMaxStack(EFixMaxStackItem::INCREASE_RANGE);
+					ManagerComp->UpdateCurrentRange(50.f);
+					return true;
+				}
+				return false;
 			}
-			return false;
-		}
-		case EFixMaxStackItem::INCREASE_CRITICAL_PER:
-		{
-			uint8 Value = GetFixMaxStack(EFixMaxStackItem::INCREASE_CRITICAL_PER);
-			if (Value < FIX_MAX_STACK)
+			case EFixMaxStackItem::INCREASE_CRITICAL_PER:
 			{
-				IncreaseFixMaxStack(EFixMaxStackItem::INCREASE_CRITICAL_PER);
-				ManagerComp->UpdateCurrentCritical(1.f);
-				return true;
+				uint8 Value = GetFixMaxStack(EFixMaxStackItem::INCREASE_CRITICAL_PER);
+				if (Value < FIX_MAX_STACK)
+				{
+					IncreaseFixMaxStack(EFixMaxStackItem::INCREASE_CRITICAL_PER);
+					ManagerComp->UpdateCurrentCritical(1.f);
+					return true;
+				}
+				return false;
 			}
-			return false;
-		}
 		}
 	}
 	return false;
@@ -189,7 +189,7 @@ void UItemComponent::SelectItem(UItemInfo* Item)
 {
 	ARLPlayerController* RLPC = Cast<ARLPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
 	check(RLPC);
-	check(Item);
+	checkf(Item, TEXT("Item is nullptr"));
 
 	RLPC->DeactiveOnceItemListWidget();
 	switch (Item->ItemType)
