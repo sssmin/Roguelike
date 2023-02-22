@@ -1,9 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "CellActor.h"
-#include "Roguelike/Component/PortalComponent.h"
 #include "Components/ArrowComponent.h"
+
+#include "Roguelike/Component/PortalComponent.h"
 #include "WallActor.h"
 
 ACellActor::ACellActor()

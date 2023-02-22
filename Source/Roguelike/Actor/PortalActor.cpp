@@ -1,12 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "PortalActor.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Roguelike/Game/RLGameInstance.h"
-#include "Roguelike/Character/PlayerCharacter.h"
 #include "Particles/ParticleSystemComponent.h"
+
+#include "Roguelike/Game/RLGameInstance.h"
+#include "Roguelike/Character/Player/PlayerCharacter.h"
 
 
 APortalActor::APortalActor()

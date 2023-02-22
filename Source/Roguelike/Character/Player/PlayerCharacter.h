@@ -3,13 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BaseCharacter.h"
+#include "Roguelike/Character/BaseCharacter.h"
 #include "PlayerCharacter.generated.h"
 
 class USphereComponent;
 class UCameraComponent;
 class USpringArmComponent;
 class UItemComponent;
+class UPlayerCombatComponent;
 
 DECLARE_DELEGATE_OneParam(FOnPressedFreeCam, bool);
 
@@ -42,6 +43,8 @@ private:
 
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UItemComponent* ItemComp;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UPlayerCombatComponent* PlayerCombatComp;
 	void Test1();
 	void Test2();
 	void Test3();

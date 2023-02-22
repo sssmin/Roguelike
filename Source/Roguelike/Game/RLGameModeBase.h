@@ -48,16 +48,13 @@ public:
 	void CreateCenterPortal();
 	void CreatePrevBossPortal();
 	TArray<UItemInfo*> CreateRandItem();
-
 private:
 	UPROPERTY()
 	TArray<UItemInfo*> SelectedItem;
 	UPROPERTY()
 	TArray<FVector> MobSpawnPoints;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<AMonsterCharacter> NormalMonsterClass;
-	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<AMonsterCharacter> EliteMonsterClass;
+	TArray<TSubclassOf<AMonsterCharacter>> NormalMonsterClasses;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AMonsterCharacter> BossMonsterClass;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))

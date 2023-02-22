@@ -1,6 +1,7 @@
 #include "MinimapWidget.h"
 #include "Components/UniformGridPanel.h"
 #include "Components/UniformGridSlot.h"
+
 #include "MinimapCellWidget.h"
 
 void UMinimapWidget::Init(int32 MapSizeX, int32 MapSizeY, TArray<FCell> Board)

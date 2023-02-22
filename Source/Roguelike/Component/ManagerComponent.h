@@ -12,6 +12,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUpdateCurrentHP, float, CurrentH
 
 class UItemComponent;
 class UParticleSystem;
+class AController;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class ROGUELIKE_API UManagerComponent : public UActorComponent
@@ -22,19 +23,20 @@ public:
 	UManagerComponent();
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	void ReceiveDamage(const FCombatManager& EnemyCombatManager, const FItemManager& EnemyItemManager);
+	void ReceiveExplodeDamage(const float Damage, AController* InstigatedBy, AActor* DamageCauser);
 	void ApplyPlayerElement(EElement Element);
 	void Heal(float Rate);
-	bool CanAttack();
-	bool CanMove();
+	bool CanAttack() const;
+	bool CanMove() const;
 	void UpdateMaxHP(float Value);
 	void UpdateCurrentHP(float Value);
 	void UpdateCurrentAtk(float Value);
 	void UpdateCurrentCritical(float Value);
 	void UpdateCurrentRange(float Value);
+	bool HaveAnyState();
 	FOnUpdateCurrentHP OnUpdateCurrentHP;
 
-	void TestDead();
-	void TestHurt();
+	static UManagerComponent* GetManagerComp(AActor* Character);
 protected:
 	virtual void BeginPlay() override;
 
@@ -54,18 +56,16 @@ private:
 	UPROPERTY()
 	UItemComponent* ItemComponent;
 
-
-
-	void SendManager();
+	
+	void SendManager() const;
 	float CalcCounter(EElement EnemyElement);
-	bool CheckState(uint8 State);
+	bool CheckState(uint8 State) const;
 	void ApplyState(uint8 State);
 	void RemoveState(uint8 State);
-	bool CheckBuff(uint8 Buff);
+	bool CheckBuff(uint8 Buff) const;
 	void ApplyBuff(uint8 Buff);
 	void RemoveBuff(uint8 Buff);;
 	
-	bool HaveAnyState();
 	void ApplyBurnDamage();
 	void InitElemBuff();
 	void ManageStack(float DeltaTime);
@@ -74,6 +74,7 @@ private:
 	void CancelCC();
 	bool IsDodge();
 	float CalcCritical(const FCombatManager& EnemyCombatManage);
+	void InitCCStack();
 
 	int32 CCStack;
 	float CCStackDuration; //스택 지속시간
@@ -92,5 +93,6 @@ public:
 	}
 	FCombatManager GetCombatManager() const { return CombatManager;  }
 	void SetItemComp(UItemComponent* Comp) { ItemComponent = Comp; }
+	uint8 GetCurrentState() const { return CurrentState; }
 	
 };

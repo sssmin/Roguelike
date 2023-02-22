@@ -1,23 +1,22 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "PlayerCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/InputComponent.h"
-
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
+
 #include "Roguelike/Game/RLGameInstance.h"
 #include "Roguelike/Game/RLGameStateBase.h"
 #include "Roguelike/PlayerController/RLPlayerController.h"
 #include "Roguelike/Type/ItemManage.h"
-
 #include "Roguelike/Component/ManagerComponent.h"
 #include "Roguelike/Component/ItemComponent.h"
-#include "Roguelike/Component/CombatComponent.h"
+#include "Roguelike/Component/PlayerCombatComponent.h"
+
+#include "Kismet/KismetSystemLibrary.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -44,7 +43,7 @@ APlayerCharacter::APlayerCharacter()
 	bPressedAttackButton = false;
 
 	ItemComp = CreateDefaultSubobject<UItemComponent>(TEXT("ItemComponent"));
-	float a = 1;
+	PlayerCombatComp = CreateDefaultSubobject<UPlayerCombatComponent>(TEXT("PlayerCombatComp"));
 	
 }
 
@@ -61,18 +60,20 @@ void APlayerCharacter::BeginPlay()
 	{
 		FInputModeGameAndUI InputModeData;
 		InputModeData.SetHideCursorDuringCapture(false);
-		InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::LockInFullscreen);
+		//InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::LockInFullscreen);
 		PC->SetInputMode(InputModeData);
-	}
-	if (CombatComponent)
-	{
-		CombatComponent->GetItemManager.BindUObject(this, &ThisClass::GetItemManager);
 	}
 
 	if (ManagerComponent && ItemComp)
 	{
 		ManagerComponent->SetItemComp(ItemComp);
 		ItemComp->SetManagerComp(ManagerComponent);
+	}
+
+	if (PlayerCombatComp)
+	{
+		PlayerCombatComp->GetItemManager.BindUObject(this, &ThisClass::GetItemManager);
+		PlayerCombatComp->GetCombatManager.BindUObject(this, &ABaseCharacter::GetCombatManager);
 	}
 	
 }
@@ -118,12 +119,7 @@ void APlayerCharacter::ReleasedFreeCam()
 */
 void APlayerCharacter::Test1()
 {
-	ARLGameStateBase* GSB = Cast<ARLGameStateBase>(UGameplayStatics::GetGameState(this));
-	if (GSB)
-	{
-		GSB->TestKillScored();
-	}
-
+	
 }
 
 void APlayerCharacter::Test2()
@@ -140,10 +136,23 @@ void APlayerCharacter::Test2()
 
 void APlayerCharacter::Test3()
 {
-	if (GetWorld() && Cast<URLGameInstance>(GetWorld()->GetGameInstance()))
+	FVector Loc = GetActorLocation();
+	FRotator MovementRot = UKismetMathLibrary::MakeRotFromX(GetVelocity());
+	MovementRot.Vector();
+
+	Loc = Loc + MovementRot.Vector() * 500.f;
+	TEnumAsByte<EMoveComponentAction::Type> Val = EMoveComponentAction::Move;
+	FLatentActionInfo ActionInfo;
+	ActionInfo.CallbackTarget = this;
+
+	
+
+	UKismetSystemLibrary::MoveComponentTo(RootComponent, Loc, GetActorRotation(), false, true, 0.2f, true, Val, ActionInfo);
+	
+	/*if (GetWorld() && Cast<URLGameInstance>(GetWorld()->GetGameInstance()))
 	{
 		Cast<URLGameInstance>(GetWorld()->GetGameInstance())->RequestMoveNextStage();
-	}
+	}*/
 }
 
 /****************************************/
@@ -160,13 +169,18 @@ void APlayerCharacter::Interact()
 void APlayerCharacter::Attack()
 {
 	Super::Attack();
+
+	if (PlayerCombatComp)
+	{
+		PlayerCombatComp->ReadyToFire(true);
+	}
 }
 
 void APlayerCharacter::AttackReleased()
 {
-	if (CombatComponent)
+	if (PlayerCombatComp)
 	{
-		CombatComponent->ReadyToFire(false);
+		PlayerCombatComp->ReadyToFire(false);
 	}
 }
 

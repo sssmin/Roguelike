@@ -7,18 +7,27 @@
 
 class UItemInfo;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSelectItem, UItemInfo*, ItemInfo);
+DECLARE_DELEGATE_OneParam(FOnSelectItem, UItemInfo*);
+DECLARE_DELEGATE(FRestorePC);
+DECLARE_DELEGATE_TwoParams(FRequestItemSwap, const UItemInfo*, const UItemInfo*);
+DECLARE_DELEGATE(FDeactiveOnceItemList);
+DECLARE_DELEGATE_RetVal(TArray<UItemInfo*>, FGetRandItem);
 
 UCLASS()
 class ROGUELIKE_API URLListenerManager : public UObject
 {
 	GENERATED_BODY()
+	
 public:
-	URLListenerManager();
-	~URLListenerManager();
-	static URLListenerManager* Get();
-	static URLListenerManager* ListenerInstance;
-
-	FOnSelectItem OnSelectItem;
+	FOnSelectItem OnSelectItemDelegate;
 	void SelectItem(UItemInfo* ItemInfo) const;
+	FRestorePC RestorePCDelegate;
+	void RestorePC();
+	FRequestItemSwap RequestItemSwapDelegate;
+	void RequestItemSwap(const UItemInfo* OldItem, const UItemInfo* NewItem);
+	FDeactiveOnceItemList DeactiveOnceItemListDel;
+	void DeactiveOnceItemList();
+	FGetRandItem GetRandItemDelegate;
+	TArray<UItemInfo*> GetRandItem() const;
+
 };

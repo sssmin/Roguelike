@@ -1,7 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "WallActor.h"
+
 #include "Roguelike/Roguelike.h"
 
 AWallActor::AWallActor()

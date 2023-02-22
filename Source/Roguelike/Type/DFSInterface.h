@@ -20,6 +20,7 @@ struct FCell
 		IsCleared = false;
 		TempWall = 0;
 		CellClass = 2;
+		SelectedBonusItem = false;
 	}
 	bool Visited;
 	TArray<bool> Status;
@@ -29,6 +30,7 @@ struct FCell
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (Bitmask, BitmaskEnum = ETempWall))
 	uint8 TempWall;
 	int32 CellClass;
+	bool SelectedBonusItem;
 };
 
 USTRUCT()
@@ -36,8 +38,8 @@ struct FVector2Int
 {
 	GENERATED_BODY()
 
-	FVector2Int() {}
-	FVector2Int(int32 InX, int32 InY) :X(InX), Y(InY) {}
+	FVector2Int() : X(0), Y(0) {}
+	FVector2Int(int32 InX, int32 InY) : X(InX), Y(InY) {}
 
 	UPROPERTY(EditAnywhere)
 	int32 X;

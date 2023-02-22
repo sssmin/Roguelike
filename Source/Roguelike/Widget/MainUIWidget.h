@@ -20,6 +20,7 @@ public:
 	void RegisterItemEmptySlot(UItemInfo* Item);
 	void DeactiveOnceItemListWidget();
 	void SetOwner(APawn* OwnerPawn);
+	void InitOnceItemList();
 private:
 	UPROPERTY(Meta = (BindWidget))
 	UOnceItemListWidget* OnceItemListWidget;

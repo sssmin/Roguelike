@@ -14,6 +14,7 @@ USTRUCT(BlueprintType)
 struct FElementParticleTable : public FTableRowBase
 {
 	GENERATED_BODY()
+	FElementParticleTable() : Particle(nullptr) {}
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UParticleSystem* Particle;

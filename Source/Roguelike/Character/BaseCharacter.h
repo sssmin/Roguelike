@@ -9,10 +9,9 @@
 #include "BaseCharacter.generated.h"
 
 
-
-class UCombatComponent;
-class ABaseProjectile;
 class UManagerComponent;
+class UDamageType;
+class AController;
 
 UCLASS()
 class ROGUELIKE_API ABaseCharacter : public ACharacter
@@ -24,22 +23,21 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void OnHit(AActor* Attacker, const FCombatManager& EnemyManager, const FItemManager& EnemyItemManager);
-	void Dead();
-protected:
 	virtual void Attack();
+	void Dead();
+
+protected:
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UManagerComponent* ManagerComponent;
-	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	UCombatComponent* CombatComponent;
-private:
-	
-	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<ABaseProjectile> ProjectileClass;
 	
 
-	FCombatManager GetCombatManager() const;
-	
+private:
+	UFUNCTION()
+	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, FVector Origin, FHitResult HitInfo, AController* InstigatedBy, AActor* DamageCauser);
+
 public:
+	FCombatManager GetCombatManager() const;
 	UFUNCTION(BlueprintCallable)
 	UManagerComponent* GetManagerComp() const { return ManagerComponent;  }
+
 };

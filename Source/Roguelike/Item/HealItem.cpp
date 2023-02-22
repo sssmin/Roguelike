@@ -1,8 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "HealItem.h"
-#include "Roguelike/Character/PlayerCharacter.h"
+#include "Roguelike/Character/Player/PlayerCharacter.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Kismet/GameplayStatics.h"
 

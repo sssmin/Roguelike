@@ -1,14 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "ManagerComponent.h"
+#include "Kismet/GameplayStatics.h"
+
 #include "Roguelike/Game/RLGameInstance.h"
 #include "Roguelike/Game/RLGameStateBase.h"
+#include "Roguelike/Game/RLListenerManager.h"
 #include "Roguelike/PlayerController/RLPlayerController.h"
-#include "Roguelike/Character/PlayerCharacter.h"
-#include "Roguelike/Character/BossMonsterCharacter.h"
+#include "Roguelike/Character/Player/PlayerCharacter.h"
+#include "Roguelike/Character/Monster/BossMonsterCharacter.h"
 #include "Particles/ParticleSystemComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "ItemComponent.h"
 
 UManagerComponent::UManagerComponent()
@@ -31,16 +31,24 @@ UManagerComponent::UManagerComponent()
 }
 
 
+UManagerComponent* UManagerComponent::GetManagerComp(AActor* Character)
+{
+	if (Character)
+	{
+		return Character->FindComponentByClass<UManagerComponent>();
+	}
+	
+	return nullptr;
+}
+
 void UManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	
 	URLGameInstance* GI = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
 	if (GI)
 	{
 		GI->GetManager(HealthManager, CombatManager, CurrentBuff);
-		GI->OnMoveMap.AddUObject(this, &ThisClass::SendManager);
 		ApplyBuff(CurrentBuff);
 	}
 }
@@ -72,6 +80,7 @@ void UManagerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	if (bIsBurn)
 	{
 		BurnTime += DeltaTime;
+		
 		if (BurnTime >= 1.f)
 		{
 			ApplyBurnDamage();
@@ -80,7 +89,7 @@ void UManagerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	}
 }
 
-void UManagerComponent::SendManager()
+void UManagerComponent::SendManager() const
 {
 	UE_LOG(LogTemp, Warning, TEXT("ManagerComp SendManager."));
 	URLGameInstance* GI = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
@@ -116,13 +125,27 @@ void UManagerComponent::ReceiveDamage(const FCombatManager& EnemyCombatManager, 
 	const float Result = FMath::Clamp((EnemyATK * Coefficient) * FMath::RandRange(0.9, 1.1) * (RiskReturn) * CriticalPer, 0.f, TNumericLimits<int32>::Max());
 	UpdateCurrentHP(-Result);
 
-	if (HealthManager.CurrentHP <= 0.f)
-	{
-		Dead();
-	}
+	
 }
 
-bool UManagerComponent::CheckState(uint8 State)
+void UManagerComponent::ReceiveExplodeDamage(const float Damage, AController* InstigatedBy, AActor* DamageCauser)
+{
+	//메테오 대미지 받음
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("ahhh Meteor")));
+	//대미지 처리하고. 내일 할 것, 메테오에 데칼 붙여서 바닥에 범위표시부터.
+	//그리고 meteor 함수 구현
+	//aicontroller에서 2~4초 텀으로 specialattack 호출하게 할거고
+	//그 외에는 기본공격
+	//로봇은 specialattack 함수에서 meteor 호출할거고
+	//로봇 specialattack 함수에서 타겟 위치를 알아야할것. 
+	//타겟은 aicontroller만 갖고이쓰니 specialattack에 target 을 aactor로 받든지
+	//해야할듯.
+	//InitCCStack();
+	//ApplyState(static_cast<uint8>(EState::BURN));
+}
+
+
+bool UManagerComponent::CheckState(uint8 State) const
 {
 	return CurrentState & State;
 }
@@ -130,6 +153,12 @@ bool UManagerComponent::CheckState(uint8 State)
 void UManagerComponent::ApplyState(uint8 State)
 {
 	CurrentState |= State;
+	bShouldApplyCC = true;
+	if (!Cast<APlayerCharacter>(GetOwner()))
+	{
+		URLGameInstance* GI = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
+		
+	}
 }
 
 void UManagerComponent::RemoveState(uint8 State)
@@ -137,7 +166,7 @@ void UManagerComponent::RemoveState(uint8 State)
 	CurrentState ^= State;
 }
 
-bool UManagerComponent::CheckBuff(uint8 Buff)
+bool UManagerComponent::CheckBuff(uint8 Buff) const
 {
 	return CurrentBuff & Buff;
 }
@@ -269,47 +298,6 @@ void UManagerComponent::Dead()
 	}
 }
 
-void UManagerComponent::TestDead()
-{
-	ApplyState(static_cast<uint8>(EState::DEAD));
-
-	if (Cast<ABaseCharacter>(GetOwner()))
-	{
-		Cast<ABaseCharacter>(GetOwner())->Dead();
-	}
-
-	if (Cast<APlayerCharacter>(GetOwner())) //죽은게 플레이어
-	{
-		ARLPlayerController* PC = Cast<ARLPlayerController>(Cast<APlayerCharacter>(GetOwner())->GetController());
-		if (PC)
-		{
-			PC->ShowGameOverWidget();
-		}
-	}
-	else //죽은게 몬스터
-	{
-		ARLGameStateBase* RLGameState = Cast<ARLGameStateBase>(UGameplayStatics::GetGameState(this));
-		if (RLGameState)
-		{
-			if (Cast<ABossMonsterCharacter>(GetOwner())) //죽은게 보스
-			{
-				RLGameState->KillBoss();
-				GetOwner()->Destroy();
-			}
-			else //일반 몹
-			{
-				RLGameState->KillScored();
-				GetOwner()->Destroy();
-			}
-		}
-	}
-}
-
-void UManagerComponent::TestHurt()
-{
-	UpdateCurrentHP(-10.f);
-}
-
 void UManagerComponent::ApplyPlayerElement(EElement Element)
 {
 	InitElemBuff();
@@ -351,8 +339,8 @@ void UManagerComponent::InitElemBuff()
 
 void UManagerComponent::Heal(float Rate)
 {
-	float CurrentHP = HealthManager.CurrentHP;
-	float ToAddHP = HealthManager.MaxHP * Rate * 0.01f;
+	const float CurrentHP = HealthManager.CurrentHP;
+	const float ToAddHP = HealthManager.MaxHP * Rate * 0.01f;
 	UpdateCurrentHP(CurrentHP + ToAddHP);
 }
 
@@ -372,6 +360,11 @@ void UManagerComponent::ManageStack(float DeltaTime)
 	}
 }
 
+void UManagerComponent::InitCCStack()
+{
+	CCStack = 0;
+}
+
 void UManagerComponent::CalcCC(const FCombatManager& EnemyCombatManager)
 {
 	switch (EnemyCombatManager.Element)
@@ -384,7 +377,7 @@ void UManagerComponent::CalcCC(const FCombatManager& EnemyCombatManager)
 			CCStackDuration = 0.f;
 			if (++CCStack == 4)
 			{
-				CCStack = 0;
+				InitCCStack();
 				ApplyState(static_cast<uint8>(EState::BURN));
 			}
 			break;
@@ -396,7 +389,7 @@ void UManagerComponent::CalcCC(const FCombatManager& EnemyCombatManager)
 			CCStackDuration = 0.f;
 			if (++CCStack == 4)
 			{
-				CCStack = 0;
+				InitCCStack();
 				ApplyState(static_cast<uint8>(EState::FROZEN));
 			}
 			break;
@@ -408,12 +401,11 @@ void UManagerComponent::CalcCC(const FCombatManager& EnemyCombatManager)
 			CCStackDuration = 0.f;
 			if (++CCStack == 4)
 			{
-				CCStack = 0;
+				InitCCStack();
 				ApplyState(static_cast<uint8>(EState::FEAR));
 			}
 			break;
 	}
-	bShouldApplyCC = true;
 }
 
 bool UManagerComponent::HaveAnyState() //dead가 아닌 어떠한 상태
@@ -443,26 +435,25 @@ void UManagerComponent::ApplyCC()
 
 void UManagerComponent::CancelCC()
 {
-	RemoveState(CurrentBuff);
+	RemoveState(CurrentState);
 	bIsBurn = false;
 }
 
 void UManagerComponent::ApplyBurnDamage()
 {
 	const float MinusHP = HealthManager.MaxHP * .05f;
-	HealthManager.CurrentHP = FMath::Clamp(HealthManager.CurrentHP - MinusHP, 0, HealthManager.CurrentHP);
+	UpdateCurrentHP(-MinusHP);
 }
 
-bool UManagerComponent::CanAttack()
+bool UManagerComponent::CanAttack() const
 {
 	return !CheckState(static_cast<uint8>(EState::FROZEN));
 }
 
-bool UManagerComponent::CanMove()
+bool UManagerComponent::CanMove() const
 {
 	return !CheckState(static_cast<uint8>(EState::FROZEN));
 }
-
 
 void UManagerComponent::UpdateMaxHP(float Value)
 {
@@ -474,7 +465,6 @@ void UManagerComponent::UpdateMaxHP(float Value)
 			OnUpdateCurrentHP.Broadcast(HealthManager.CurrentHP, HealthManager.MaxHP);
 		}
 	}
-	
 }
 
 void UManagerComponent::UpdateCurrentHP(float Value)
@@ -485,6 +475,10 @@ void UManagerComponent::UpdateCurrentHP(float Value)
 		if (OnUpdateCurrentHP.IsBound())
 		{
 			OnUpdateCurrentHP.Broadcast(HealthManager.CurrentHP, HealthManager.MaxHP);
+		}
+		if (HealthManager.CurrentHP <= 0.f)
+		{
+			Dead();
 		}
 	}
 }
@@ -515,7 +509,7 @@ void UManagerComponent::UpdateCurrentRange(float Value)
 
 bool UManagerComponent::IsDodge()
 {
-	float RandValue = FMath::Rand() % 100 + 1;
+	const float RandValue = FMath::Rand() % 100 + 1;
 	if (RandValue <= 10.f)
 	{
 		return true;

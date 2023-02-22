@@ -1,10 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "CharacterAnimInstance.h"
-#include "Roguelike/Character/PlayerCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+
+#include "Roguelike/Character/Player/PlayerCharacter.h"
 
 void UCharacterAnimInstance::NativeInitializeAnimation()
 {

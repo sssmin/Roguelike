@@ -10,6 +10,7 @@
 class UManagerComponent;
 class ARLPlayerController;
 
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class ROGUELIKE_API UItemComponent : public UActorComponent
 {
@@ -23,12 +24,10 @@ public:
 	bool ApplyOnceEquipItem(const UItemInfo* Item, OUT EOnceEquipItemFlag& Flag);
 	bool CheckOnceItem(uint8 Item);
 	void ItemSwap(const UItemInfo* OldItem, const UItemInfo* NewItem);
-	UFUNCTION()
-	void SelectItem(UItemInfo* Item);
 
 protected:
 	virtual void BeginPlay() override;
-
+	virtual void InitializeComponent() override;
 private:	
 	const char FIX_MAX_STACK = 10;
 
@@ -47,9 +46,12 @@ private:
 	TMap<uint8, uint8> FixMaxNum;
 	TMap<uint8, UTexture2D*> ItemIcons;
 
-
 	void SendManager();
 	void ResumeController(ARLPlayerController* RLPC);
+	UFUNCTION()
+	void SelectItem(UItemInfo* Item);
+	UFUNCTION()
+	void InitEquipItems();
 public:
 	FItemManager GetItemManager() const { return ItemManager; }
 	void SetManagerComp(UManagerComponent* Comp) { ManagerComp = Comp; }

@@ -10,7 +10,7 @@
 
 class UButton;
 class UWidgetAnimation;
-class ARLPlayerController;
+class UTexture2D;
 
 UCLASS()
 class ROGUELIKE_API UOnceItemListWidget : public UUserWidget
@@ -22,6 +22,8 @@ public:
 	void RegisterItem(UItemInfo* ItemInfo);
 	virtual void NativeConstruct() override;
 	void DeactiveItemList();
+	void InitItemList();
+
 private:
 	UPROPERTY(Meta = (BindWidget))
 	UButton* FirstItemButton;
@@ -31,25 +33,24 @@ private:
 	UWidgetAnimation* FlikerFirstItem;
 	UPROPERTY(Transient, Meta = (BindWidgetAnim))
 	UWidgetAnimation* FlikerSecondItem;
-
-	UItemInfo* FirstItem;
-	UItemInfo* SecondItem;
-	UItemInfo* TempSelectItem;
-
 	UPROPERTY()
-	ARLPlayerController* PC;
+	UItemInfo* FirstItem;
+	UPROPERTY()
+	UItemInfo* SecondItem;
+	UPROPERTY()
+	UItemInfo* TempSelectItem;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UTexture2D* OriginSlotImg;
+	
+	bool bIsActive;
 
 	UFUNCTION()
 	void FirstItemButtonClick();
 	UFUNCTION()
 	void SecondItemButtonClick();
-	void SetButtonStyle(const UItemInfo* Item, UButton* Btn);
-
-	void RestorePC();
-	void RequestItemSwap(const UItemInfo* OldItem, const UItemInfo* NewItem);
+	void SetButtonStyle(UTexture2D* Item, UButton* Btn);
 public:
-	bool ExistFirstItem() { return FirstItem != nullptr; }
-	bool ExistSecondItem() { return SecondItem != nullptr; }
+
 
 	
 };

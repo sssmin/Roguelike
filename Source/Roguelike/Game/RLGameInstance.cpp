@@ -1,29 +1,31 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "RLGameInstance.h"
+#include "Kismet/GameplayStatics.h"
+
 #include "Roguelike/Map/DFSAgrt.h"
 #include "Roguelike/PlayerController/RLPlayerController.h"
 #include "RLListenerManager.h"
 #include "RLGameStateBase.h"
-#include "Kismet/GameplayStatics.h"
 
 
 URLGameInstance::URLGameInstance()
 {
-	DFS = MakeShared<DFSAgrt>();
 	
-	Initialize();
 }
 
 void URLGameInstance::Init()
 {
 	Super::Init();
+
+	DFS = MakeShared<DFSAgrt>();
+	ListenerManager = NewObject<URLListenerManager>();
+	Initialize();
 }
 
 void URLGameInstance::NewGame()
 {
 	Initialize();
+	
 	GenerateMap();
 }
 
@@ -33,7 +35,7 @@ void URLGameInstance::Initialize()
 	StartPos = FVector::ZeroVector;
 	StartCell = 0;
 	PlayerCurrentCell = 0;
-	StageLevel = 1;
+	StageLevel = 2;
 	BossCell = 0;
 	BossPrevCell = 0;
 
@@ -44,8 +46,6 @@ void URLGameInstance::Initialize()
 
 	Buff = 0;
 	RLGameState = Cast<ARLGameStateBase>(UGameplayStatics::GetGameState(this));
-
-	
 }
 
 void URLGameInstance::GenerateMap()
@@ -193,6 +193,7 @@ void URLGameInstance::CheckEarlyDiscoveredBossCell()
 {
 	if ((TotalCellNum - 1 == ClearCount) && bIsEarlyDiscoveredBoss)
 	{
+		RLGameState = RLGameState ? RLGameState : Cast<ARLGameStateBase>(UGameplayStatics::GetGameState(this));
 		if (RLGameState)
 		{
 			RLGameState->SpawnPrevBossPortal();
@@ -210,27 +211,14 @@ void URLGameInstance::RequestMoveNextStage()
 	StageLevel++;
 	GenerateMap();
 	
-	if (OnMoveMap.IsBound())
-	{
-		OnMoveMap.Broadcast();
-	}
+	InitOnceItemDelegate.ExecuteIfBound();
 	MoveProcess(StartCell, -1);
 }
 
-void URLGameInstance::MoveNextStage()
-{
-	/*if (Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld())))
-	{
-		GetFirstLocalPlayerController(GetWorld())->ClientTravel(MapName, ETravelType::TRAVEL_Relative, true);
-	}*/
-	
-}
-
-void URLGameInstance::ClearStage()
+void URLGameInstance::ShowSelectItemWidget()
 {
 	if (Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld())))
 	{
-		Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld()))->RemoveMinimapWidget();
 		Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld()))->ShowSelectItemWidget();
 	}
 }
@@ -252,6 +240,10 @@ void URLGameInstance::Recall()
 void URLGameInstance::MoveProcess(int32 TargetCell, int32 Dir)
 {
 	Board[PlayerCurrentCell].CellState = ECellState::CLEAR;
+	if ((Board[PlayerCurrentCell].CellType == ECellType::BONUS) && !Board[PlayerCurrentCell].IsCleared)
+	{
+		Board[PlayerCurrentCell].CellState = ECellState::BONUS;
+	}
 	PlayerCurrentCell = TargetCell;
 	Board[PlayerCurrentCell].CellState = ECellState::IN_PLAYER;
 
@@ -260,15 +252,14 @@ void URLGameInstance::MoveProcess(int32 TargetCell, int32 Dir)
 		Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld()))->RemoveMinimapWidget();
 		Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld()))->SetMapInfo(MapSize, Board, PlayerCurrentCell);
 	}
-	RLGameState = RLGameState == nullptr ? Cast<ARLGameStateBase>(UGameplayStatics::GetGameState(this)) : RLGameState;
+	RLGameState = RLGameState ? RLGameState : Cast<ARLGameStateBase>(UGameplayStatics::GetGameState(this));
 	if (RLGameState)
 	{
 		RLGameState->ReconstructCuzMove(Dir, StageLevel, Board[PlayerCurrentCell]);
 	}
 }
 
-URLListenerManager* URLGameInstance::GetLisnterManager()
+URLListenerManager* URLGameInstance::GetListenerManager()
 {
-	//return ListenerManagerInstance ? ListenerManagerInstance : ListenerManagerInstance = NewObject<URLListenerManager>();
-	return URLListenerManager::Get();
+	return ListenerManager;
 }

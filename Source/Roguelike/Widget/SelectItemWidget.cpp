@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "SelectItemWidget.h"
 #include "Components/Button.h"
 #include "Components/VerticalBox.h"
 #include "Components/VerticalBoxSlot.h"
-#include "SelectItemCellWidget.h"
+#include "Kismet/GameplayStatics.h"
 
-#include "Roguelike/PlayerController/RLPlayerController.h"
+#include "SelectItemCellWidget.h"
+#include "Roguelike/Game/RLListenerManager.h"
+#include "Roguelike/Game/RLGameInstance.h"
 
 void USelectItemWidget::NativeConstruct()
 {
@@ -71,14 +71,15 @@ void USelectItemWidget::CreateCellWidget()
 
 void USelectItemWidget::F5ButtonClick()
 {
-	ARLPlayerController* PC = Cast<ARLPlayerController>(GetOwningPlayer());
-	if (PC)
+	URLGameInstance* GI = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
+	if (GI && GI->GetListenerManager())
 	{
-		PC->DeactiveOnceItemListWidget();
+		GI->GetListenerManager()->DeactiveOnceItemList();
 		if (!HaveEverPressed)
 		{
 			HaveEverPressed = true;
-			Init(PC->GetRandItem());
+			TArray<UItemInfo*> ItemInfos = GI->GetListenerManager()->GetRandItem();
+			Init(ItemInfos);
 			Refresh();
 		}
 	}
@@ -86,12 +87,10 @@ void USelectItemWidget::F5ButtonClick()
 
 void USelectItemWidget::ExitButtonClick()
 {
-	RemoveFromViewport();
-	ARLPlayerController* PC = Cast<ARLPlayerController>(GetOwningPlayer());
-	if (PC)
+	URLGameInstance* GI = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
+	if (GI && GI->GetListenerManager())
 	{
-		PC->ResumeController();
-		PC->DeactiveOnceItemListWidget();
+		GI->GetListenerManager()->RestorePC();
 	}
 }
 

@@ -1,14 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "RLGameModeBase.h"
-#include "Roguelike/Character/MonsterCharacter.h"
+#include "Kismet/GameplayStatics.h"
+
+#include "Roguelike/Character/Monster/MonsterCharacter.h"
 #include "Roguelike/Component/ManagerComponent.h"
 #include "Roguelike/Item/ElementItem.h"
 #include "Roguelike/Item/HealItem.h"
 #include "Roguelike/Actor/CellActor.h"
-#include "GameFramework/Character.h"
-#include "Kismet/GameplayStatics.h"
 
 ARLGameModeBase::ARLGameModeBase()
 {
@@ -23,7 +21,7 @@ ARLGameModeBase::ARLGameModeBase()
 void ARLGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 }
 
 void ARLGameModeBase::SpawnMob(int32 StageLevel, int32 MobCount)
@@ -34,22 +32,20 @@ void ARLGameModeBase::SpawnMob(int32 StageLevel, int32 MobCount)
 	CombatManager = SetRandomElement(StageLevel, CombatManager);
 	int32 EliteNum = MobCount / 3;
 
-	for (int32 i = 0; i < MobCount; ++i)
+	//for (int32 i = 0; i < MobCount; ++i)
+		for (int32 i = 0; i < 1; ++i)
 	{
-		TSubclassOf<AMonsterCharacter> SpawnMonsterClass;
-		if ((EliteNum > 0) && (StageLevel > 1))
-		{
-			SpawnMonsterClass = EliteMonsterClass;
-		}
-		else
-		{
-			SpawnMonsterClass = NormalMonsterClass;
-		}
+		int32 RandIndex = FMath::RandRange(0, NormalMonsterClasses.Num() - 1);
+		RandIndex = 3; //TEST
+		TSubclassOf<AMonsterCharacter> SpawnMonsterClass = NormalMonsterClasses[RandIndex];
+
 		if (GetWorld())
 		{
 			AMonsterCharacter* Mob = GetWorld()->SpawnActor<AMonsterCharacter>(SpawnMonsterClass, MobSpawnPoints[i], FRotator::ZeroRotator);
+			
 			if (Mob && Mob->GetManagerComp())
 			{
+				Mob->SpawnDefaultController();
 				if ((EliteNum-- > 0) && (StageLevel > 1))
 				{
 					Mob->SetMonsterType(EMonsterType::ELITE);
@@ -169,7 +165,6 @@ FCombatManager& ARLGameModeBase::SetRandomElement(int32 StageLevel, FCombatManag
 	return CombatManager;
 }
 
-
 void ARLGameModeBase::SpawnCounterElementItem(EElement Element)
 {
 	EElement ItemElement = EElement::NONE;
@@ -248,13 +243,13 @@ TArray<UItemInfo*> ARLGameModeBase::CreateRandItem()
 				{
 					if (SelectedItem[0]->ItemName != (Items[Rand]->ItemName))
 					{
-						NewItemInfo = UItemInfo::ConstructItemInfo(Items[Rand]->ItemType, Items[Rand]->DetailType, Items[Rand]->ItemName, Items[Rand]->ItemDesc, Items[Rand]->ItemIcon);
+						NewItemInfo = UItemInfo::ConstructItemInfo(Items[Rand]->ItemsType, Items[Rand]->DetailType, Items[Rand]->ItemName, Items[Rand]->ItemDesc, Items[Rand]->ItemIcon);
 						SelectedItem.Add(NewItemInfo);
 						break;
 					}
 					continue;
 				}
-				NewItemInfo = UItemInfo::ConstructItemInfo(Items[Rand]->ItemType, Items[Rand]->DetailType, Items[Rand]->ItemName, Items[Rand]->ItemDesc, Items[Rand]->ItemIcon);
+				NewItemInfo = UItemInfo::ConstructItemInfo(Items[Rand]->ItemsType, Items[Rand]->DetailType, Items[Rand]->ItemName, Items[Rand]->ItemDesc, Items[Rand]->ItemIcon);
 				SelectedItem.Add(NewItemInfo);
 			}
 		}

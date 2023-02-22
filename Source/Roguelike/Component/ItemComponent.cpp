@@ -1,21 +1,29 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "ItemComponent.h"
+#include "Kismet/GameplayStatics.h"
+
 #include "ManagerComponent.h"
 #include "Roguelike/Game/RLGameInstance.h"
 #include "Roguelike/PlayerController/RLPlayerController.h"
 #include "Roguelike/Game/RLListenerManager.h"
-#include "Kismet/GameplayStatics.h"
+
 
 UItemComponent::UItemComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+	bWantsInitializeComponent = true;
 
 	ItemManager = FItemManager();
 	IncreaseAtkValue = 3.f;
 	IncreaseMaxHpValue = 15.f;
 
+}
+
+void UItemComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+
+	
 }
 
 void UItemComponent::BeginPlay()
@@ -26,9 +34,8 @@ void UItemComponent::BeginPlay()
 	if (GI)
 	{
 		GI->GetManager(ItemManager, FixMaxNum);
-		GI->OnMoveMap.AddUObject(this, &ThisClass::SendManager);
-		//아이템 적용
-		URLGameInstance::GetLisnterManager()->OnSelectItem.AddDynamic(this, &ThisClass::SelectItem);
+		GI->InitOnceItemDelegate.BindUObject(this, &ThisClass::InitEquipItems);
+		GI->GetListenerManager()->OnSelectItemDelegate.BindUObject(this, &ThisClass::SelectItem);
 	}
 }
 
@@ -178,11 +185,9 @@ void UItemComponent::SendManager()
 
 void UItemComponent::ResumeController(ARLPlayerController* RLPC)
 {
-	if (RLPC)
-	{
-		RLPC->RemoveSelectWidget();
-		RLPC->ResumeController();
-	}
+	check(RLPC);
+	RLPC->RemoveSelectWidget();
+	RLPC->ResumeController();
 }
 
 void UItemComponent::SelectItem(UItemInfo* Item)
@@ -192,7 +197,7 @@ void UItemComponent::SelectItem(UItemInfo* Item)
 	checkf(Item, TEXT("Item is nullptr"));
 
 	RLPC->DeactiveOnceItemListWidget();
-	switch (Item->ItemType)
+	switch (Item->ItemsType)
 	{
 		case EItemType::INF_STACK_ITEM:
 		{
@@ -235,5 +240,16 @@ void UItemComponent::SelectItem(UItemInfo* Item)
 			}
 			break;
 		}
+	}
+}
+
+void UItemComponent::InitEquipItems()
+{
+	ItemManager.OnceEquippedItem = 0;
+	ItemManager.EquippedItemCount = 0;
+	ARLPlayerController* RLPC = Cast<ARLPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+	if (RLPC)
+	{
+		RLPC->InitOnceItemWidget();
 	}
 }

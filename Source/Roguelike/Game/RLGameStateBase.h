@@ -8,7 +8,7 @@
 #include "RLGameStateBase.generated.h"
 
 class ARLGameModeBase;
-
+class URLGameInstance;
 
 
 UCLASS()
@@ -38,13 +38,14 @@ private:
 
 	UPROPERTY()
 	ARLGameModeBase* RLGameMode;
+	UPROPERTY()
+	URLGameInstance* RLGameInst;
 
 	void ClearThisCell();
 	void SetObjective();
 	void CreateCenterPortal();
 	void CreateSidePortal();
 public:
-	void TestKillScored();
 	void SetCellInfo(const FCell& Info) { CellInfo = Info;  }
 	
 };

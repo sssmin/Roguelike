@@ -22,31 +22,9 @@ class ROGUELIKE_API UCombatComponent : public UActorComponent
 public:	
 	UCombatComponent();
 	virtual void BeginPlay() override;
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	void ReadyToFire(bool bPressed);
+	virtual void ReadyToFire(bool bPressed);
+
 	FGetCombatManager GetCombatManager;
 	FGetItemManager GetItemManager;
-
-	bool HaveItem(const FItemManager& Manager, EOnceEquippedItem ItemType);
-private:
-	TSubclassOf<ABaseProjectile> ProjectileClass;
-	UFUNCTION()
-	void Fire(const FCombatManager& CombatManager, const FItemManager& ItemManager);
-	UFUNCTION()
-	void MultishotFire(const FCombatManager& CombatManager, const FItemManager& ItemManager);
-	void Fire(const FCombatManager& CombatManager);
-	FTimerHandle MultiShotTimerHandle;
-	float MutliShotTime;
-
-	bool bFireCooldown;
-	bool bAttackPressed;
-	float Delay;
-
-	void StartFireTimer();
-	FTimerHandle FireTimerHandle;
-	void FireTimerFinished();
-public:	
-	void SetProjectileClass(TSubclassOf<ABaseProjectile> Class) { ProjectileClass = Class;  }
 	
-		
 };

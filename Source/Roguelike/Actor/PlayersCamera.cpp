@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "PlayersCamera.h"
 #include "Camera/CameraComponent.h"
-#include "Roguelike/Character/PlayerCharacter.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
+
+#include "Roguelike/Character/Player/PlayerCharacter.h"
+
 
 APlayersCamera::APlayersCamera()
 {

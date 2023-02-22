@@ -1,8 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "RLPlayerController.h"
 #include "Blueprint/UserWidget.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Particles/ParticleSystemComponent.h"
+
 #include "Roguelike/Game/RLGameInstance.h"
 #include "Roguelike/Game/RLGameModeBase.h"
 #include "Roguelike/Widget/MinimapWidget.h"
@@ -11,10 +13,8 @@
 #include "Roguelike/Widget/NoticeWidget.h"
 #include "Roguelike/Widget/RecallBarWidget.h"
 #include "Roguelike/Actor/PlayersCamera.h"
-#include "Roguelike/Character/PlayerCharacter.h"
-#include "Kismet/GameplayStatics.h"
-#include "Kismet/KismetMathLibrary.h"
-#include "Particles/ParticleSystemComponent.h"
+#include "Roguelike/Character/Player/PlayerCharacter.h"
+#include "Roguelike/Game/RLListenerManager.h"
 
 
 void ARLPlayerController::SetupInputComponent()
@@ -33,6 +33,14 @@ void ARLPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
+	URLGameInstance* GI = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
+	if (GI && GI->GetListenerManager())
+	{
+		GI->GetListenerManager()->RestorePCDelegate.BindUObject(this, &ThisClass::RestorePC);
+		GI->GetListenerManager()->RequestItemSwapDelegate.BindUObject(this, &ThisClass::RequestItemSwap);
+		GI->GetListenerManager()->DeactiveOnceItemListDel.BindUObject(this, &ThisClass::DeactiveOnceItemListWidget);
+		GI->GetListenerManager()->GetRandItemDelegate.BindUObject(this, &ThisClass::GetRandItem);
+	}
 }
 
 void ARLPlayerController::Init()
@@ -42,6 +50,7 @@ void ARLPlayerController::Init()
 	FTransform SpawnTransform = FTransform(FRotator::ZeroRotator, GetPawn()->GetActorLocation(), FVector(1.f, 1.f, 1.f));
 	FActorSpawnParameters Params;
 	Params.Owner = GetPawn();
+	PlayerCharacter = Cast<APlayerCharacter>(GetPawn());
 	if (PlayersCameraClass && GetWorld())
 	{
 		CurrentPlayersCamera = GetWorld()->SpawnActor<APlayersCamera>(PlayersCameraClass, SpawnTransform, Params);
@@ -50,7 +59,6 @@ void ARLPlayerController::Init()
 			SetViewTargetWithBlend(CurrentPlayersCamera, 0.5f);
 		}
 	}
-	PlayerCharacter = Cast<APlayerCharacter>(GetPawn());
 
 	if (MainUIWidgetClass)
 	{
@@ -62,6 +70,7 @@ void ARLPlayerController::Init()
 		}
 	}
 	SetActorTickEnabled(true);
+	
 }
 
 void ARLPlayerController::PlayerTick(float DeltaTime)
@@ -197,7 +206,7 @@ void ARLPlayerController::ShowGameOverWidget()
 		if (GameOverWidget)
 		{
 			FInputModeUIOnly InputModeData;
-			InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::LockInFullscreen);
+			//InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::LockInFullscreen);
 			SetInputMode(InputModeData);
 			
 			GameOverWidget->AddToViewport();
@@ -260,7 +269,7 @@ void ARLPlayerController::LookAtCursor()
 void ARLPlayerController::ResumeController()
 {
 	FInputModeGameAndUI InputModeData;
-	InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::LockInFullscreen);
+	//InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::LockInFullscreen);
 	SetInputMode(InputModeData);
 	SetActorTickEnabled(true);
 }
@@ -370,4 +379,19 @@ void ARLPlayerController::RecallEnd()
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RecallEndParticle, GetPawn()->GetActorTransform());
 	}
+}
+
+void ARLPlayerController::InitOnceItemWidget()
+{
+	if (MainUIWidget)
+	{
+		MainUIWidget->InitOnceItemList();
+	}
+}
+
+void ARLPlayerController::RestorePC()
+{
+	ResumeController();
+	RemoveSelectWidget();
+	DeactiveOnceItemListWidget();
 }

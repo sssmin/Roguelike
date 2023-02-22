@@ -26,14 +26,17 @@ class ROGUELIKE_API ARLPlayerController : public APlayerController
 	GENERATED_BODY()
 public:
 	/* widget */
+	UFUNCTION()
+	void DeactiveOnceItemListWidget();
 	void RemoveMinimapWidget();
 	void ShowNoticeWidget(const FString& Notice);
 	void ShowGameOverWidget();
 	void ShowSelectItemWidget();
 	void ActiveOnceItemListWidget(UItemInfo* SelectItem) const;
-	void DeactiveOnceItemListWidget();
 	void RemoveSelectWidget();
 	void MoveMapFade();
+	void InitOnceItemWidget();
+	
 
 	UFUNCTION(BlueprintCallable)
 	void Init();
@@ -46,7 +49,9 @@ public:
 	void StopFire();
 	
 	void RegisterItemEmptySlot(UItemInfo* Item) const;
+	UFUNCTION()
 	void RequestItemSwap(const UItemInfo* OldItem, const UItemInfo* NewItem);
+	UFUNCTION()
 	TArray<UItemInfo*> GetRandItem();
 
 	void RecallStart();
@@ -113,6 +118,9 @@ private:
 	void RecallTimerFinished();
 	void RecallCancel();
 	void RecallEnd();
+
+	UFUNCTION()
+	void RestorePC();
 
 public:
 	

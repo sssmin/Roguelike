@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "RLGameStateBase.h"
+#include "Kismet/GameplayStatics.h"
+
 #include "RLGameInstance.h"
 #include "RLGameModeBase.h"
-#include "Kismet/GameplayStatics.h"
+
 
 ARLGameStateBase::ARLGameStateBase()
 {
@@ -21,17 +21,15 @@ void ARLGameStateBase::BeginPlay()
 void ARLGameStateBase::Init()
 {
 	RLGameMode = Cast<ARLGameModeBase>(UGameplayStatics::GetGameMode(this));
-	if (GetWorld())
-	{
-		URLGameInstance* RLGameInstance = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-		if (RLGameInstance)
-		{
-			StageLevel = RLGameInstance->GetStageLevel();
-			CellInfo = RLGameInstance->GetCellInfo();
-			RLGameMode->SpawnCell(CellInfo.CellClass, CellInfo.TempWall);
-			SetObjective();
-		}
-	}
+	RLGameInst = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
+	check(RLGameMode);
+	check(RLGameInst);
+	
+	StageLevel = RLGameInst->GetStageLevel();
+	CellInfo = RLGameInst->GetCellInfo();
+	RLGameMode->SpawnCell(CellInfo.CellClass, CellInfo.TempWall);
+	SetObjective();
+	
 }
 
 void ARLGameStateBase::ReconstructCuzMove(int32 Dir, int32 Level, const FCell& Info)
@@ -44,39 +42,42 @@ void ARLGameStateBase::ReconstructCuzMove(int32 Dir, int32 Level, const FCell& I
 
 void ARLGameStateBase::SpawnCell(int32 Dir)
 {
-	if (RLGameMode)
-	{
-		RLGameMode->SpawnCell(CellInfo.CellClass, CellInfo.TempWall, Dir);
-	}
+	check(RLGameMode);
+	RLGameMode->SpawnCell(CellInfo.CellClass, CellInfo.TempWall, Dir);
 }
 
 
 void ARLGameStateBase::SetObjective()
 {
 	CurrentNum = 0;
+
+	check(RLGameInst);
+	check(RLGameMode);
 	if (CellInfo.IsCleared)
 	{
 		CreateSidePortal();
 	}
 	else
 	{
-		if (RLGameMode)
+		switch (CellInfo.CellType)
 		{
-			switch (CellInfo.CellType)
+		case ECellType::MOBS:
+			ObjectiveNum = FMath::RandRange(4, 6);
+			RLGameMode->SpawnMob(StageLevel, ObjectiveNum);
+			break;
+		case ECellType::BOSS:
+			ObjectiveNum = 1;
+			RLGameMode->SpawnBoss(StageLevel);
+			break;
+		case ECellType::BONUS:
+			RLGameMode->SpawnHealItem();
+			if (!CellInfo.SelectedBonusItem)
 			{
-			case ECellType::MOBS:
-				ObjectiveNum = FMath::RandRange(4, 6);
-				RLGameMode->SpawnMob(StageLevel, ObjectiveNum);
-				break;
-			case ECellType::BOSS:
-				ObjectiveNum = 1;
-				RLGameMode->SpawnBoss(StageLevel);
-				break;
-			case ECellType::BONUS:
-				RLGameMode->SpawnHealItem();
-				CreateSidePortal();
-				break;
+				RLGameInst->SetSelectedBonusItem(true);
+				RLGameInst->ShowSelectItemWidget();
 			}
+			CreateSidePortal();
+			break;
 		}
 	}
 }
@@ -84,12 +85,8 @@ void ARLGameStateBase::SetObjective()
 void ARLGameStateBase::KillBoss()
 {
 	CreateCenterPortal();
-	URLGameInstance* RLGameInstance = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	
-	if (RLGameInstance)
-	{
-		RLGameInstance->ClearStage();
-	}
+	check(RLGameInst);
+	RLGameInst->ShowSelectItemWidget();
 }
 
 void ARLGameStateBase::KillScored()
@@ -103,57 +100,30 @@ void ARLGameStateBase::KillScored()
 
 void ARLGameStateBase::ClearThisCell() //어떠한 조건으로 클리어 했을 때
 {
-	if (GetWorld())
-	{
-		URLGameInstance* RLGameInstance = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-		if (RLGameInstance)
-		{
-			RLGameInstance->ClearThisCell();
-		}
-	}
+	check(RLGameInst);
+	RLGameInst->ClearThisCell();
 }
 
 void ARLGameStateBase::AteHealThisCell()
 {
-	if (GetWorld())
-	{
-		URLGameInstance* RLGameInstance = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-		if (RLGameInstance)
-		{
-			RLGameInstance->AteHealThisCell();
-		}
-	}
-}
-
-void ARLGameStateBase::TestKillScored()
-{
-	if (++CurrentNum == ObjectiveNum)
-	{
-		ClearThisCell();
-		CreateSidePortal();
-	}
+	check(RLGameInst);
+	RLGameInst->AteHealThisCell();
 }
 
 void ARLGameStateBase::CreateSidePortal()
 {
-	if (RLGameMode)
-	{
-		RLGameMode->CreateSidePortal();
-	}
+	check(RLGameMode);
+	RLGameMode->CreateSidePortal();
 }
 
 void ARLGameStateBase::CreateCenterPortal()
 {
-	if (RLGameMode)
-	{
-		RLGameMode->CreateCenterPortal();
-	}
+	check(RLGameMode);
+	RLGameMode->CreateCenterPortal();
 }
 
 void ARLGameStateBase::SpawnPrevBossPortal()
 {
-	if (RLGameMode)
-	{
-		RLGameMode->CreatePrevBossPortal();
-	}
+	check(RLGameMode);
+	RLGameMode->CreatePrevBossPortal();
 }

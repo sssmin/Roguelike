@@ -1,12 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "PortalComponent.h"
 #include "Components/SphereComponent.h"
-#include "Roguelike/Actor/PortalActor.h"
-#include "Roguelike/Game/RLGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/ArrowComponent.h"
+
+#include "Roguelike/Actor/PortalActor.h"
+#include "Roguelike/Game/RLGameInstance.h"
+
 
 UPortalComponent::UPortalComponent()
 {

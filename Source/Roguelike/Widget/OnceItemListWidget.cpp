@@ -1,9 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "OnceItemListWidget.h"
 #include "Components/Button.h"
-#include "Roguelike/PlayerController/RLPlayerController.h"
+
+#include "Roguelike/Game/RLListenerManager.h"
+#include "Roguelike/Game/RLGameInstance.h"
+#include "Kismet/GameplayStatics.h"
 
 void UOnceItemListWidget::NativeConstruct()
 {
@@ -16,12 +17,13 @@ void UOnceItemListWidget::NativeConstruct()
 	}
 	bIsEnabled = false;
 
-	PC = Cast<ARLPlayerController>(GetOwningPlayer());
-	
+	bIsActive = false;
 }
 
 void UOnceItemListWidget::ItemListAnimPlay(UItemInfo* ItemInfo)
 {
+	if (bIsActive) return;
+	bIsActive = true;
 	TempSelectItem = ItemInfo;
 
 	if (FlikerFirstItem && FlikerSecondItem && FirstItemButton && SecondItemButton)
@@ -32,7 +34,6 @@ void UOnceItemListWidget::ItemListAnimPlay(UItemInfo* ItemInfo)
 		PlayAnimation(FlikerFirstItem, 0.f, 0);
 		PlayAnimation(FlikerSecondItem, 0.f, 0);
 	}
-	
 }
 
 void UOnceItemListWidget::RegisterItem(UItemInfo* ItemInfo)
@@ -43,7 +44,7 @@ void UOnceItemListWidget::RegisterItem(UItemInfo* ItemInfo)
 	
 		if (FirstItemButton && FirstItem)
 		{
-			SetButtonStyle(FirstItem, FirstItemButton);
+			SetButtonStyle(FirstItem->ItemIcon, FirstItemButton);
 		}
 	}
 	else
@@ -51,20 +52,20 @@ void UOnceItemListWidget::RegisterItem(UItemInfo* ItemInfo)
 		SecondItem = ItemInfo;
 		if (SecondItemButton && SecondItem)
 		{
-			SetButtonStyle(SecondItem, SecondItemButton);
+			SetButtonStyle(SecondItem->ItemIcon, SecondItemButton);
 		}
 	}
 }
 
-void UOnceItemListWidget::SetButtonStyle(const UItemInfo* Item, UButton* Btn)
+void UOnceItemListWidget::SetButtonStyle(UTexture2D* ItemIcon, UButton* Btn)
 {	
 	FButtonStyle ButtonStyle;
-	ButtonStyle.Normal.SetResourceObject(Item->ItemIcon);
+	ButtonStyle.Normal.SetResourceObject(ItemIcon);
 	ButtonStyle.Normal.SetImageSize(FVector2D(256.f, 256.f));
-	ButtonStyle.Hovered.SetResourceObject(Item->ItemIcon);
+	ButtonStyle.Hovered.SetResourceObject(ItemIcon);
 	ButtonStyle.Hovered.TintColor = FSlateColor(FLinearColor(1.f, 1.f, 1.f, 0.5f));
 	ButtonStyle.Hovered.SetImageSize(FVector2D(256.f, 256.f));
-	ButtonStyle.Pressed.SetResourceObject(Item->ItemIcon);
+	ButtonStyle.Pressed.SetResourceObject(ItemIcon);
 	ButtonStyle.Pressed.TintColor = FSlateColor(FLinearColor(0.1f, 0.1f, 0.1f, 0.9f));
 	ButtonStyle.Pressed.SetImageSize(FVector2D(256.f, 256.f));
 	Btn->SetStyle(ButtonStyle);
@@ -74,11 +75,15 @@ void UOnceItemListWidget::FirstItemButtonClick()
 {
 	if (FirstItemButton && FirstItem && TempSelectItem)
 	{
-		RequestItemSwap(FirstItem, TempSelectItem);
-		FirstItem = TempSelectItem;
-		SetButtonStyle(FirstItem, FirstItemButton);
-		DeactiveItemList();                        
-		RestorePC();
+		URLGameInstance* GI = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
+		if (GI && GI->GetListenerManager())
+		{
+			GI->GetListenerManager()->RequestItemSwap(SecondItem, TempSelectItem);
+			FirstItem = TempSelectItem;
+			SetButtonStyle(FirstItem->ItemIcon, FirstItemButton);
+			DeactiveItemList();
+			GI->GetListenerManager()->RestorePC();
+		}
 	}
 }
 
@@ -86,16 +91,22 @@ void UOnceItemListWidget::SecondItemButtonClick()
 {
 	if (SecondItemButton && SecondItem && TempSelectItem)
 	{
-		RequestItemSwap(SecondItem, TempSelectItem);
-		SecondItem = TempSelectItem;
-		SetButtonStyle(SecondItem, SecondItemButton);
-		DeactiveItemList();
-		RestorePC();
+		URLGameInstance* GI = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
+		if (GI && GI->GetListenerManager())
+		{
+			GI->GetListenerManager()->RequestItemSwap(SecondItem, TempSelectItem);
+			SecondItem = TempSelectItem;
+			SetButtonStyle(SecondItem->ItemIcon, SecondItemButton);
+			DeactiveItemList();
+			GI->GetListenerManager()->RestorePC();
+		}
 	}
 }
 
 void UOnceItemListWidget::DeactiveItemList()
 {
+	if (!bIsActive) return;
+	bIsActive = false;
 	FirstItemButton->SetIsEnabled(false);
 	SecondItemButton->SetIsEnabled(false);
 
@@ -105,19 +116,13 @@ void UOnceItemListWidget::DeactiveItemList()
 	TempSelectItem = nullptr;
 }
 
-void UOnceItemListWidget::RestorePC()
+void UOnceItemListWidget::InitItemList()
 {
-	if (PC)
-	{
-		PC->RemoveSelectWidget();
-		PC->ResumeController();
-	}
-}
+	FirstItem = nullptr;
+	SecondItem = nullptr;
+	TempSelectItem = nullptr;
 
-void UOnceItemListWidget::RequestItemSwap(const UItemInfo* OldItem, const UItemInfo* NewItem)
-{
-	if (PC)
-	{
-		PC->RequestItemSwap(OldItem, NewItem);
-	}
+	
+	SetButtonStyle(OriginSlotImg, FirstItemButton);
+	SetButtonStyle(OriginSlotImg, SecondItemButton);
 }

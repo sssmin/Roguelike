@@ -1,28 +1,28 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "RLListenerManager.h"
 
-URLListenerManager* URLListenerManager::ListenerInstance = nullptr;
-
-URLListenerManager::URLListenerManager()
-{
-}
-
-URLListenerManager::~URLListenerManager()
-{
-}
-
-URLListenerManager* URLListenerManager::Get()
-{
-	return ListenerInstance ? ListenerInstance : ListenerInstance = NewObject<URLListenerManager>();
-}
 
 void URLListenerManager::SelectItem(UItemInfo* ItemInfo) const
 {
-	if (OnSelectItem.IsBound())
-	{
-		OnSelectItem.Broadcast(ItemInfo);
-	}
+	OnSelectItemDelegate.ExecuteIfBound(ItemInfo);
 }
 
+void URLListenerManager::RestorePC()
+{
+	RestorePCDelegate.ExecuteIfBound();
+}
+
+void URLListenerManager::RequestItemSwap(const UItemInfo* OldItem, const UItemInfo* NewItem)
+{
+	RequestItemSwapDelegate.ExecuteIfBound(OldItem, NewItem);
+}
+
+void URLListenerManager::DeactiveOnceItemList()
+{
+	DeactiveOnceItemListDel.ExecuteIfBound();
+}
+
+TArray<UItemInfo*> URLListenerManager::GetRandItem() const
+{
+	return GetRandItemDelegate.Execute();
+}

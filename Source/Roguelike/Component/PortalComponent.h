@@ -14,10 +14,10 @@ USTRUCT()
 struct FPortalInfo
 {
 	GENERATED_BODY()
-	FPortalInfo() {}
+	FPortalInfo() : Dir(0), Portal(nullptr) {}
 	FPortalInfo(int32 InDir, APortalActor* InPortal) : Dir(InDir), Portal(InPortal) {}
 
-	int32 Dir = 0;
+	int32 Dir;
 	UPROPERTY()
 	APortalActor* Portal;
 };

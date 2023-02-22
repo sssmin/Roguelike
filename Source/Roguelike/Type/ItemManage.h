@@ -41,6 +41,7 @@ enum class EOnceEquippedItem : uint8
 	RISK_RETURN = 1 << 0,
 	MULTI_SHOT = 1 << 1,
 	DODGE = 1 << 2,
+	TRIPLE = 1 << 3,
 
 	MAX
 };
@@ -50,6 +51,10 @@ USTRUCT(BlueprintType)
 struct FItemType
 {
 	GENERATED_BODY()
+	FItemType():
+		INFStackItem(EINFStackItem::NONE), 
+		FixMaxStackItem(EFixMaxStackItem::NONE),
+		OnceEquipItem(EOnceEquippedItem::DEFAULT) {}
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EINFStackItem INFStackItem;
@@ -78,9 +83,14 @@ class UItemInfo : public UObject
 {
 	GENERATED_BODY()
 public:
-	UItemInfo() {}
+	UItemInfo() :
+		ItemsType(EItemType::NONE),
+		DetailType(FItemType()),
+		ItemName(FString()),
+		ItemDesc(FString()),
+		ItemIcon(nullptr) {}
 	
-	EItemType ItemType;
+	EItemType ItemsType;
 
 	FItemType DetailType;
 
@@ -101,7 +111,7 @@ public:
 private:
 	void Init(EItemType InItemType, FItemType InDetailType, FString InItemName, FString InItemDesc, UTexture2D* InItemIcon)
 	{
-		ItemType = InItemType;
+		ItemsType = InItemType;
 		DetailType = InDetailType;
 		ItemName = InItemName;
 		ItemDesc = InItemDesc;
@@ -115,9 +125,15 @@ USTRUCT(BlueprintType)
 struct FItemInfoTable : public FTableRowBase
 {
 	GENERATED_BODY()
+		FItemInfoTable() :
+		ItemsType(EItemType::NONE), 
+		DetailType(FItemType()),
+		ItemName(FString()),
+		ItemDesc(FString()),
+		ItemIcon(nullptr) {}
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	EItemType ItemType;
+	EItemType ItemsType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FItemType DetailType;

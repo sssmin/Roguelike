@@ -1,6 +1,4 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "SelectItemCellWidget.h"
 #include "Components/Button.h"
 #include "Components/Image.h"
@@ -8,8 +6,9 @@
 #include "Styling/SlateTypes.h"
 #include "Styling/SlateBrush.h"
 
-#include "Roguelike/Game/RLGameInstance.h"
 #include "Roguelike/Game/RLListenerManager.h"
+#include "Roguelike/Game/RLGameInstance.h"
+#include "Kismet/GameplayStatics.h"
 
 
 void USelectItemCellWidget::Init(UItemInfo* Item)
@@ -37,5 +36,9 @@ void USelectItemCellWidget::Init(UItemInfo* Item)
 
 void USelectItemCellWidget::SelectItem()
 {
-	URLGameInstance::GetLisnterManager()->SelectItem(ItemInfo);
+	URLGameInstance* GI = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
+	if (GI && GI->GetListenerManager())
+	{
+		GI->GetListenerManager()->SelectItem(ItemInfo);
+	}
 }

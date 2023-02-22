@@ -1,12 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "BaseProjectile.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Roguelike/Character/MonsterCharacter.h"
-#include "Roguelike/Character/PlayerCharacter.h"
+
+#include "Roguelike/Character/Monster/MonsterCharacter.h"
+#include "Roguelike/Character/Player/PlayerCharacter.h"
+#include "Roguelike/Type/MonsterInterface.h"
 
 ABaseProjectile::ABaseProjectile()
 {
@@ -17,10 +17,11 @@ ABaseProjectile::ABaseProjectile()
 	Sphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	Sphere->SetCollisionObjectType(ECC_Projectile);
 	Sphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	Sphere->SetCollisionResponseToChannel(ECC_CharacterBlockProjectile, ECollisionResponse::ECR_Block);
-	Sphere->SetCollisionResponseToChannel(ECC_WallBlockProjectile, ECollisionResponse::ECR_Block);
-	Sphere->SetCollisionResponseToChannel(ECC_WorldStatic, ECollisionResponse::ECR_Block);
+	Sphere->SetCollisionResponseToChannel(ECC_CharacterBlockProjectile, ECollisionResponse::ECR_Overlap);
+	Sphere->SetCollisionResponseToChannel(ECC_WallBlockProjectile, ECollisionResponse::ECR_Overlap);
+	Sphere->SetCollisionResponseToChannel(ECC_WorldStatic, ECollisionResponse::ECR_Overlap);
 	Sphere->SetSphereRadius(64.f);
+	Sphere->SetGenerateOverlapEvents(true);
 
 	PMC = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("PMC"));
 	if (PMC)
@@ -40,46 +41,12 @@ void ABaseProjectile::BeginPlay()
 	Super::BeginPlay();
 
 	StartLocation = GetActorLocation();
-	
-	if (!ProjectileParticles.IsEmpty())
-	{
-		switch (CombatManager.Element)
-		{
-			case EElement::NONE:
-				Particle = ProjectileParticles[0];
-				break;
-			case EElement::FIRE:
-				Particle = ProjectileParticles[1];
-				break;
-			case EElement::WATER:
-				Particle = ProjectileParticles[2];
-				break;
-			case EElement::EARTH:
-				Particle = ProjectileParticles[3];
-				break;
-			case EElement::DARKNESS:
-				Particle = ProjectileParticles[4];
-				break;
-			case EElement::LIGHT:
-				Particle = ProjectileParticles[5];
-				break;
-		}
-		if (Particle)
-		{
-			UGameplayStatics::SpawnEmitterAttached(
-				Particle,
-				RootComponent,
-				NAME_None,
-				GetActorLocation(),
-				GetActorRotation(),
-				EAttachLocation::KeepWorldPosition);
-		}
-	}
+	SetActorTickEnabled(false);
 
 	if (Sphere)
 	{
-		Sphere->OnComponentHit.AddDynamic(this, &ThisClass::OnHit);
-	}	
+		Sphere->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnHit);
+	}
 }
 
 void ABaseProjectile::Tick(float DeltaTime)
@@ -102,19 +69,30 @@ void ABaseProjectile::SetVelocity(const FVector& Dir)
 	}
 }
 
-void ABaseProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void ABaseProjectile::SetRange(float InRange)
 {
-	if (OtherActor && Cast<ABaseCharacter>(OtherActor) && (OtherActor != GetOwner()))
-	{
-		Cast<ABaseCharacter>(OtherActor)->OnHit(GetOwner(), CombatManager, ItemManager);
-		CheckAttackerBeHealed(OtherActor, Cast<APlayerCharacter>(GetOwner()));
-		PlayHitEffect();
-	}
-	else
-	{
-		PlayDestroyEffect();
-	}
+	SetActorTickEnabled(true);
+	Range = InRange;
+}
 
+void ABaseProjectile::OnHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor)
+	{
+		if (OtherActor == GetOwner()) return;
+		if (OtherActor->Implements<UMonsterInterface>() && GetOwner()->Implements<UMonsterInterface>()) return;
+
+		if (Cast<ABaseCharacter>(OtherActor)) //맞은게 상대
+		{
+			Cast<ABaseCharacter>(OtherActor)->OnHit(GetOwner(), CombatManager, ItemManager);
+			CheckAttackerBeHealed(OtherActor, Cast<APlayerCharacter>(GetOwner()));
+			PlayHitEffect();
+		}
+		else if (OtherActor != GetOwner()) //나 아닌 다른 무언가
+		{
+			PlayDestroyEffect();
+		}
+	}
 }
 
 void ABaseProjectile::PlayHitEffect()
@@ -131,6 +109,10 @@ void ABaseProjectile::PlayDestroyEffect()
 
 void ABaseProjectile::Destroyed()
 {
+	if (HitParticle)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitParticle, GetActorTransform());
+	}
 
 }
 
@@ -143,4 +125,25 @@ void ABaseProjectile::CheckAttackerBeHealed(AActor* Other, APlayerCharacter* Pla
 			Player->HealByHit();
 		}
 	}
+}
+
+void ABaseProjectile::SetCombatManage(const FCombatManager& InManager)
+{
+	CombatManager = InManager;
+	SetParticle();
+}
+
+void ABaseProjectile::SetParticle()
+{
+	if (ProjectileParticle)
+	{
+		UGameplayStatics::SpawnEmitterAttached(
+			ProjectileParticle,
+			RootComponent,
+			NAME_None,
+			GetActorLocation(),
+			GetActorRotation(),
+			EAttachLocation::KeepWorldPosition);
+	}
+
 }

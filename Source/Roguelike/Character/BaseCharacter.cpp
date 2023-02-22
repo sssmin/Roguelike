@@ -1,31 +1,24 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "BaseCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Roguelike/Component/CombatComponent.h"
-#include "Roguelike/Component/ManagerComponent.h"
-#include "Roguelike/Projectile/BaseProjectile.h"
 
+#include "Roguelike/Component/ManagerComponent.h"
 
 ABaseCharacter::ABaseCharacter()
 {
-	CombatComponent = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComp"));
 	ManagerComponent = CreateDefaultSubobject<UManagerComponent>(TEXT("ManagerComp"));
 
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	GetMesh()->SetCollisionProfileName(TEXT("CharacterBlockProjectile"));
+	GetMesh()->SetGenerateOverlapEvents(true);
 }
 
 void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	if (CombatComponent && ProjectileClass)
-	{
-		CombatComponent->SetProjectileClass(ProjectileClass);
-		CombatComponent->GetCombatManager.BindUObject(this, &ThisClass::GetCombatManager);
-	}
+
+	OnTakeRadialDamage.AddDynamic(this, &ThisClass::ReceiveDamage);
 }
 
 void ABaseCharacter::Tick(float DeltaTime)
@@ -34,10 +27,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 
 void ABaseCharacter::Attack()
 {
-	if (CombatComponent)
-	{
-		CombatComponent->ReadyToFire(true);
-	}
+	
 }
 
 void ABaseCharacter::OnHit(AActor* Attacker, const FCombatManager& EnemyCombatManager, const FItemManager& EnemyItemManager)
@@ -57,6 +47,12 @@ FCombatManager ABaseCharacter::GetCombatManager() const
 	return FCombatManager();
 }
 
+void ABaseCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, FVector Origin, FHitResult HitInfo, AController* InstigatedBy, AActor* DamageCauser)
+{
+	check(ManagerComponent);
+
+	ManagerComponent->ReceiveExplodeDamage(Damage, InstigatedBy, DamageCauser);
+}
 
 void ABaseCharacter::Dead()
 {

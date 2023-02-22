@@ -7,13 +7,15 @@
 #include "Roguelike/Type/DFSInterface.h"
 #include "Roguelike/Type/StatManage.h"
 #include "Roguelike/Type/ItemManage.h"
+#include "Roguelike/Game/RLListenerManager.h"
 #include "RLGameInstance.generated.h"
 
 class DFSAgrt;
 class ARLGameStateBase;
-class URLListenerManager;
+class ARLGameModeBase;
 
-DECLARE_MULTICAST_DELEGATE(FOnMoveMap);
+DECLARE_DELEGATE(FOnInitOnceItem)
+
 
 UCLASS()
 class ROGUELIKE_API URLGameInstance : public UGameInstance
@@ -34,17 +36,20 @@ public:
 	TArray<int32> GetConnectedDir();
 	void ClearThisCell();
 	void AteHealThisCell();
-	void ClearStage();
 	void ReadyToRecall();
+	void ShowSelectItemWidget();
 
-	FOnMoveMap OnMoveMap;
 	void TestPrintMap();
 
-	static URLListenerManager* GetLisnterManager();
+	URLListenerManager* GetListenerManager();
+	
+	FOnInitOnceItem InitOnceItemDelegate;
 private:
 	TSharedPtr<DFSAgrt> DFS;
 	UPROPERTY()
 	ARLGameStateBase* RLGameState;
+	UPROPERTY()
+	ARLGameModeBase* RLGameMode;
 
 	FVector2Int MapSize;
 	int32 ClearCount; //방 클리어 갯수
@@ -58,7 +63,6 @@ private:
 	int32 TotalCellNum; // 방 총개수. 시작지점 미포함. Total - 1 == ClearCount면 보스 입장 가능
 	bool bIsEarlyDiscoveredBoss;
 	
-	//아이템 정보, 플레이어 정보도 저장해야함.
 	FHealthManager HealthManager;
 	FCombatManager CombatManager;
 	FItemManager ItemManager;
@@ -66,17 +70,11 @@ private:
 	TMap<uint8, uint8> FixMaxNum;
 
 	int32 CalcNextCell(int32 Dir);
-	UFUNCTION()
-	void MoveNextStage();
 	void CheckEarlyDiscoveredBossCell();
 	void Recall();
 	void MoveProcess(int32 TargetCell, int32 Dir);
-
-	FTimerHandle MoveNextStageTimerHandle;
-
-	//UPROPERTY(Transient)
-	//static URLListenerManager* ListenerManagerInstance;
-
+	UPROPERTY()
+	URLListenerManager* ListenerManager;
 public:
 	void GetManager(OUT FHealthManager& OutHealthManager, OUT FCombatManager& OutCombatManager, OUT uint8& OutBuff)
 	{ 
@@ -91,7 +89,7 @@ public:
 		OutFixMaxNum = FixMaxNum;
 
 	}
-	void SetManager(FHealthManager& InHealthManager, FCombatManager& InCombatManager, uint8& InBuff)
+	void SetManager(const FHealthManager& InHealthManager, const FCombatManager& InCombatManager, const uint8& InBuff)
 	{
 		HealthManager = InHealthManager;
 		CombatManager = InCombatManager;
@@ -102,6 +100,21 @@ public:
 		ItemManager = InItemManager;
 		FixMaxNum = InFixMaxNum;
 	}
+	void SetSelectedBonusItem(bool Boolean)
+	{
+		if (Board.IsValidIndex(PlayerCurrentCell))
+		{
+			Board[PlayerCurrentCell].SelectedBonusItem = Boolean;
+		}
+	}
+	FCell GetCellInfo() const 
+	{ 
+		if (Board.IsValidIndex(PlayerCurrentCell))
+		{
+			return Board[PlayerCurrentCell];
+		}
+		return FCell();
+	}
+
 	int32 GetStageLevel() const { return StageLevel; }
-	FCell GetCellInfo() const { return Board[PlayerCurrentCell]; }
 };

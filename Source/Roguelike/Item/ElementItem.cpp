@@ -1,9 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "ElementItem.h"
 #include "Kismet/GameplayStatics.h"
-#include "Roguelike/Character/PlayerCharacter.h"
+
+#include "Roguelike/Character/Player/PlayerCharacter.h"
 
 AElementItem::AElementItem()
 {
