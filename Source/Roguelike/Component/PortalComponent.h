@@ -47,6 +47,8 @@ private:
 	void SetLocationPotal();
 	void CreatePortal(TArray<int32> Dirs);
 	FVector CalcLocation(int32 Dir);
+	UPROPERTY()
+	APortalActor* PrevBossPortal;
 public:
 	
 };

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Roguelike/Type/DFSInterface.h"
+#include "Roguelike/Interface/DFSInterface.h"
 
 
 class ROGUELIKE_API DFSAgrt

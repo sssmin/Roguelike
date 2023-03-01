@@ -24,7 +24,6 @@ void UCharacterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 		Velocity.Z = 0;
 		Speed = Velocity.Size();
 
-		bIsInAir = Char->GetCharacterMovement()->IsFalling();
 		bIsAccelerating = Char->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f ? true : false;
 		
 		FRotator MovementRot = UKismetMathLibrary::MakeRotFromX(Char->GetVelocity());

@@ -16,7 +16,7 @@ public:
 	APlayerProjectile();
 
 protected:
-	virtual void SetParticle() override;
+	virtual void BeginPlay() override;
 	virtual void Destroyed() override;
 private:
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))

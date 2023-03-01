@@ -9,40 +9,25 @@ AMonsterProjectile::AMonsterProjectile()
 	if (PMC)
 	{
 		PMC->InitialSpeed = 1200.f;
-		PMC->MaxSpeed = 1700.f;
+		PMC->MaxSpeed = 1200.f;
 	}
 }
 
-void AMonsterProjectile::OneToTwo(const FVector& Dir)
+void AMonsterProjectile::BeginPlay()
 {
-	FTimerHandle TimerHandle;
-	FTimerDelegate TimerDelegate;
-	TimerDelegate.BindUFunction(this, FName("ChangeDir"), Dir);
-	float ChangeTime = 0.5f;
-	
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, ChangeTime, false);
+	Super::BeginPlay();
+
+
+	SetParticle(MonsterProjectileParticle);
+
+	SpawnParticle();
 }
 
-void AMonsterProjectile::SetParticle()
-{
-	ProjectileParticle = MonsterProjectileParticle;
-	
-	Super::SetParticle();
-}
 
 void AMonsterProjectile::Destroyed()
 {
 	if (HitParticle)
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitParticle, GetActorTransform());
-	}
-}
-
-void AMonsterProjectile::ChangeDir(const FVector& Dir)
-{
-	if (PMC)
-	{
-		FVector Dirs = UKismetMathLibrary::InverseTransformLocation(GetActorTransform(), Dir);
-		PMC->SetVelocityInLocalSpace(Dir * PMC->MaxSpeed);
 	}
 }

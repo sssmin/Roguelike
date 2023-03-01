@@ -15,8 +15,12 @@
 #include "Roguelike/Component/ManagerComponent.h"
 #include "Roguelike/Component/ItemComponent.h"
 #include "Roguelike/Component/PlayerCombatComponent.h"
+#include "Roguelike/Interface/InteractInterface.h"
 
 #include "Kismet/KismetSystemLibrary.h"
+
+
+#include "DrawDebugHelpers.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -101,6 +105,8 @@ void APlayerCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 	PlayerInputComponent->BindAction("FreeCam", IE_Pressed, this, &ThisClass::PressedFreeCam);
 	PlayerInputComponent->BindAction("FreeCam", IE_Released, this, &ThisClass::ReleasedFreeCam);
 
+	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &ThisClass::Interact);
+
 }
 
 void APlayerCharacter::PressedFreeCam()
@@ -119,19 +125,36 @@ void APlayerCharacter::ReleasedFreeCam()
 */
 void APlayerCharacter::Test1()
 {
-	
+	FVector OutVector;
+	UGameplayStatics::SuggestProjectileVelocity_CustomArc(
+		this,
+		OutVector,
+		GetActorLocation(),
+		GetActorLocation() + GetActorForwardVector() * 1000.f,
+		GetWorld()->GetGravityZ()
+	);
+	FPredictProjectilePathParams Params(20.f, GetActorLocation(), OutVector, 15.f);
+	Params.DrawDebugTime = 15.f;
+	Params.DrawDebugType = EDrawDebugTrace::Type::ForDuration;
+	Params.OverrideGravityZ = GetWorld()->GetGravityZ();
+	FPredictProjectilePathResult Result;
+	UGameplayStatics::PredictProjectilePath(
+		this,
+		Params,
+		Result
+	);
 }
 
 void APlayerCharacter::Test2()
 {
-	/*if (GetWorld() && Cast<URLGameInstance>(GetWorld()->GetGameInstance()))
+	if (GetWorld() && Cast<URLGameInstance>(GetWorld()->GetGameInstance()))
 	{
 		Cast<URLGameInstance>(GetWorld()->GetGameInstance())->TestPrintMap();
-	}*/
-	if (Cast<ARLPlayerController>(GetController()))
+	}
+	/*if (Cast<ARLPlayerController>(GetController()))
 	{
 		Cast<ARLPlayerController>(GetController())->ShowSelectItemWidget();
-	}
+	}*/
 }
 
 void APlayerCharacter::Test3()
@@ -157,12 +180,28 @@ void APlayerCharacter::Test3()
 
 /****************************************/
 	
-
-
-
 void APlayerCharacter::Interact()
 {
-	
+	FVector Start = GetActorLocation();
+	FVector End = GetActorLocation() + GetActorForwardVector() * 500.f;
+	//DrawDebugLine(GetWorld(), Start, End, FColor::Red, true, 5.f, 0, 10.f);
+	FHitResult HitResult;
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+	GetWorld()->LineTraceSingleByChannel(
+		HitResult,
+		Start,
+		End,
+		ECC_Visibility,
+		QueryParams
+	);
+	if (HitResult.GetActor())
+	{
+		if (HitResult.GetActor()->Implements<UInteractInterface>())
+		{
+			Cast<IInteractInterface>(HitResult.GetActor())->Interact();
+		}
+	}
 }
 
 
@@ -199,7 +238,7 @@ void APlayerCharacter::GetElementFromItem(EElement Element)
 
 void APlayerCharacter::IncreaseMovementSpeed()
 {
-	if (GetMovementComponent())
+	if (GetCharacterMovement())
 	{
 		GetCharacterMovement()->MaxWalkSpeed = 1100.f;
 	}
@@ -207,7 +246,7 @@ void APlayerCharacter::IncreaseMovementSpeed()
 
 void APlayerCharacter::DecreaseMovementSpeed()
 {
-	if (GetMovementComponent())
+	if (GetCharacterMovement())
 	{
 		GetCharacterMovement()->MaxWalkSpeed = 700.f;
 	}
@@ -256,5 +295,13 @@ void APlayerCharacter::Recall()
 	if (GetWorld() && Cast<URLGameInstance>(GetWorld()->GetGameInstance()))
 	{
 		Cast<URLGameInstance>(GetWorld()->GetGameInstance())->ReadyToRecall();
+	}
+}
+
+void APlayerCharacter::OnSkillHit(AActor* Attacker, AActor* DamageCauser, const FCombatManager& EnemyManager, TSubclassOf<UDamageType> DamageType)
+{
+	if (ManagerComponent)
+	{
+		ManagerComponent->ReceiveDamage(EnemyManager, FItemManager(), Attacker, DamageCauser, DamageType);
 	}
 }

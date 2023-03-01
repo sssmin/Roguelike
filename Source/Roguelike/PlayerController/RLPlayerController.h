@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
-#include "Roguelike/Type/DFSInterface.h"
+#include "Roguelike/Interface/DFSInterface.h"
 #include "Roguelike/Type/ItemManage.h"
 #include "RLPlayerController.generated.h"
 

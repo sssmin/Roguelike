@@ -6,40 +6,42 @@ APlayerProjectile::APlayerProjectile()
 {
 }
 
-void APlayerProjectile::SetParticle()
+void APlayerProjectile::BeginPlay()
 {
+	Super::BeginPlay();
+
 	if (!ProjectileParticles.IsEmpty())
 	{
 		switch (CombatManager.Element)
 		{
 		case EElement::NONE:
-			ProjectileParticle = ProjectileParticles[0];
+			SetParticle(ProjectileParticles[0]);
 			HitParticle = HitParticles[0];
 			break;
 		case EElement::FIRE:
-			ProjectileParticle = ProjectileParticles[1];
+			SetParticle(ProjectileParticles[1]);
 			HitParticle = HitParticles[1];
 			break;
 		case EElement::WATER:
-			ProjectileParticle = ProjectileParticles[2];
+			SetParticle(ProjectileParticles[2]);
 			HitParticle = HitParticles[2];
 			break;
 		case EElement::EARTH:
-			ProjectileParticle = ProjectileParticles[3];
+			SetParticle(ProjectileParticles[3]);
 			HitParticle = HitParticles[3];
 			break;
 		case EElement::DARKNESS:
-			ProjectileParticle = ProjectileParticles[4];
+			SetParticle(ProjectileParticles[4]);
 			HitParticle = HitParticles[4];
 			break;
 		case EElement::LIGHT:
-			ProjectileParticle = ProjectileParticles[5];
+			SetParticle(ProjectileParticles[5]);
 			HitParticle = HitParticles[5];
 			break;
 		}
 	}
 
-	Super::SetParticle();
+	SpawnParticle();
 }
 
 

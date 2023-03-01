@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Roguelike/Type/DFSInterface.h"
+#include "Roguelike/Interface/DFSInterface.h"
 #include "Roguelike/Type/Types.h"
 #include "MinimapWidget.generated.h"
 

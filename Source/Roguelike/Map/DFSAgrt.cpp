@@ -174,7 +174,7 @@ void DFSAgrt::MakeBonusCell()
 	while (MakedBonusCell != BonusCellNum)
 	{
 		RandCellIdx = FMath::RandRange(0, (Size.X * Size.Y) - 1);
-		if (Board[RandCellIdx].Visited && (RandCellIdx != BossCell) && (RandCellIdx != BossPrevCell) && (RandCellIdx != StartCell))
+		if (Board[RandCellIdx].Visited && (RandCellIdx != BossCell) && (RandCellIdx != BossPrevCell) && (RandCellIdx != StartCell) && (Board[RandCellIdx].CellType != ECellType::BONUS))
 		{
 			Board[RandCellIdx].CellState = ECellState::BONUS;
 			Board[RandCellIdx].CellType = ECellType::BONUS;

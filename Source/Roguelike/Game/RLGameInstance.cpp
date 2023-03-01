@@ -35,7 +35,7 @@ void URLGameInstance::Initialize()
 	StartPos = FVector::ZeroVector;
 	StartCell = 0;
 	PlayerCurrentCell = 0;
-	StageLevel = 2;
+	StageLevel = 1;
 	BossCell = 0;
 	BossPrevCell = 0;
 
@@ -52,7 +52,7 @@ void URLGameInstance::GenerateMap()
 {
 	if (DFS.IsValid())
 	{
-		MapSize = FVector2Int(4 + StageLevel, 4 + StageLevel);
+		MapSize = FVector2Int(2 + StageLevel, 2 + StageLevel);
 		DFS->StartAlgorithm(MapSize);
 		Board = DFS->GetBoard();
 		StartPos = DFS->GetStartPostion();
@@ -78,10 +78,11 @@ void URLGameInstance::TestPrintMap()
 
 	UE_LOG(LogTemp, Warning, TEXT("CurrentCell : %d"), PlayerCurrentCell);
 	UE_LOG(LogTemp, Warning, TEXT("StartCell : %d"), StartCell);
-	UE_LOG(LogTemp, Warning, TEXT("TotalCellNum : %d"), TotalCellNum);
 	UE_LOG(LogTemp, Warning, TEXT("BossCell : %d"), BossCell);
 	UE_LOG(LogTemp, Warning, TEXT("BossPrevCell : %d"), BossPrevCell);
-	
+	UE_LOG(LogTemp, Warning, TEXT("TotalCellNum : %d"), TotalCellNum);
+	UE_LOG(LogTemp, Warning, TEXT("ClearCount : %d"), ClearCount);
+	UE_LOG(LogTemp, Warning, TEXT("TotalCellNum - 1 == ClearCount -> Can Move Boss"));
 
 
 	//RequestMoveNextStage();

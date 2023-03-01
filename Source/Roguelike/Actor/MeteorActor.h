@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "BaseSkillActor.h"
 #include "NiagaraDataInterfaceExport.h"
 #include "MeteorActor.generated.h"
 
@@ -11,7 +11,7 @@ class UNiagaraComponent;
 class UDecalComponent;
 
 UCLASS()
-class ROGUELIKE_API AMeteorActor : public AActor, public INiagaraParticleCallbackHandler
+class ROGUELIKE_API AMeteorActor : public ABaseSkillActor, public INiagaraParticleCallbackHandler
 {
 	GENERATED_BODY()
 	

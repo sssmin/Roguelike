@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Roguelike/Type/DFSInterface.h"
+#include "Roguelike/Interface/DFSInterface.h"
 #include "CellActor.generated.h"
 
 class UPortalComponent;
@@ -23,6 +23,8 @@ public:
 	void CreatePrevBossPortal();
 	FVector GetPlayerSpawnLocation(int32 Dir);
 	void CreateWall();
+	UFUNCTION(BlueprintImplementableEvent)
+	FVector GetPlaneScale();
 protected:
 	virtual void BeginPlay() override;
 	virtual void Destroyed() override;
@@ -45,6 +47,7 @@ private:
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AWallActor> WallActorClass;
 
+	
 public:
 	void SetTempWall(int32 CellIndex, uint8 Value) 
 	{ 

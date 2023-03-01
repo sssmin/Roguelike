@@ -1,5 +1,4 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -22,8 +21,7 @@ class ROGUELIKE_API UManagerComponent : public UActorComponent
 public:	
 	UManagerComponent();
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	void ReceiveDamage(const FCombatManager& EnemyCombatManager, const FItemManager& EnemyItemManager);
-	void ReceiveExplodeDamage(const float Damage, AController* InstigatedBy, AActor* DamageCauser);
+	void ReceiveDamage(const FCombatManager& EnemyCombatManager, const FItemManager& EnemyItemManager, AActor* Attacker, AActor* DamageCauser, TSubclassOf<UDamageType> DamageType);
 	void ApplyPlayerElement(EElement Element);
 	void Heal(float Rate);
 	bool CanAttack() const;
@@ -65,7 +63,6 @@ private:
 	bool CheckBuff(uint8 Buff) const;
 	void ApplyBuff(uint8 Buff);
 	void RemoveBuff(uint8 Buff);;
-	
 	void ApplyBurnDamage();
 	void InitElemBuff();
 	void ManageStack(float DeltaTime);
@@ -94,5 +91,7 @@ public:
 	FCombatManager GetCombatManager() const { return CombatManager;  }
 	void SetItemComp(UItemComponent* Comp) { ItemComponent = Comp; }
 	uint8 GetCurrentState() const { return CurrentState; }
-	
+	bool IsDead();
+	bool IsHPLow();
+	float GetMaxHP() const { return HealthManager.MaxHP; }
 };

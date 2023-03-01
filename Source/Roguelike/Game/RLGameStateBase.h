@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameStateBase.h"
-#include "Roguelike/Type/DFSInterface.h"
+#include "Roguelike/Interface/DFSInterface.h"
 #include "RLGameStateBase.generated.h"
 
 class ARLGameModeBase;
@@ -28,11 +28,11 @@ public:
 	void Init();
 	void SpawnPrevBossPortal();
 private:
-	/* ¼¿ ¸ñÇ¥ */
-	int32 ObjectiveNum; //¸ñÇ¥ Å³¼ö
-	int32 CurrentNum; //ÇöÀç Å³¼ö
+	/* ì…€ ëª©í‘œ */
+	int32 ObjectiveNum; //ëª©í‘œ í‚¬ìˆ˜
+	int32 CurrentNum; //í˜„ìž¬ í‚¬ìˆ˜
 
-	/* Á¤º¸ */
+	/* ì •ë³´ */
 	FCell CellInfo;
 	int32 StageLevel;
 

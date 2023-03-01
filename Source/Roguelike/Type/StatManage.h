@@ -37,7 +37,7 @@ struct FCombatManager
 		ATK(InATK), Element(InElement), Critical(0.f), Range(900.f) {}
 
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	float ATK;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	EElement Element;

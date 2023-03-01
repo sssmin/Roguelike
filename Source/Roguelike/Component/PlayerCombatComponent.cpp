@@ -1,11 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "PlayerCombatComponent.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "GameFramework/Character.h"
 
 #include "Roguelike/Projectile/BaseProjectile.h"
-
-
-#include "DrawDebugHelpers.h"
-#include "Kismet/KismetMathLibrary.h"
 
 UPlayerCombatComponent::UPlayerCombatComponent()
 {
@@ -43,6 +41,7 @@ void UPlayerCombatComponent::ReadyToFire(bool bPressed)
 				if (HaveItem(ItemManager, EOnceEquippedItem::MULTI_SHOT))
 				{
 					FTimerDelegate MultiShotTimerDelegate;
+					FTimerHandle MultiShotTimerHandle;
 					MultiShotTimerDelegate.BindUFunction(this, FName("Multishot"), CombatManager, ItemManager);
 					GetWorld()->GetTimerManager().SetTimer(MultiShotTimerHandle, MultiShotTimerDelegate, MutliShotTime, false);
 				}
@@ -81,6 +80,8 @@ void UPlayerCombatComponent::Triple(const FCombatManager& CombatManager, const F
 
 bool UPlayerCombatComponent::NormalFire(const FCombatManager& CombatManager, const FItemManager& ItemManager)
 {
+	PlayFireMontage();
+	
 	FActorSpawnParameters Params;
 	Params.Owner = GetOwner();
 	if (ProjectileClass && GetWorld())
@@ -97,14 +98,17 @@ bool UPlayerCombatComponent::NormalFire(const FCombatManager& CombatManager, con
 			SpawnedProjectile->SetCombatManage(CombatManager);
 			SpawnedProjectile->SetRange(CombatManager.Range);
 			SpawnedProjectile->SetItemManager(ItemManager);
-			return true;
+			SpawnedProjectile->SetDamageType(UDamageType::StaticClass());
 		}
+		return true;
 	}
 	return false;
 }
 
 bool UPlayerCombatComponent::TripleFire(const FCombatManager& CombatManager, const FItemManager& ItemManager)
 {
+	PlayFireMontage();
+	
 	FActorSpawnParameters Params;
 	Params.Owner = GetOwner();
 	if (ProjectileClass && GetWorld())
@@ -125,10 +129,7 @@ bool UPlayerCombatComponent::TripleFire(const FCombatManager& CombatManager, con
 				SpawnedProjectile->SetCombatManage(CombatManager);
 				SpawnedProjectile->SetRange(CombatManager.Range);
 				SpawnedProjectile->SetItemManager(ItemManager);
-			}
-			else
-			{
-				return false;
+				SpawnedProjectile->SetDamageType(UDamageType::StaticClass());
 			}
 		}
 		return true;
@@ -150,6 +151,7 @@ void UPlayerCombatComponent::Multishot(const FCombatManager& CombatManager, cons
 
 void UPlayerCombatComponent::StartFireTimer()
 {
+	FTimerHandle FireTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(FireTimerHandle, this, &ThisClass::FireTimerFinished, Delay);
 }
 
@@ -167,3 +169,6 @@ bool UPlayerCombatComponent::HaveItem(const FItemManager& Manage, EOnceEquippedI
 {
 	return Manage.OnceEquippedItem & static_cast<uint8>(ItemType);
 }
+
+
+

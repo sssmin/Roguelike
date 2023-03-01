@@ -2,9 +2,7 @@
 #include "MeteorActor.h"
 #include "NiagaraComponent.h"
 #include "Components/DecalComponent.h"
-#include "NiagaraFunctionLibrary.h"
 #include "NiagaraSystem.h"
-
 
 AMeteorActor::AMeteorActor()
 {

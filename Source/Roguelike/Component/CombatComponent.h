@@ -1,5 +1,4 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -23,8 +22,17 @@ public:
 	UCombatComponent();
 	virtual void BeginPlay() override;
 	virtual void ReadyToFire(bool bPressed);
-
+	FName GetRandomMontageSection();
 	FGetCombatManager GetCombatManager;
 	FGetItemManager GetItemManager;
+protected:
+	void PlayFireMontage();
+
+private:
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* FireMontage;
+
+public:
+	UAnimMontage* GetFireMontage() const { return FireMontage; }
 	
 };

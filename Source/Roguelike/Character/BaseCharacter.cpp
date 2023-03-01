@@ -18,7 +18,7 @@ void ABaseCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 
-	OnTakeRadialDamage.AddDynamic(this, &ThisClass::ReceiveDamage);
+	OnTakeRadialDamage.AddDynamic(this, &ThisClass::OnExplodeHit);
 }
 
 void ABaseCharacter::Tick(float DeltaTime)
@@ -27,14 +27,24 @@ void ABaseCharacter::Tick(float DeltaTime)
 
 void ABaseCharacter::Attack()
 {
-	
 }
 
-void ABaseCharacter::OnHit(AActor* Attacker, const FCombatManager& EnemyCombatManager, const FItemManager& EnemyItemManager)
+void ABaseCharacter::OnHit(const FCombatManager& EnemyCombatManager, const FItemManager& EnemyItemManager, AActor* Attacker, AActor* DamageCauser, TSubclassOf<UDamageType> DamageType)
 {
 	if (ManagerComponent)
 	{
-		ManagerComponent->ReceiveDamage(EnemyCombatManager, EnemyItemManager);
+		ManagerComponent->ReceiveDamage(EnemyCombatManager, EnemyItemManager, Attacker, DamageCauser, DamageType);
+	}
+}
+
+void ABaseCharacter::OnExplodeHit(AActor* DamagedActor, float Damage, const UDamageType* DamageType, FVector Origin, FHitResult HitInfo, AController* InstigatedBy, AActor* DamageCauser)
+{
+	/*check(ManagerComponent);
+	ManagerComponent->ReceiveExplodeDamage(Damage, InstigatedBy, DamageCauser);*/
+	FCombatManager EnemyCombatManager = GetCombatManager();
+	if (ManagerComponent)
+	{
+		ManagerComponent->ReceiveDamage(EnemyCombatManager, FItemManager(), DamagedActor, DamageCauser, DamageType->GetClass());
 	}
 }
 
@@ -47,12 +57,17 @@ FCombatManager ABaseCharacter::GetCombatManager() const
 	return FCombatManager();
 }
 
-void ABaseCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, FVector Origin, FHitResult HitInfo, AController* InstigatedBy, AActor* DamageCauser)
+bool ABaseCharacter::IsDead()
 {
-	check(ManagerComponent);
-
-	ManagerComponent->ReceiveExplodeDamage(Damage, InstigatedBy, DamageCauser);
+	bool Return = false;
+	if (ManagerComponent)
+	{
+		Return = ManagerComponent->IsDead();
+	}
+	return Return;
 }
+
+
 
 void ABaseCharacter::Dead()
 {

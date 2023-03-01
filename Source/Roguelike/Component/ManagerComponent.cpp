@@ -6,10 +6,13 @@
 #include "Roguelike/Game/RLGameStateBase.h"
 #include "Roguelike/Game/RLListenerManager.h"
 #include "Roguelike/PlayerController/RLPlayerController.h"
+#include "Roguelike/PlayerController/RLMonsterAIController.h"
 #include "Roguelike/Character/Player/PlayerCharacter.h"
-#include "Roguelike/Character/Monster/BossMonsterCharacter.h"
+#include "Roguelike/Character/BossMonster/BossMonsterCharacter.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "ItemComponent.h"
+#include "Roguelike/Type/DamageType/AllDamageTypes.h"
+
 
 UManagerComponent::UManagerComponent()
 {
@@ -29,7 +32,6 @@ UManagerComponent::UManagerComponent()
 	
 
 }
-
 
 UManagerComponent* UManagerComponent::GetManagerComp(AActor* Character)
 {
@@ -99,7 +101,7 @@ void UManagerComponent::SendManager() const
 	}
 }
 
-void UManagerComponent::ReceiveDamage(const FCombatManager& EnemyCombatManager, const FItemManager& EnemyItemManager)
+void UManagerComponent::ReceiveDamage(const FCombatManager& EnemyCombatManager, const FItemManager& EnemyItemManager, AActor* Attacker, AActor* DamageCauser, TSubclassOf<UDamageType> DamageType)
 {
 	if (CheckState(static_cast<uint8>(EState::DEAD))) return;
 
@@ -118,32 +120,35 @@ void UManagerComponent::ReceiveDamage(const FCombatManager& EnemyCombatManager, 
 
 	CalcCC(EnemyCombatManager);
 
-	const float Coefficient = CalcCounter(EnemyCombatManager.Element); //°è¼ö
-	const float EnemyATK = EnemyCombatManager.ATK;
+	const float Coefficient = CalcCounter(EnemyCombatManager.Element); //ê³„ìˆ˜
+	float EnemyATK = EnemyCombatManager.ATK;
 	const float CriticalPer = CalcCritical(EnemyCombatManager);
+
+	if (Cast<USkillDamageType>(DamageType.GetDefaultObject()))
+	{
+		EnemyATK *= 5.f;
+	}
+	else if (Cast<USpecialATKDamageType>(DamageType.GetDefaultObject()))
+	{
+		EnemyATK *= 2.f;
+	}
 	
-	const float Result = FMath::Clamp((EnemyATK * Coefficient) * FMath::RandRange(0.9, 1.1) * (RiskReturn) * CriticalPer, 0.f, TNumericLimits<int32>::Max());
+	float Result = FMath::Clamp((EnemyATK * Coefficient) * FMath::RandRange(0.9, 1.1) * (RiskReturn) * CriticalPer, 0.f, TNumericLimits<int32>::Max());
+	if (Cast<UMaxHPRatioDamageType>(DamageType.GetDefaultObject()))
+	{
+		Result += (HealthManager.MaxHP * 0.1f);
+	}
+	else if (Cast<UCurrentHPRatioDamageType>(DamageType.GetDefaultObject()))
+	{
+		Result += (HealthManager.CurrentHP * 0.1f);
+	}
+	else if (Cast<ULostHPRatioDamageType>(DamageType.GetDefaultObject()))
+	{
+		Result += (HealthManager.MaxHP - HealthManager.CurrentHP * 0.1f);
+	}
+	
 	UpdateCurrentHP(-Result);
-
-	
 }
-
-void UManagerComponent::ReceiveExplodeDamage(const float Damage, AController* InstigatedBy, AActor* DamageCauser)
-{
-	//¸ŞÅ×¿À ´ë¹ÌÁö ¹ŞÀ½
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("ahhh Meteor")));
-	//´ë¹ÌÁö Ã³¸®ÇÏ°í. ³»ÀÏ ÇÒ °Í, ¸ŞÅ×¿À¿¡ µ¥Ä® ºÙ¿©¼­ ¹Ù´Ú¿¡ ¹üÀ§Ç¥½ÃºÎÅÍ.
-	//±×¸®°í meteor ÇÔ¼ö ±¸Çö
-	//aicontroller¿¡¼­ 2~4ÃÊ ÅÒÀ¸·Î specialattack È£ÃâÇÏ°Ô ÇÒ°Å°í
-	//±× ¿Ü¿¡´Â ±âº»°ø°İ
-	//·Îº¿Àº specialattack ÇÔ¼ö¿¡¼­ meteor È£ÃâÇÒ°Å°í
-	//·Îº¿ specialattack ÇÔ¼ö¿¡¼­ Å¸°Ù À§Ä¡¸¦ ¾Ë¾Æ¾ßÇÒ°Í. 
-	//Å¸°ÙÀº aicontroller¸¸ °®°íÀÌ¾²´Ï specialattack¿¡ target À» aactor·Î ¹ŞµçÁö
-	//ÇØ¾ßÇÒµí.
-	//InitCCStack();
-	//ApplyState(static_cast<uint8>(EState::BURN));
-}
-
 
 bool UManagerComponent::CheckState(uint8 State) const
 {
@@ -154,11 +159,6 @@ void UManagerComponent::ApplyState(uint8 State)
 {
 	CurrentState |= State;
 	bShouldApplyCC = true;
-	if (!Cast<APlayerCharacter>(GetOwner()))
-	{
-		URLGameInstance* GI = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
-		
-	}
 }
 
 void UManagerComponent::RemoveState(uint8 State)
@@ -197,7 +197,7 @@ void UManagerComponent::RemoveBuff(uint8 Buff)
 	}
 }
 
-float UManagerComponent::CalcCounter(EElement EnemyElement)//»ó¼º. ¹ŞÀ» ´ë¹ÌÁö °è¼ö
+float UManagerComponent::CalcCounter(EElement EnemyElement)//ìƒì„±. ë°›ì„ ëŒ€ë¯¸ì§€ ê³„ìˆ˜
 {
 	float Ret = 1.f;
 
@@ -271,7 +271,7 @@ void UManagerComponent::Dead()
 		Cast<ABaseCharacter>(GetOwner())->Dead();
 	}
 
-	if (Cast<APlayerCharacter>(GetOwner())) //Á×Àº°Ô ÇÃ·¹ÀÌ¾î
+	if (Cast<APlayerCharacter>(GetOwner())) //ì£½ì€ê²Œ í”Œë ˆì´ì–´
 	{
 		ARLPlayerController* PC = Cast<ARLPlayerController>(Cast<APlayerCharacter>(GetOwner())->GetController());
 		if (PC)
@@ -279,23 +279,34 @@ void UManagerComponent::Dead()
 			PC->ShowGameOverWidget(); 
 		}
 	}
-	else //Á×Àº°Ô ¸ó½ºÅÍ
+	else //ì£½ì€ê²Œ ëª¬ìŠ¤í„°
 	{
 		ARLGameStateBase* RLGameState = Cast<ARLGameStateBase>(UGameplayStatics::GetGameState(this));
 		if (RLGameState)
 		{
-			if (Cast<ABossMonsterCharacter>(GetOwner())) //Á×Àº°Ô º¸½º
+			if (Cast<ABossMonsterCharacter>(GetOwner())) //ì£½ì€ê²Œ ë³´ìŠ¤
 			{
 				RLGameState->KillBoss();
 				GetOwner()->Destroy();
 			}
-			else //ÀÏ¹İ ¸÷
+			else //ì¼ë°˜ ëª¹
 			{
+				UE_LOG(LogTemp, Warning, TEXT("Kill"));
 				RLGameState->KillScored();
 				GetOwner()->Destroy();
 			}
 		}
 	}
+}
+
+bool UManagerComponent::IsDead()
+{
+	return CheckState(static_cast<uint8>(EState::DEAD));
+}
+
+bool UManagerComponent::IsHPLow()
+{
+	return (HealthManager.CurrentHP / HealthManager.MaxHP * 100.f) < 45.f ? true : false;
 }
 
 void UManagerComponent::ApplyPlayerElement(EElement Element)
@@ -408,7 +419,7 @@ void UManagerComponent::CalcCC(const FCombatManager& EnemyCombatManager)
 	}
 }
 
-bool UManagerComponent::HaveAnyState() //dead°¡ ¾Æ´Ñ ¾î¶°ÇÑ »óÅÂ
+bool UManagerComponent::HaveAnyState() //deadê°€ ì•„ë‹Œ ì–´ë– í•œ ìƒíƒœ
 {
 	return (CurrentState != 0) && !CheckState(static_cast<uint8>(EState::DEAD));
 }
@@ -428,7 +439,6 @@ void UManagerComponent::ApplyCC()
 	else if (CheckState(static_cast<uint8>(EState::FEAR)))
 	{
 		CCDuration = 2.5f;
-
 	}
 	bShouldApplyCC = false;
 }

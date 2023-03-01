@@ -2,7 +2,6 @@
 #include "HPBarWidget.h"
 #include "Components/ProgressBar.h"
 
-#include "Roguelike/Character/BaseCharacter.h"
 #include "Roguelike/Component/ManagerComponent.h"
 
 void UHPBarWidget::NativeConstruct()
@@ -26,14 +25,9 @@ void UHPBarWidget::UpdateCurrentHP(float CurrentHP, float MaxHP)
 
 void UHPBarWidget::SetOwnerPlayer(APawn* OwnerPawn)
 {
-	OwnerCharacter = Cast<ABaseCharacter>(OwnerPawn);
-
-	if (OwnerCharacter)
+	UManagerComponent* ManagerComp = UManagerComponent::GetManagerComp(OwnerPawn);
+	if (ManagerComp)
 	{
-		UManagerComponent* ManagerComp = OwnerCharacter->GetManagerComp();
-		if (ManagerComp)
-		{
-			ManagerComp->OnUpdateCurrentHP.AddDynamic(this, &ThisClass::UpdateCurrentHP);
-		}
+		ManagerComp->OnUpdateCurrentHP.AddDynamic(this, &ThisClass::UpdateCurrentHP);
 	}
 }

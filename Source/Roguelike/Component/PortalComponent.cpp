@@ -115,20 +115,26 @@ void UPortalComponent::CreatePrevBossPortal()
 {
 	if (GetWorld())
 	{
-		APortalActor* Portal = Cast<APortalActor>(GetWorld()->SpawnActor(PortalActorClass));
-		if (Portal)
+		PrevBossPortal = Cast<APortalActor>(GetWorld()->SpawnActor(PortalActorClass));
+		if (PrevBossPortal)
 		{
-			Portal->SetPrevBossPortal();
-			Portals.Add(FPortalInfo(-1, Portal));
+			PrevBossPortal->SetPrevBossPortal();
+			
 		}
 	}
 }
 
 void UPortalComponent::DestroyPortal()
 {
-	for (auto Portal : Portals)
+	for (int32 i = 0; i < Portals.Num(); ++i)
 	{
-		Portal.Portal->Destroy();
+		Portals[i].Portal->Destroy();
+	}
+	Portals.Empty();
+	if (PrevBossPortal)
+	{
+		PrevBossPortal->Destroy();
+		PrevBossPortal = nullptr;
 	}
 }
 

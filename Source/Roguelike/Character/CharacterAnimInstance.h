@@ -6,12 +6,6 @@
 #include "Animation/AnimInstance.h"
 #include "CharacterAnimInstance.generated.h"
 
-enum class ETurnInPlace : uint8
-{
-	NONE,
-	Left,
-	Right
-};
 
 class APlayerCharacter;
 
@@ -27,8 +21,6 @@ private:
 	UPROPERTY(BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	float Speed;
 	UPROPERTY(BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
-	bool bIsInAir;
-	UPROPERTY(BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	bool bIsAccelerating;
 	UPROPERTY(BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	float YawOffset;
@@ -41,10 +33,7 @@ private:
 
 	UPROPERTY()
 	APlayerCharacter* Char;
-	UPROPERTY()
-	APlayerController* PC;
 	
-
 
 	
 };

@@ -22,22 +22,21 @@ public:
 	ABaseCharacter();
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
-	virtual void OnHit(AActor* Attacker, const FCombatManager& EnemyManager, const FItemManager& EnemyItemManager);
+	virtual void OnHit(const FCombatManager& EnemyCombatManager, const FItemManager& EnemyItemManager, AActor* Attacker, AActor* DamageCauser, TSubclassOf<UDamageType> DamageType);
 	virtual void Attack();
 	void Dead();
+	bool IsDead();
 
 protected:
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UManagerComponent* ManagerComponent;
 	
-
 private:
 	UFUNCTION()
-	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, FVector Origin, FHitResult HitInfo, AController* InstigatedBy, AActor* DamageCauser);
+	void OnExplodeHit(AActor* DamagedActor, float Damage, const UDamageType* DamageType, FVector Origin, FHitResult HitInfo, AController* InstigatedBy, AActor* DamageCauser);
 
 public:
 	FCombatManager GetCombatManager() const;
 	UFUNCTION(BlueprintCallable)
 	UManagerComponent* GetManagerComp() const { return ManagerComponent;  }
-
 };

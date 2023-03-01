@@ -3,10 +3,10 @@
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Components/WidgetComponent.h"
 
 #include "Roguelike/Game/RLGameInstance.h"
 #include "Roguelike/Character/Player/PlayerCharacter.h"
-
 
 APortalActor::APortalActor()
 {
@@ -17,24 +17,51 @@ APortalActor::APortalActor()
 	SphereComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	SphereComp->SetCollisionResponseToChannel(ECC_Player_Portal, ECollisionResponse::ECR_Overlap);
 	SetRootComponent(SphereComp);
+
+	InteractWidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("InteractWidgetComponent"));
+	InteractWidgetComp->SetupAttachment(RootComponent);
+
+
+	InteractSphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("InteractSphereComp"));
+	InteractSphereComp->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
+	InteractSphereComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	InteractSphereComp->SetCollisionResponseToChannel(ECC_Player_Portal, ECollisionResponse::ECR_Overlap);
+	InteractSphereComp->SetupAttachment(RootComponent);
+
+	InteractSphere = CreateDefaultSubobject<USphereComponent>(TEXT("InteractSphere"));
+	InteractSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	InteractSphere->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
+	InteractSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	InteractSphere->SetCollisionResponseToChannel(ECC_Visibility, ECollisionResponse::ECR_Block);
+	InteractSphere->SetupAttachment(RootComponent);
+
+	bIsInteractActive = false;
 }
 
 void APortalActor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (SphereComp)
+	if (SphereComp && InteractSphereComp && InteractWidgetComp)
 	{
 		SphereComp->Deactivate();
+		InteractSphereComp->Deactivate();
+		InteractWidgetComp->SetVisibility(false);
 	}
 }
 
-void APortalActor::PortalParticleVisible(bool IsActive)
+void APortalActor::PortalActivate()
 {
-	if (SphereComp)
+	if (SphereComp && (PortalType == EPortalType::SIDE))
 	{
 		SphereComp->OnComponentBeginOverlap.AddUniqueDynamic(this, &APortalActor::BeginOverlapped);
 		SphereComp->Activate();
+	}
+	if (InteractSphereComp && (PortalType == EPortalType::PREV_BOSS))
+	{
+		InteractSphereComp->OnComponentBeginOverlap.AddUniqueDynamic(this, &APortalActor::InteractBeginOverlapped);
+		InteractSphereComp->OnComponentEndOverlap.AddUniqueDynamic(this, &APortalActor::InteractEndOverlapped);
+		InteractSphereComp->Activate();
 	}
 }
 
@@ -52,13 +79,27 @@ void APortalActor::BeginOverlapped(UPrimitiveComponent* OverlappedComponent, AAc
 			case EPortalType::CENTER:
 				Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this))->RequestMoveNextStage();
 				break;
-			case EPortalType::PREV_BOSS:
-				Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this))->RequestMovePrevBossCell();
-				break;
-			
 			}
 		}
 	}
+}
+
+void APortalActor::InteractBeginOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (InteractWidgetComp)
+	{
+		InteractWidgetComp->SetVisibility(true);
+	}
+	bIsInteractActive = true;	
+}
+
+void APortalActor::InteractEndOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (InteractWidgetComp)
+	{
+		InteractWidgetComp->SetVisibility(false);
+	}
+	bIsInteractActive = false;
 }
 
 void APortalActor::SetCenterPortal()
@@ -68,8 +109,8 @@ void APortalActor::SetCenterPortal()
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), CenterPortalCreateParticle, GetActorTransform());
 		CenterPortalParticleComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), CenterPortalParticle, GetActorTransform());
 	}
-	PortalParticleVisible(true);
 	PortalType = EPortalType::CENTER;
+	PortalActivate();
 }
 
 void APortalActor::SetSidePortal()
@@ -78,8 +119,8 @@ void APortalActor::SetSidePortal()
 	{
 		PortalParticleComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PortalParticle, GetActorTransform());
 	}
-	PortalParticleVisible(true);
 	PortalType = EPortalType::SIDE;
+	PortalActivate();
 }
 
 void APortalActor::SetPrevBossPortal()
@@ -89,8 +130,16 @@ void APortalActor::SetPrevBossPortal()
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), CenterPortalCreateParticle, GetActorTransform());
 		CenterPortalParticleComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), CenterPortalParticle, GetActorTransform());
 	}
-	PortalParticleVisible(true);
 	PortalType = EPortalType::PREV_BOSS;
+	PortalActivate();
+}
+
+void APortalActor::Interact()
+{
+	if (bIsInteractActive)
+	{
+		Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this))->RequestMovePrevBossCell();
+	}
 }
 
 void APortalActor::Destroyed()

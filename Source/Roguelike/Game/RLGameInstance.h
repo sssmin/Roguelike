@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
-#include "Roguelike/Type/DFSInterface.h"
+#include "Roguelike/Interface/DFSInterface.h"
 #include "Roguelike/Type/StatManage.h"
 #include "Roguelike/Type/ItemManage.h"
 #include "Roguelike/Game/RLListenerManager.h"

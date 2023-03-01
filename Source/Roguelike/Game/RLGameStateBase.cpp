@@ -27,7 +27,7 @@ void ARLGameStateBase::Init()
 	
 	StageLevel = RLGameInst->GetStageLevel();
 	CellInfo = RLGameInst->GetCellInfo();
-	RLGameMode->SpawnCell(CellInfo.CellClass, CellInfo.TempWall);
+	RLGameMode->RequestSpawnCell(CellInfo.CellClass, CellInfo.TempWall);
 	SetObjective();
 	
 }
@@ -43,7 +43,7 @@ void ARLGameStateBase::ReconstructCuzMove(int32 Dir, int32 Level, const FCell& I
 void ARLGameStateBase::SpawnCell(int32 Dir)
 {
 	check(RLGameMode);
-	RLGameMode->SpawnCell(CellInfo.CellClass, CellInfo.TempWall, Dir);
+	RLGameMode->RequestSpawnCell(CellInfo.CellClass, CellInfo.TempWall, Dir);
 }
 
 
@@ -62,15 +62,23 @@ void ARLGameStateBase::SetObjective()
 		switch (CellInfo.CellType)
 		{
 		case ECellType::MOBS:
-			ObjectiveNum = FMath::RandRange(4, 6);
-			RLGameMode->SpawnMob(StageLevel, ObjectiveNum);
+			if (FMath::RandBool())
+			{
+				ObjectiveNum = 4;
+			}
+			else
+			{
+				ObjectiveNum = 6;
+			}
+			//ObjectiveNum = 1;//TEST
+			RLGameMode->RequestSpawnMob(StageLevel, ObjectiveNum++); //±âº» ÅÍ·¿ 1 ++
 			break;
 		case ECellType::BOSS:
 			ObjectiveNum = 1;
-			RLGameMode->SpawnBoss(StageLevel);
+			RLGameMode->RequestSpawnBoss(StageLevel);
 			break;
 		case ECellType::BONUS:
-			RLGameMode->SpawnHealItem();
+			RLGameMode->RequestSpawnHealItem();
 			if (!CellInfo.SelectedBonusItem)
 			{
 				RLGameInst->SetSelectedBonusItem(true);

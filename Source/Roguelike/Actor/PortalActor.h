@@ -4,10 +4,12 @@
 
 #include "Roguelike/Roguelike.h"
 #include "GameFramework/Actor.h"
+#include "Roguelike/Interface/InteractInterface.h"
 #include "PortalActor.generated.h"
 
 class USphereComponent;
 class UParticleSystem;
+class UWidgetComponent;
 
 enum class EPortalType : uint8
 {
@@ -18,7 +20,7 @@ enum class EPortalType : uint8
 };
 
 UCLASS()
-class ROGUELIKE_API APortalActor : public AActor
+class ROGUELIKE_API APortalActor : public AActor, public IInteractInterface
 {
 	GENERATED_BODY()
 	
@@ -27,6 +29,7 @@ public:
 	void SetCenterPortal();
 	void SetSidePortal();
 	void SetPrevBossPortal();
+	virtual void Interact() override;
 protected:
 	virtual void BeginPlay() override;
 	virtual void Destroyed() override;
@@ -53,12 +56,28 @@ private:
 
 	UFUNCTION()
 	void BeginOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void InteractBeginOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	
+	UFUNCTION()
+	void InteractEndOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
 	EPortalType PortalType;
 
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UWidgetComponent* InteractWidgetComp;
 
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	USphereComponent* InteractSphereComp;
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	USphereComponent* InteractSphere;
+
+	bool bIsInteractActive;
 public:
-	void PortalParticleVisible(bool IsActive);
+	void PortalActivate();
 	void SetDir(int32 InDir) { Dir = InDir; }
-	
+	EPortalType GetPortalType() const { return PortalType; }
+	bool GetIsInteractActive() const { return bIsInteractActive; }
 };

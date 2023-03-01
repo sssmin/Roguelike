@@ -31,6 +31,8 @@ public:
 	void RequestItemSwap(const UItemInfo* OldItem, const UItemInfo* NewItem);
 	UFUNCTION(BlueprintImplementableEvent)
 	void ApplyElementParticle();
+
+	void OnSkillHit(AActor* Attacker, AActor* DamageCauser, const FCombatManager& EnemyManager, TSubclassOf<UDamageType> DamageType);
 protected:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

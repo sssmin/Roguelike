@@ -4,9 +4,9 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
-#include "Roguelike/Character/Monster/MonsterCharacter.h"
+#include "Roguelike/Character/NormalMonster/MonsterCharacter.h"
 #include "Roguelike/Character/Player/PlayerCharacter.h"
-#include "Roguelike/Type/MonsterInterface.h"
+#include "Roguelike/Interface/MonsterInterface.h"
 
 ABaseProjectile::ABaseProjectile()
 {
@@ -58,7 +58,6 @@ void ABaseProjectile::Tick(float DeltaTime)
 	{
 		Destroy();
 	}
-
 }
 
 void ABaseProjectile::SetVelocity(const FVector& Dir)
@@ -81,10 +80,10 @@ void ABaseProjectile::OnHit(UPrimitiveComponent* OverlappedComponent, AActor* Ot
 	{
 		if (OtherActor == GetOwner()) return;
 		if (OtherActor->Implements<UMonsterInterface>() && GetOwner()->Implements<UMonsterInterface>()) return;
-
+		
 		if (Cast<ABaseCharacter>(OtherActor)) //맞은게 상대
 		{
-			Cast<ABaseCharacter>(OtherActor)->OnHit(GetOwner(), CombatManager, ItemManager);
+			Cast<ABaseCharacter>(OtherActor)->OnHit(CombatManager, ItemManager, GetOwner(), this, GetDamageType());
 			CheckAttackerBeHealed(OtherActor, Cast<APlayerCharacter>(GetOwner()));
 			PlayHitEffect();
 		}
@@ -97,13 +96,11 @@ void ABaseProjectile::OnHit(UPrimitiveComponent* OverlappedComponent, AActor* Ot
 
 void ABaseProjectile::PlayHitEffect()
 {
-	UE_LOG(LogTemp, Warning, TEXT("hit character"));
 	Destroy();
 }
 
 void ABaseProjectile::PlayDestroyEffect()
 {
-	UE_LOG(LogTemp, Warning, TEXT("hit other"));
 	Destroy();
 }
 
@@ -113,7 +110,6 @@ void ABaseProjectile::Destroyed()
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitParticle, GetActorTransform());
 	}
-
 }
 
 void ABaseProjectile::CheckAttackerBeHealed(AActor* Other, APlayerCharacter* Player)
@@ -130,10 +126,11 @@ void ABaseProjectile::CheckAttackerBeHealed(AActor* Other, APlayerCharacter* Pla
 void ABaseProjectile::SetCombatManage(const FCombatManager& InManager)
 {
 	CombatManager = InManager;
-	SetParticle();
+	SpawnParticle();
 }
 
-void ABaseProjectile::SetParticle()
+
+void ABaseProjectile::SpawnParticle()
 {
 	if (ProjectileParticle)
 	{
@@ -145,5 +142,4 @@ void ABaseProjectile::SetParticle()
 			GetActorRotation(),
 			EAttachLocation::KeepWorldPosition);
 	}
-
 }

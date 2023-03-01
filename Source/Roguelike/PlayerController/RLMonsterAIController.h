@@ -23,13 +23,10 @@ public:
 	virtual void BeginPlay() override;
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void Tick(float DeltaTime) override;
-	virtual FRotator GetControlRotation() const override;
+	void OnSkillEnd();
 
 	UFUNCTION()
-	void OnPawnDetected(const TArray<AActor*>& DetectedPawns);
-	UFUNCTION()
 	void OnPercptionUpdated(AActor* Actor, FAIStimulus Stimulus);
-	
 
 private:
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
@@ -57,10 +54,12 @@ private:
 	UPROPERTY()
 	UAISenseConfig_Sight* SightConfig;
 
-	bool bIsPlayerDetected;
-	float DistToPlayer;
-
 	FName TargetKey;
 	FName OutofSightKey;
 
+	UFUNCTION()
+	void RunBT();
+public:
+	void SetBehaviorTree(UBehaviorTree* BT);
+	void SetTarget(AActor* Target);
 };

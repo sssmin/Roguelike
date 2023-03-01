@@ -15,8 +15,6 @@ class ROGUELIKE_API UPlayerCombatComponent : public UCombatComponent
 public:
 	UPlayerCombatComponent();
 	virtual void ReadyToFire(bool bPressed) override;
-protected:
-	
 
 private:
 	void Fire(const FCombatManager& CombatManager, const FItemManager& ItemManager);
@@ -24,21 +22,19 @@ private:
 	void Multishot(const FCombatManager& CombatManager, const FItemManager& ItemManager);
 	UFUNCTION()
 	void Triple(const FCombatManager& CombatManager, const FItemManager& ItemManager);
-
 	bool NormalFire(const FCombatManager& CombatManager, const FItemManager& ItemManager);
 	bool TripleFire(const FCombatManager& CombatManager, const FItemManager& ItemManager);
+	void StartFireTimer();
+	void FireTimerFinished();
+	bool HaveItem(const FItemManager& Manager, EOnceEquippedItem ItemType);
+	
 
 	bool bAttackPressed;
 	bool bFireCooldown;
 	float Delay;
-	void StartFireTimer();
-	FTimerHandle FireTimerHandle;
-	void FireTimerFinished();
-	FTimerHandle MultiShotTimerHandle;
 	float MutliShotTime;
-
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<ABaseProjectile> ProjectileClass;
 
-	bool HaveItem(const FItemManager& Manager, EOnceEquippedItem ItemType);
+	
 };
