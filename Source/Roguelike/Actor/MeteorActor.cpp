@@ -23,9 +23,10 @@ void AMeteorActor::BeginPlay()
 	check(NiagaraComponent);
 	NiagaraComponent->Deactivate();
 	NiagaraComponent->SetNiagaraVariableObject(TEXT("User.ExplodeCallback"), this);
-
-	//타이머 후 Active
+	
+	FTimerHandle MeteorTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(MeteorTimerHandle, this, &ThisClass::Active, MeteorTime, false);
+	OwnerActor = GetOwner();
 }
 
 void AMeteorActor::Active()

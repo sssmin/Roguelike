@@ -140,4 +140,3 @@ void APlayersCamera::MoveCam()
 		RootComponent->AddRelativeLocation(DeltaLoc);
 	}
 }
-

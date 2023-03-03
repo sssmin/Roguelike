@@ -8,18 +8,14 @@
 
 UBTServiceCheckState::UBTServiceCheckState()
 {
-	StateKey.SelectedKeyName = FName("State");
 	CurrentState = 0;
 }
 
 void UBTServiceCheckState::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
-
-
-	CheckState(OwnerComp);
-
 	
+	CheckState(OwnerComp);
 }
 
 void UBTServiceCheckState::CheckState(UBehaviorTreeComponent& OwnerComp)

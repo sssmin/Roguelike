@@ -11,11 +11,7 @@ UCLASS()
 class ROGUELIKE_API URecallBarWidget : public UUserWidget
 {
 	GENERATED_BODY()
-	
-public:
 
-
-private:
 	float Per;
 	FString Time;
 	

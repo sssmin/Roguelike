@@ -12,6 +12,7 @@ UCLASS()
 class ROGUELIKE_API UPlayerCombatComponent : public UCombatComponent
 {
 	GENERATED_BODY()
+	
 public:
 	UPlayerCombatComponent();
 	virtual void ReadyToFire(bool bPressed) override;
@@ -27,14 +28,13 @@ private:
 	void StartFireTimer();
 	void FireTimerFinished();
 	bool HaveItem(const FItemManager& Manager, EOnceEquippedItem ItemType);
-	
 
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<ABaseProjectile> ProjectileClass;
+	
 	bool bAttackPressed;
 	bool bFireCooldown;
 	float Delay;
 	float MutliShotTime;
-	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<ABaseProjectile> ProjectileClass;
-
 	
 };

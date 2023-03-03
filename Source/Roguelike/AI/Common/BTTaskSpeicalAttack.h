@@ -11,10 +11,8 @@ UCLASS()
 class ROGUELIKE_API UBTTaskSpeicalAttack : public UBTTaskNode
 {
 	GENERATED_BODY()
+	
 public:
-	UBTTaskSpeicalAttack();
-private:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
-	FName TargetKey;
-	FName CanSpecialAttackKey;
+	
 };

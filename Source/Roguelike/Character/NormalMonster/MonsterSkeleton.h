@@ -16,8 +16,8 @@ public:
 	AMonsterSkeleton();
 	virtual void BeginPlay() override;
 	virtual void GiveBTToController() override;
-protected:
 	virtual void SpecialAttack(AActor* Target) override;
+	
 private:
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UBehaviorTree* SkeletonBT;

@@ -25,6 +25,12 @@ public:
 	void InitItemList();
 
 private:
+	UFUNCTION()
+	void FirstItemButtonClick();
+	UFUNCTION()
+	void SecondItemButtonClick();
+	void SetButtonStyle(UTexture2D* Item, UButton* Btn);
+	
 	UPROPERTY(Meta = (BindWidget))
 	UButton* FirstItemButton;
 	UPROPERTY(Meta = (BindWidget))
@@ -43,14 +49,5 @@ private:
 	UTexture2D* OriginSlotImg;
 	
 	bool bIsActive;
-
-	UFUNCTION()
-	void FirstItemButtonClick();
-	UFUNCTION()
-	void SecondItemButtonClick();
-	void SetButtonStyle(UTexture2D* Item, UButton* Btn);
-public:
-
-
 	
 };

@@ -29,8 +29,10 @@ public:
 	AElementItem();
 	virtual void BeginPlay() override;
 	void SetParticle();
+	
 protected:
 	virtual void ItemInteract(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
+	
 private:
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess ="true"))
 	EElement Element;

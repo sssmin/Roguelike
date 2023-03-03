@@ -15,14 +15,15 @@ public:
 	AMonsterSuicide();
 	virtual void BeginPlay() override;
 	virtual void GiveBTToController() override;
-	virtual void Destroyed() override;
+	virtual void Dead() override;
 
 private:
-	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
-	UBehaviorTree* SuicideBT;
-	
-	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	UBoxComponent* BoxComp;
 	UFUNCTION()
 	void OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	
+	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UBehaviorTree* SuicideBT;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UBoxComponent* BoxComp;
+	
 };

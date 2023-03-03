@@ -4,6 +4,7 @@
 
 APlayerProjectile::APlayerProjectile()
 {
+	PrimaryActorTick.bCanEverTick = true;
 }
 
 void APlayerProjectile::BeginPlay()
@@ -15,28 +16,28 @@ void APlayerProjectile::BeginPlay()
 		switch (CombatManager.Element)
 		{
 		case EElement::NONE:
-			SetParticle(ProjectileParticles[0]);
-			HitParticle = HitParticles[0];
+			SetProjectileParticle(ProjectileParticles[0]);
+			SetHitParticle(HitParticles[0]);
 			break;
 		case EElement::FIRE:
-			SetParticle(ProjectileParticles[1]);
-			HitParticle = HitParticles[1];
+			SetProjectileParticle(ProjectileParticles[1]);
+			SetHitParticle(HitParticles[1]);
 			break;
 		case EElement::WATER:
-			SetParticle(ProjectileParticles[2]);
-			HitParticle = HitParticles[2];
+			SetProjectileParticle(ProjectileParticles[2]);
+			SetHitParticle(HitParticles[2]);
 			break;
 		case EElement::EARTH:
-			SetParticle(ProjectileParticles[3]);
-			HitParticle = HitParticles[3];
+			SetProjectileParticle(ProjectileParticles[3]);
+			SetHitParticle(HitParticles[3]);
 			break;
 		case EElement::DARKNESS:
-			SetParticle(ProjectileParticles[4]);
-			HitParticle = HitParticles[4];
+			SetProjectileParticle(ProjectileParticles[4]);
+			SetHitParticle(HitParticles[4]);
 			break;
 		case EElement::LIGHT:
-			SetParticle(ProjectileParticles[5]);
-			HitParticle = HitParticles[5];
+			SetProjectileParticle(ProjectileParticles[5]);
+			SetHitParticle(HitParticles[5]);
 			break;
 		}
 	}
@@ -47,9 +48,9 @@ void APlayerProjectile::BeginPlay()
 
 void APlayerProjectile::Destroyed()
 {
-	if (HitParticle)
+	if (GetHitParticle())
 	{
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitParticle, GetActorTransform());
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), GetHitParticle(), GetActorTransform());
 	}
 
 }

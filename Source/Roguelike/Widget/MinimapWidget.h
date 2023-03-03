@@ -24,7 +24,6 @@ public:
 private:
 	UPROPERTY(Meta = (BindWidget))
 	UUniformGridPanel* MapGrid;
-
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UMinimapCellWidget> MinimapCellWidgetClass;
 	UPROPERTY()
@@ -32,7 +31,5 @@ private:
 
 	TArray<UMinimapCellWidget*> CellWidgets;
 	TArray<UUniformGridSlot*> GridSlots;
-
-	
 	
 };

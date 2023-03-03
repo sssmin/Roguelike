@@ -3,22 +3,20 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "BehaviorTree/BehaviorTree.h"
-#include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
-#include "NiagaraSystem.h"
 
-#include "Roguelike/Projectile/MonsterProjectile.h"
-#include "Roguelike/Projectile/OnetoAnotherProjectile.h"
-#include "Roguelike/Projectile/ThrowBallProjectile.h"
 #include "Roguelike/Actor/WhirlwindActor.h"
 #include "Roguelike/Actor/BreathActor.h"
 #include "Roguelike/Component/ManagerComponent.h"
 #include "Roguelike/PlayerController/RLMonsterAIController.h"
 #include "Roguelike/Game/RLGameModeBase.h"
 #include "Roguelike/Type/DamageType/AllDamageTypes.h"
+#include "Roguelike/Widget/BossHPBarWidget.h"
 
 ABossMonsterCharacter::ABossMonsterCharacter()
 {
+	PrimaryActorTick.bCanEverTick = true;
+	
 	bSkillFlipflop = false;
 	bIsActiveBreath = false;
 	SpawnedBreathNum = 0;
@@ -30,15 +28,6 @@ ABossMonsterCharacter::ABossMonsterCharacter()
 	if (BTObject.Succeeded())
 	{
 		BossBT = BTObject.Object;
-	}
-}
-
-void ABossMonsterCharacter::GiveBTToController()
-{
-	RLAIController = RLAIController == nullptr ? Cast<ARLMonsterAIController>(GetController()) : RLAIController;
-	if (RLAIController)
-	{
-		RLAIController->SetBehaviorTree(BossBT);
 	}
 }
 
@@ -60,6 +49,15 @@ void ABossMonsterCharacter::Tick(float DeltaTime)
 void ABossMonsterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void ABossMonsterCharacter::GiveBTToController()
+{
+	RLAIController = RLAIController == nullptr ? Cast<ARLMonsterAIController>(GetController()) : RLAIController;
+	if (RLAIController)
+	{
+		RLAIController->SetBehaviorTree(BossBT);
+	}
 }
 
 void ABossMonsterCharacter::Whirlwind()
@@ -85,9 +83,18 @@ void ABossMonsterCharacter::OnExecuteWhirlwind()
 			AWhirlwindActor* WhirlwindActor = GetWorld()->SpawnActor<AWhirlwindActor>(WhirlwindActorClass, SpawnTransform, Params);
 			if (WhirlwindActor && GetManagerComp())
 			{
+				SpawnedWhirlwindActors.Add(WhirlwindActor);
 				WhirlwindActor->SetCombatManager(GetManagerComp()->GetCombatManager());
 			}
 		}
+	}
+}
+
+void ABossMonsterCharacter::RemoveSpawnedWhirlwindActor(AWhirlwindActor* WhirlwindActor)
+{
+	if (SpawnedWhirlwindActors.Contains(WhirlwindActor))
+	{
+		SpawnedWhirlwindActors.Remove(WhirlwindActor);
 	}
 }
 
@@ -165,7 +172,7 @@ void ABossMonsterCharacter::OnExecuteThrowBall()
 
 	if (GetMonsterCombatComp())
 	{
-		GetMonsterCombatComp()->FireToDir<AThrowBallProjectile>(SpawnLoc, Dir, USkillDamageType::StaticClass(), ThrowProjectileClass);
+		GetMonsterCombatComp()->FireToDir(SpawnLoc, Dir, USkillDamageType::StaticClass());
 	}
 }
 
@@ -188,9 +195,65 @@ void ABossMonsterCharacter::OnExecuteSquare()
 		{
 			FVector SpawnRandLoc = GetRandomLoc(CellScale);
 			FVector Dir = GetRandomDir(CellScale, SpawnRandLoc);
-
-
 			FireToDir(SpawnRandLoc, Dir, USkillDamageType::StaticClass());
+		}
+	}
+}
+
+void ABossMonsterCharacter::Destroyed()
+{
+	Super::Destroyed();
+
+	if (GetBossHPBarWidget())
+	{
+		GetBossHPBarWidget()->RemoveFromViewport();
+	}
+}
+
+void ABossMonsterCharacter::SetIsDeadAnimInst()
+{
+	Super::SetIsDeadAnimInst();
+	if (BossEgo)
+	{
+		BossEgo->SetIsDeadAnimInst();
+	}
+}
+
+void ABossMonsterCharacter::SetIsDeadBB()
+{
+	Super::SetIsDeadBB();
+	if (BossEgo)
+	{
+		BossEgo->SetIsDeadBB();
+	}
+}
+
+void ABossMonsterCharacter::Dead()
+{
+	Super::Dead();
+
+	for(auto Actor : SpawnedWhirlwindActors)
+	{
+		if (Actor)
+		{
+			Actor->ReserveDestroy();
+		}
+	}
+	SpawnedWhirlwindActors.Empty();
+}
+
+void ABossMonsterCharacter::OnHit(const FCombatManager& EnemyCombatManager, const FItemManager& EnemyItemManager,
+                                  AActor* Attacker, AActor* DamageCauser, TSubclassOf<UDamageType> DamageType)
+{
+	Super::OnHit(EnemyCombatManager, EnemyItemManager, Attacker, DamageCauser, DamageType);
+
+	if (BossEgo)
+	{
+		ARLMonsterAIController* EgoController = Cast<ARLMonsterAIController>(BossEgo->GetController());
+
+		if (EgoController)
+		{
+			EgoController->SetTarget(Attacker);
 		}
 	}
 }
@@ -210,28 +273,28 @@ FVector ABossMonsterCharacter::GetRandomDir(const FVector& CellScale, const FVec
 	float CellHalfX = 0;
 	float CellHalfY = 0;
 
-	if (RandomLoc.X > CellHalfX) //-x¹æÇâ
+	if (RandomLoc.X > CellHalfX) //-xë°©í–¥
 	{
 		if (bEither)
 		{
 			Dir = FVector(-1.f, 0.f, 0.f);
 		}
 	}
-	if (RandomLoc.X < CellHalfX) //x¹æÇâ
+	if (RandomLoc.X < CellHalfX) //xë°©í–¥
 	{
 		if (bEither)
 		{
 			Dir = FVector(1.f, 0.f, 0.f);
 		}
 	}
-	if (RandomLoc.Y < CellHalfY) //-y¹æÇâ
+	if (RandomLoc.Y < CellHalfY) //-yë°©í–¥
 	{
 		if (!bEither)
 		{
 			Dir = FVector(0.f, -1.f, 0.f);
 		}
 	}
-	if (RandomLoc.Y > CellHalfY) //y¹æÇâ
+	if (RandomLoc.Y > CellHalfY) //yë°©í–¥
 	{
 		if (!bEither)
 		{
@@ -245,38 +308,12 @@ void ABossMonsterCharacter::FireToDir(const FVector& SpawnLoc, const FVector& Di
 {
 	if (GetMonsterCombatComp())
 	{
-		GetMonsterCombatComp()->FireToDir<AMonsterProjectile>(SpawnLoc, Dir, DamageType, nullptr);
+		GetMonsterCombatComp()->FireToDir(SpawnLoc, Dir, DamageType);
 	}
 }
 
 void ABossMonsterCharacter::ExecuteSkill()
 {
-}
-
-void ABossMonsterCharacter::SpecialAttack(AActor* Target)
-{
-	int32 RandValue = FMath::RandRange(0, 5);
-	switch (RandValue)
-	{
-	case 0:
-		FireIn3Parts<AMonsterProjectile>(USkillDamageType::StaticClass(), nullptr);
-		break;
-	case 1:
-		FireIn8Parts<AMonsterProjectile>(USkillDamageType::StaticClass(), nullptr);
-		break;
-	case 2:
-		FireOneToTwo<AOnetoAnotherProjectile>(USkillDamageType::StaticClass(), nullptr);
-		break;
-	case 3:
-		FireSpread8PartsFromCenter<AMonsterProjectile>(USkillDamageType::StaticClass(), nullptr);
-		break;
-	case 4:
-		Fire3Projectile(USkillDamageType::StaticClass());
-		break;
-	case 5:
-		Meteor(GetMeteorActorClass(), Target);
-		break;
-	}
 }
 
 void ABossMonsterCharacter::OnSkillEnd()

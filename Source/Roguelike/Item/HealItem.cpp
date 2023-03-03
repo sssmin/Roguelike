@@ -6,7 +6,7 @@
 
 AHealItem::AHealItem()
 {
-
+	PrimaryActorTick.bCanEverTick = false;
 }
 
 void AHealItem::BeginPlay()

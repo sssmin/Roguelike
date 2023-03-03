@@ -12,7 +12,7 @@ class ROGUELIKE_API UBTServiceCheckTarget : public UBTService
 {
 	GENERATED_BODY()
 	
-protected:
+public:
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 
 };

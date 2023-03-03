@@ -23,6 +23,23 @@ void UHPBarWidget::UpdateCurrentHP(float CurrentHP, float MaxHP)
 	}
 }
 
+void UHPBarWidget::SetMonsterType(EMonsterType Type)
+{
+	if (HPBar)
+	{
+		switch (Type)
+		{
+		case EMonsterType::NORMAL:
+			HPBar->SetFillColorAndOpacity(FLinearColor::Green);
+			break;
+		case EMonsterType::ELITE:
+			HPBar->SetFillColorAndOpacity(FLinearColor::Red);
+			break;
+		}
+	}
+	
+}
+
 void UHPBarWidget::SetOwnerPlayer(APawn* OwnerPawn)
 {
 	UManagerComponent* ManagerComp = UManagerComponent::GetManagerComp(OwnerPawn);

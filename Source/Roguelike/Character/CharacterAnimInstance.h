@@ -13,6 +13,7 @@ UCLASS()
 class ROGUELIKE_API UCharacterAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
+	
 public:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaTime) override;
@@ -26,14 +27,14 @@ private:
 	float YawOffset;
 	UPROPERTY(BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	bool bIsDead;
+	UPROPERTY()
+	APlayerCharacter* Char;
 
 	FRotator CharacterRotationLastFrame;
 	FRotator CharacterRotation;
 	FRotator DeltaRotation;
 
-	UPROPERTY()
-	APlayerCharacter* Char;
-	
-
+public:
+	void SetIsDead(bool Boolean) { bIsDead = Boolean; }
 	
 };

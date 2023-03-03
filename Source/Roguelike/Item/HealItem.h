@@ -15,9 +15,11 @@ class ROGUELIKE_API AHealItem : public ABaseItem
 public:
 	AHealItem();
 	virtual void BeginPlay() override;
+	
 protected:
 	virtual void ItemInteract(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	virtual void Destroyed() override;
+	
 private:
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* HealedParticle;

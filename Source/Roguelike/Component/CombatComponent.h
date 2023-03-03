@@ -23,8 +23,10 @@ public:
 	virtual void BeginPlay() override;
 	virtual void ReadyToFire(bool bPressed);
 	FName GetRandomMontageSection();
+	
 	FGetCombatManager GetCombatManager;
 	FGetItemManager GetItemManager;
+	
 protected:
 	void PlayFireMontage();
 

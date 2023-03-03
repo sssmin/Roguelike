@@ -6,6 +6,7 @@
 
 #include "Roguelike/Character/NormalMonster/MonsterCharacter.h"
 #include "Roguelike/Character/Player/PlayerCharacter.h"
+#include "Roguelike/Game/RLGameModeBase.h"
 #include "Roguelike/Interface/MonsterInterface.h"
 
 ABaseProjectile::ABaseProjectile()
@@ -41,7 +42,6 @@ void ABaseProjectile::BeginPlay()
 	Super::BeginPlay();
 
 	StartLocation = GetActorLocation();
-	SetActorTickEnabled(false);
 
 	if (Sphere)
 	{
@@ -70,7 +70,6 @@ void ABaseProjectile::SetVelocity(const FVector& Dir)
 
 void ABaseProjectile::SetRange(float InRange)
 {
-	SetActorTickEnabled(true);
 	Range = InRange;
 }
 
@@ -110,6 +109,7 @@ void ABaseProjectile::Destroyed()
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitParticle, GetActorTransform());
 	}
+	//ARLGameModeBase::RemoveSpawnedOtherActor(this);
 }
 
 void ABaseProjectile::CheckAttackerBeHealed(AActor* Other, APlayerCharacter* Player)
@@ -126,7 +126,6 @@ void ABaseProjectile::CheckAttackerBeHealed(AActor* Other, APlayerCharacter* Pla
 void ABaseProjectile::SetCombatManage(const FCombatManager& InManager)
 {
 	CombatManager = InManager;
-	SpawnParticle();
 }
 
 

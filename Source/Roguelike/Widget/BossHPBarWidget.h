@@ -3,18 +3,18 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Roguelike/Type/DTForGM.h"
-#include "HPBarWidget.generated.h"
+#include "BossHPBarWidget.generated.h"
 
 class UProgressBar;
+class USizeBox;
 
 UCLASS()
-class ROGUELIKE_API UHPBarWidget : public UUserWidget
+class ROGUELIKE_API UBossHPBarWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	
 public:
-	void SetOwnerPlayer(APawn* OwnerPawn);
+	void Init(APawn* InPawn);
 	virtual void NativeConstruct() override;
 	
 private:
@@ -22,9 +22,6 @@ private:
 	void UpdateCurrentHP(float CurrentHP, float MaxHP);
 	
 	UPROPERTY(Meta = (BindWidget))
-	UProgressBar* HPBar;
-
-public:
-	void SetMonsterType(EMonsterType Type);
+	UProgressBar* BossHPBar;
 	
 };

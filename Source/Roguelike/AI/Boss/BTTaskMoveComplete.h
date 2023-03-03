@@ -11,7 +11,7 @@ class ROGUELIKE_API UBTTaskMoveComplete : public UBTTaskNode
 {
 	GENERATED_BODY()
 	
-private:
+public:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 	
 };

@@ -18,36 +18,32 @@ class ROGUELIKE_API AWhirlwindActor : public ABaseSkillActor
 public:	
 	AWhirlwindActor();
 	virtual void Tick(float DeltaTime) override;
-
-protected:
 	virtual void BeginPlay() override;
+	void ReserveDestroy();
 
 private:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
-	UDecalComponent* DecalComponent;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
-	UBoxComponent* BoxComponent;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
-	UParticleSystem* WhirlwindParticle;
-
-	UPROPERTY()
-	UParticleSystemComponent* ParticleSystemComp;
-
-	bool IsActive;
-	float ActiveTime;
-	float ApplyTime;
-	float DestoryTime;
-	void ActiveThisSkill();
-	void DestroyThisSkill();
-
 	UFUNCTION()
 	void BoxBeginOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 	void BoxEndOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	void ActiveThisSkill();
+	void DestroyThisSkill();
 	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	UDecalComponent* DecalComponent;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	UBoxComponent* BoxComponent;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* WhirlwindParticle;
+	UPROPERTY()
+	UParticleSystemComponent* ParticleSystemComp;
 	UPROPERTY()
 	APlayerCharacter* Player;
-public:
+	
+	bool IsActive;
+	float ActiveTime;
+	float ApplyTime;
+	float DestoryTime;
+	FTimerHandle DestroyTimerHandle;
+	
 };

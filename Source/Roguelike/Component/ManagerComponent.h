@@ -20,6 +20,7 @@ class ROGUELIKE_API UManagerComponent : public UActorComponent
 
 public:	
 	UManagerComponent();
+	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	void ReceiveDamage(const FCombatManager& EnemyCombatManager, const FItemManager& EnemyItemManager, AActor* Attacker, AActor* DamageCauser, TSubclassOf<UDamageType> DamageType);
 	void ApplyPlayerElement(EElement Element);
@@ -32,29 +33,14 @@ public:
 	void UpdateCurrentCritical(float Value);
 	void UpdateCurrentRange(float Value);
 	bool HaveAnyState();
+	bool IsDead();
+	bool IsHPLow();
+	
 	FOnUpdateCurrentHP OnUpdateCurrentHP;
 
 	static UManagerComponent* GetManagerComp(AActor* Character);
-protected:
-	virtual void BeginPlay() override;
 
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
-	FHealthManager HealthManager;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
-	FCombatManager CombatManager;
-
-	UPROPERTY(Meta = (Bitmask, BitmaskEnum = EState))
-	uint8 CurrentState;
-
-	UPROPERTY(Meta = (Bitmask, BitmaskEnum = EBuff))
-	uint8 CurrentBuff;
-
-	UPROPERTY()
-	UItemComponent* ItemComponent;
-
-	
 	void SendManager() const;
 	float CalcCounter(EElement EnemyElement);
 	bool CheckState(uint8 State) const;
@@ -72,7 +58,19 @@ private:
 	bool IsDodge();
 	float CalcCritical(const FCombatManager& EnemyCombatManage);
 	void InitCCStack();
-
+	void Dead();
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	FHealthManager HealthManager;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	FCombatManager CombatManager;
+	UPROPERTY(Meta = (Bitmask, BitmaskEnum = EState))
+	uint8 CurrentState;
+	UPROPERTY(Meta = (Bitmask, BitmaskEnum = EBuff))
+	uint8 CurrentBuff;
+	UPROPERTY()
+	UItemComponent* ItemComponent;
+	
 	int32 CCStack;
 	float CCStackDuration; //스택 지속시간
 	float CCSeconds; //CC 경과시간
@@ -81,7 +79,6 @@ private:
 	bool bIsBurn;
 	float BurnTime;
 
-	void Dead();
 public:
 	void SetManager(const FHealthManager& InHealthManager, const FCombatManager& InCombatManager )
 	{
@@ -91,7 +88,5 @@ public:
 	FCombatManager GetCombatManager() const { return CombatManager;  }
 	void SetItemComp(UItemComponent* Comp) { ItemComponent = Comp; }
 	uint8 GetCurrentState() const { return CurrentState; }
-	bool IsDead();
-	bool IsHPLow();
 	float GetMaxHP() const { return HealthManager.MaxHP; }
 };

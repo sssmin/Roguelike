@@ -14,7 +14,6 @@ ACellActor::ACellActor()
 void ACellActor::BeginPlay()
 {
 	Super::BeginPlay();
-
 }
 
 void ACellActor::Destroyed()
@@ -32,12 +31,6 @@ void ACellActor::Destroyed()
 			WallActor->Destroy();
 		}
 	}
-}
-
-void ACellActor::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
 }
 
 void ACellActor::CreateSidePortal()

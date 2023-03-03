@@ -1,6 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "BossUsurper.h"
 
+ABossUsurper::ABossUsurper()
+{
+	PrimaryActorTick.bCanEverTick = true;
+}
+
 void ABossUsurper::ExecuteSkill()
 {
 	if (GetSkillFlipflop())
@@ -31,7 +36,12 @@ void ABossUsurper::ExecuteSkill()
 	}
 }
 
-void ABossUsurper::SpecialAttack(AActor* Target)
+void ABossUsurper::Destroyed()
 {
-	ABossMonsterCharacter::SpecialAttack(Target);
+	Super::Destroyed();
+
+	if (GetBossEgo())
+	{
+		GetBossEgo()->Destroy();
+	}
 }

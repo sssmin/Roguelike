@@ -9,6 +9,7 @@
 #include "Roguelike/Character/Player/PlayerCharacter.h"
 #include "Roguelike/Character/NormalMonster/MonsterCharacter.h"
 #include "Roguelike/Widget/HPBarWidget.h"
+#include "Roguelike/Widget/BossHPBarWidget.h"
 
 
 ARLMonsterAIController::ARLMonsterAIController()
@@ -36,22 +37,12 @@ ARLMonsterAIController::ARLMonsterAIController()
 
 	GetPerceptionComponent()->SetDominantSense(*SightConfig->GetSenseImplementation());
 	GetPerceptionComponent()->ConfigureSense(*SightConfig);
-
-	TargetKey = "Target";
-	OutofSightKey = "OutOfSight";
-
+	
 }
 
 void ARLMonsterAIController::BeginPlay()
 {
 	Super::BeginPlay();
-
-
-}
-
-void ARLMonsterAIController::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 
 }
 
@@ -63,15 +54,26 @@ void ARLMonsterAIController::OnPossess(APawn* InPawn)
 	{
 		GetPerceptionComponent()->OnTargetPerceptionUpdated.AddUniqueDynamic(this, &ThisClass::OnPercptionUpdated);
 	}
-
+	
 	if (InPawn)
 	{
 		Monster = Cast<AMonsterCharacter>(InPawn);
-		if (Monster && (Monster->GetMonsterType() != EMonsterType::BOSS) && HPBarWidgetClass)
+		if (Monster && HPBarWidgetClass && BossHPBarWidgetClass)
 		{
-			Monster->SetHPBarWidget(HPBarWidgetClass);
+			if (Monster->GetMonsterType() == EMonsterType::EGO) return;
+			
+			if (Monster->GetMonsterType() == EMonsterType::BOSS)
+			{
+				Monster->SetHPBarWidget(BossHPBarWidgetClass);
+			}
+			else
+			{
+				Monster->SetHPBarWidget(HPBarWidgetClass);
+			}
 		}
 	}
+
+	
 }
 
 void ARLMonsterAIController::OnPercptionUpdated(AActor* Actor, FAIStimulus Stimulus)
@@ -81,12 +83,12 @@ void ARLMonsterAIController::OnPercptionUpdated(AActor* Actor, FAIStimulus Stimu
 	{
 		if (Stimulus.IsActive())
 		{
-			BBComp->SetValueAsObject(TargetKey, Actor);
-			BBComp->SetValueAsBool(OutofSightKey, false);
+			BBComp->SetValueAsObject("Target", Actor);
+			BBComp->SetValueAsBool("OutOfSight", false);
 		}
-		else //½Ã¾ß ³õÄ§.
+		else //ì‹œì•¼ ë†“ì¹¨.
 		{
-			BBComp->SetValueAsBool(OutofSightKey, true);
+			BBComp->SetValueAsBool("OutOfSight", true);
 		}
 	}
 }
@@ -112,7 +114,7 @@ void ARLMonsterAIController::SetTarget(AActor* Target)
 {
 	if (Target && BBComp)
 	{
-		BBComp->SetValueAsObject(TargetKey, Target);
+		BBComp->SetValueAsObject("Target", Target);
 	}
 }
 

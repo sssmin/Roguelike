@@ -216,14 +216,6 @@ void URLGameInstance::RequestMoveNextStage()
 	MoveProcess(StartCell, -1);
 }
 
-void URLGameInstance::ShowSelectItemWidget()
-{
-	if (Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld())))
-	{
-		Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld()))->ShowSelectItemWidget();
-	}
-}
-
 void URLGameInstance::ReadyToRecall()
 {
 	if (Board[PlayerCurrentCell].IsCleared)

@@ -8,10 +8,11 @@
 
 AMonsterBee::AMonsterBee()
 {
+	PrimaryActorTick.bCanEverTick = false;
 	GetCapsuleComponent()->SetCollisionObjectType(ECC_CharacterBlockProjectile);
 }
 
 void AMonsterBee::SpecialAttack(AActor* Target)
 {
-	FireOneToTwo<AOnetoAnotherProjectile>(USpecialATKDamageType::StaticClass(), GetOnetoAnotherProjectileClass());
+	FireOneToTwo(USpecialATKDamageType::StaticClass());
 }

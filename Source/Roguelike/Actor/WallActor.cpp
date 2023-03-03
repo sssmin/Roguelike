@@ -17,7 +17,6 @@ AWallActor::AWallActor()
 void AWallActor::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 void AWallActor::SetSM(int32 CellClass)

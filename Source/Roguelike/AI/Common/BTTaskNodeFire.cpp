@@ -4,10 +4,6 @@
 #include "Roguelike/Character/NormalMonster/MonsterCharacter.h"
 #include "AIController.h"
 
-UBTTaskNodeFire::UBTTaskNodeFire()
-{
-
-}
 
 EBTNodeResult::Type UBTTaskNodeFire::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {

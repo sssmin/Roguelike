@@ -12,12 +12,14 @@ UCLASS()
 class ROGUELIKE_API APlayerProjectile : public ABaseProjectile
 {
 	GENERATED_BODY()
+	
 public:
 	APlayerProjectile();
+	virtual void BeginPlay() override;
 
 protected:
-	virtual void BeginPlay() override;
 	virtual void Destroyed() override;
+	
 private:
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TArray<UParticleSystem*> ProjectileParticles;

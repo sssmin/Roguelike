@@ -17,20 +17,16 @@ class ROGUELIKE_API ABaseItem : public AActor
 	
 public:	
 	ABaseItem();
-	virtual void Tick(float DeltaTime) override;
+	virtual void BeginPlay() override;
 	
 protected:
-	virtual void BeginPlay() override;
 	UFUNCTION()
 	virtual void ItemInteract(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	UParticleSystem* ItemParticle; //Element ½ºÆùµÆÀ» ¶§
 
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* ItemParticle; //Element ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	USphereComponent* ItemSphere;
 
-private:	
-	
 
-public:
 };

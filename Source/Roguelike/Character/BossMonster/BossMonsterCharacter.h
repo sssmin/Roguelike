@@ -19,38 +19,41 @@ class ROGUELIKE_API ABossMonsterCharacter : public AMonsterCharacter
 	GENERATED_BODY()
 public:
 	ABossMonsterCharacter();
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 	virtual void ExecuteSkill();
-	virtual void SpecialAttack(AActor* Target) override;
 	virtual void GiveBTToController() override;
 	void OnSkillEnd();
 	void OnExecuteBreath();
 	void OnExecuteThrowBall();
 	void OnExecuteWhirlwind();
 	void OnExecuteSquare();
+	virtual void SetIsDeadAnimInst() override;
+	virtual void SetIsDeadBB() override;
+	virtual void Dead() override;
+	void RemoveSpawnedWhirlwindActor(AWhirlwindActor* Actor);
+	
 protected:
+	virtual void OnHit(const FCombatManager& EnemyCombatManager, const FItemManager& EnemyItemManager, AActor* Attacker, AActor* DamageCauser, TSubclassOf<UDamageType> DamageType) override;
 	virtual void Whirlwind();
 	virtual void ThrowBall();
 	virtual void Breath();
 	virtual void Square();
-	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTime) override;
+	virtual void Destroyed() override;
 
 private:
+	FVector GetRandomFloor();
+	void SpawnBreathActor();
+	FVector GetRandomLoc(const FVector& CellScale);
+	FVector GetRandomDir(const FVector& CellScale, const FVector& RandomLoc);
+	void FireToDir(const FVector& SpawnLoc, const FVector& Dir, TSubclassOf<UDamageType> DamageType);
+	
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AWhirlwindActor> WhirlwindActorClass;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<ABreathActor> BreathActorClass;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AThrowBallProjectile> ThrowProjectileClass;
-
-	EKindOfBossMonster KindOfBossMonster;
-
-	bool bSkillFlipflop;
-	bool bIsActiveBreath;
-	int32 SpawnedBreathNum;
-	float BreathSpawnTime;
-	float BreathDegree;
-	int32 BreathMaxSpawnNum;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* BreathMontage;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
@@ -59,19 +62,27 @@ private:
 	UAnimMontage* WhirlwindMontage;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* SquareMontage;
-
-	FVector GetRandomFloor();
-	void SpawnBreathActor();
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UBehaviorTree* BossBT;
-	FVector GetRandomLoc(const FVector& CellScale);
-	FVector GetRandomDir(const FVector& CellScale, const FVector& RandomLoc);
-	void FireToDir(const FVector& SpawnLoc, const FVector& Dir, TSubclassOf<UDamageType> DamageType);
+	UPROPERTY()
+	AMonsterCharacter* BossEgo;
+	UPROPERTY()
+	TArray<AWhirlwindActor*> SpawnedWhirlwindActors;
 
+	EKindOfBossMonster KindOfBossMonster;
+	bool bSkillFlipflop;
+	bool bIsActiveBreath;
+	int32 SpawnedBreathNum;
+	float BreathSpawnTime;
+	float BreathDegree;
+	int32 BreathMaxSpawnNum;
+	
 public:
 	void SetSkillFlipflop(bool Boolean) { bSkillFlipflop = Boolean; }
 	bool GetSkillFlipflop() const { return bSkillFlipflop; }
 	void SetKindOfBossMonster(EKindOfBossMonster Kind) { KindOfBossMonster = Kind; }
 	EKindOfBossMonster GetKindOfBossMonster() const { return KindOfBossMonster; }
+	void SetBossEgo(AMonsterCharacter* Ego) { BossEgo = Ego; }
+	AMonsterCharacter* GetBossEgo() const { return BossEgo; }
 	
 };

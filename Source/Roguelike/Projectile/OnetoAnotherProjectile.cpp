@@ -10,6 +10,7 @@
 
 AOnetoAnotherProjectile::AOnetoAnotherProjectile()
 {
+	PrimaryActorTick.bCanEverTick = false;
 	if (PMC)
 	{
 		PMC->InitialSpeed = 1200.f;
@@ -34,13 +35,13 @@ void AOnetoAnotherProjectile::OnHit(UPrimitiveComponent* OverlappedComponent, AA
 		if (OtherActor == GetOwner()) return;
 		if (OtherActor->Implements<UMonsterInterface>() && GetOwner()->Implements<UMonsterInterface>()) return;
 
-		if (Cast<ABaseCharacter>(OtherActor)) //¸ÂÀº°Ô »ó´ë
+		if (Cast<ABaseCharacter>(OtherActor)) //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 		{
 			Cast<ABaseCharacter>(OtherActor)->OnHit(CombatManager, ItemManager, GetOwner(), this, USkillDamageType::StaticClass());
 			CheckAttackerBeHealed(OtherActor, Cast<APlayerCharacter>(GetOwner()));
 			PlayHitEffect();
 		}
-		else if (OtherActor != GetOwner()) //³ª ¾Æ´Ñ ´Ù¸¥ ¹«¾ð°¡
+		else if (OtherActor != GetOwner()) //ï¿½ï¿½ ï¿½Æ´ï¿½ ï¿½Ù¸ï¿½ ï¿½ï¿½ï¿½ï¿½
 		{
 			PlayDestroyEffect();
 		}

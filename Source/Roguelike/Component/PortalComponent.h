@@ -30,25 +30,25 @@ class ROGUELIKE_API UPortalComponent : public UActorComponent
 
 public:	
 	UPortalComponent();
+	virtual void BeginPlay() override;
+	virtual void InitializeComponent() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	void CreateSidePortal();
 	void CreateCenterPortal();
 	void CreatePrevBossPortal();
 	void DestroyPortal();
 	FVector GetArrowLocation(int32 Dir);
-protected:
-	virtual void BeginPlay() override;
-	virtual void InitializeComponent() override;
 
-private:	
-	TArray<FPortalInfo> Portals;
-	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<APortalActor> PortalActorClass;
+private:
 	void SetLocationPotal();
 	void CreatePortal(TArray<int32> Dirs);
 	FVector CalcLocation(int32 Dir);
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<APortalActor> PortalActorClass;
 	UPROPERTY()
 	APortalActor* PrevBossPortal;
-public:
+	UPROPERTY()
+	TArray<FPortalInfo> Portals;
 	
 };

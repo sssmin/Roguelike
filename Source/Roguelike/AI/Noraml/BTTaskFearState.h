@@ -14,10 +14,6 @@ class ROGUELIKE_API UBTTaskFearState : public UBTTaskNode
 	GENERATED_BODY()
 	
 public:
-	UBTTaskFearState();
-
-private:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
-	FName LocKey;
-
+	
 };

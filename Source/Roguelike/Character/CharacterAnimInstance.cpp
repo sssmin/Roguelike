@@ -4,6 +4,7 @@
 #include "Kismet/KismetMathLibrary.h"
 
 #include "Roguelike/Character/Player/PlayerCharacter.h"
+#include "Roguelike/Component/ManagerComponent.h"
 
 void UCharacterAnimInstance::NativeInitializeAnimation()
 {
@@ -34,5 +35,6 @@ void UCharacterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 		DeltaRotation = FMath::RInterpTo(DeltaRotation, DeltaRot, DeltaTime, 6.f);
 		
 		YawOffset = DeltaRotation.Yaw;
+
 	}
 }

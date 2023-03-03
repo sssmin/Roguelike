@@ -4,21 +4,18 @@
 #include "Components/SphereComponent.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "GameFramework/Controller.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 #include "Roguelike/Game/RLGameInstance.h"
 #include "Roguelike/Game/RLGameStateBase.h"
-#include "Roguelike/PlayerController/RLPlayerController.h"
 #include "Roguelike/Type/ItemManage.h"
 #include "Roguelike/Component/ManagerComponent.h"
 #include "Roguelike/Component/ItemComponent.h"
 #include "Roguelike/Component/PlayerCombatComponent.h"
 #include "Roguelike/Interface/InteractInterface.h"
-
-#include "Kismet/KismetSystemLibrary.h"
-
+#include "Roguelike/Character/CharacterAnimInstance.h"
 
 #include "DrawDebugHelpers.h"
 
@@ -51,7 +48,6 @@ APlayerCharacter::APlayerCharacter()
 	
 }
 
-
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -79,13 +75,6 @@ void APlayerCharacter::BeginPlay()
 		PlayerCombatComp->GetItemManager.BindUObject(this, &ThisClass::GetItemManager);
 		PlayerCombatComp->GetCombatManager.BindUObject(this, &ABaseCharacter::GetCombatManager);
 	}
-	
-}
-
-void APlayerCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -96,17 +85,12 @@ void APlayerCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 	PlayerInputComponent->BindAction("Test1", IE_Pressed, this, &ThisClass::Test1);
 	PlayerInputComponent->BindAction("Test2", IE_Pressed, this, &ThisClass::Test2);
 	PlayerInputComponent->BindAction("Test3", IE_Pressed, this, &ThisClass::Test3);
-
 	PlayerInputComponent->BindAction("Recall", IE_Pressed, this, &ThisClass::Recall);
-
 	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &ThisClass::Attack);
 	PlayerInputComponent->BindAction("Attack", IE_Released, this, &ThisClass::AttackReleased);
-
 	PlayerInputComponent->BindAction("FreeCam", IE_Pressed, this, &ThisClass::PressedFreeCam);
 	PlayerInputComponent->BindAction("FreeCam", IE_Released, this, &ThisClass::ReleasedFreeCam);
-
 	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &ThisClass::Interact);
-
 }
 
 void APlayerCharacter::PressedFreeCam()
@@ -118,7 +102,6 @@ void APlayerCharacter::ReleasedFreeCam()
 {
 	OnPressedFreeCam.ExecuteIfBound(false);
 }
-
 
 /****************************************
 	Test Function
@@ -203,7 +186,6 @@ void APlayerCharacter::Interact()
 		}
 	}
 }
-
 
 void APlayerCharacter::Attack()
 {
@@ -303,5 +285,15 @@ void APlayerCharacter::OnSkillHit(AActor* Attacker, AActor* DamageCauser, const 
 	if (ManagerComponent)
 	{
 		ManagerComponent->ReceiveDamage(EnemyManager, FItemManager(), Attacker, DamageCauser, DamageType);
+	}
+}
+
+void APlayerCharacter::Dead()
+{
+	Super::Dead();
+
+	if (GetMesh() && Cast<UCharacterAnimInstance>(GetMesh()->GetAnimInstance()))
+	{
+		Cast<UCharacterAnimInstance>(GetMesh()->GetAnimInstance())->SetIsDead((true));
 	}
 }

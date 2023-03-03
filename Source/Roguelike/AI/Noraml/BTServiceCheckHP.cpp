@@ -9,12 +9,11 @@
 void UBTServiceCheckHP::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
-	UManagerComponent* ManagerComp = UManagerComponent::GetManagerComp(OwnerComp.GetAIOwner()->GetPawn());
 	
+	UManagerComponent* ManagerComp = UManagerComponent::GetManagerComp(OwnerComp.GetAIOwner()->GetPawn());
 	UBlackboardComponent* BBComp = OwnerComp.GetBlackboardComponent();
 	
 	if (BBComp && BBComp->GetValueAsBool("DestroyTurret")) return;
-
 	
 	if (ManagerComp)
 	{

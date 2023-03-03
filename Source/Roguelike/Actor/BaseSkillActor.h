@@ -13,12 +13,11 @@ class ROGUELIKE_API ABaseSkillActor : public AActor
 	
 public:	
 	ABaseSkillActor();
-	virtual void Tick(float DeltaTime) override;
-
-protected:
 	virtual void BeginPlay() override;
 
+protected:
 	FCombatManager OwnerCombatManager;
+	
 public:	
 	void SetCombatManager(const FCombatManager& InManager) { OwnerCombatManager = InManager; }
 	FCombatManager GetCombatManager() const { return OwnerCombatManager; }

@@ -17,24 +17,20 @@ class ROGUELIKE_API AMeteorActor : public ABaseSkillActor, public INiagaraPartic
 	
 public:	
 	AMeteorActor();
-	
-protected:
 	virtual void BeginPlay() override;
-
+	
 private:	
+	void Active();
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	UNiagaraComponent* NiagaraComponent;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	UDecalComponent* DecalComponent;
-
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UNiagaraSystem* MeteorNiagara;
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	AActor* OwnerActor;
+	
 	float MeteorTime;
-
-	FTimerHandle MeteorTimerHandle;
-
-	void Active();
-
+	
 };

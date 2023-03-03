@@ -10,7 +10,6 @@ EBTNodeResult::Type UBTTaskMoveComplete::ExecuteTask(UBehaviorTreeComponent& Own
 	{
 		BBComp->SetValueAsBool("ShouldMove", false);
 
-
 		return EBTNodeResult::Succeeded;
 	}
 	return EBTNodeResult::Failed;

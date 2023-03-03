@@ -28,31 +28,33 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void InitializeComponent() override;
-private:	
-	const char FIX_MAX_STACK = 10;
-
-	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
-	FItemManager ItemManager;
-	void ApplyOnceItem(uint8 Item);
-	void RemoveOnceItem(uint8 Item);
-	uint8 GetFixMaxStack(EFixMaxStackItem Item);
-	void IncreaseFixMaxStack(EFixMaxStackItem Item);
-
-	UPROPERTY()
-	UManagerComponent* ManagerComp;
 	
-	float IncreaseAtkValue;
-	float IncreaseMaxHpValue;
-	TMap<uint8, uint8> FixMaxNum;
-	TMap<uint8, UTexture2D*> ItemIcons;
-
-	void SendManager();
-	void ResumeController(ARLPlayerController* RLPC);
+private:
 	UFUNCTION()
 	void SelectItem(UItemInfo* Item);
 	UFUNCTION()
 	void InitEquipItems();
+	void ApplyOnceItem(uint8 Item);
+	void RemoveOnceItem(uint8 Item);
+	uint8 GetFixMaxStack(EFixMaxStackItem Item);
+	void IncreaseFixMaxStack(EFixMaxStackItem Item);void SendManager();
+	void ResumeController(ARLPlayerController* RLPC);
+	
+	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
+	FItemManager ItemManager;
+	UPROPERTY()
+	UManagerComponent* ManagerComp;
+	
+	const char FIX_MAX_STACK = 10;
+	float IncreaseAtkValue;
+	float IncreaseMaxHpValue;
+	UPROPERTY()
+	TMap<uint8, uint8> FixMaxNum;
+	UPROPERTY()
+	TMap<uint8, UTexture2D*> ItemIcons;
+	
 public:
 	FItemManager GetItemManager() const { return ItemManager; }
 	void SetManagerComp(UManagerComponent* Comp) { ManagerComp = Comp; }
+	
 };

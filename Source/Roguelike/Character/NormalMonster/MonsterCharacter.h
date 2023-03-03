@@ -8,18 +8,9 @@
 #include "Roguelike/Type/DTForGM.h"
 #include "MonsterCharacter.generated.h"
 
-enum class EMonsterType : uint8
-{
-	NONE,
-	NORMAL,
-	ELITE,
-	BOSS,
-
-	MAX
-};
-
 class UWidgetComponent;
 class UHPBarWidget;
+class UBossHPBarWidget;
 class UMonsterCombatComponent;
 class AMeteorActor;
 class UBehaviorTree;
@@ -35,6 +26,7 @@ public:
 	AMonsterCharacter();
 	virtual void BeginPlay() override;
 	void SetHPBarWidget(const TSubclassOf<UHPBarWidget>& Widget);
+	void SetHPBarWidget(const TSubclassOf<UBossHPBarWidget>& Widget);
 	virtual void Attack() override;
 	virtual void SpecialAttack(AActor* Target);
 	virtual void GiveBTToController();
@@ -42,89 +34,49 @@ public:
 	void SetPatrolSpeed();
 	void SetDefaultSpeed();
 	void RequestHeal(AActor* Requester);
-
+	virtual void Dead() override;
+	virtual void SetIsDeadAnimInst();
+	virtual void SetIsDeadBB();
+	
 protected:
-	template<class T>
-	void FireIn3Parts(TSubclassOf<UDamageType> DamageType, TSubclassOf<T> ProjectileClass)
-	{
-		if (MonsterCombatComp)
-		{
-			MonsterCombatComp->FireInParts<T>(3, 45.f, 45.f, DamageType, ProjectileClass);
-		}
-	}
-	template<class T>
-	void FireIn8Parts(TSubclassOf<UDamageType> DamageType, TSubclassOf<T> ProjectileClass)
-	{
-		if (MonsterCombatComp)
-		{
-			MonsterCombatComp->FireSpreadFromCenter<T>(8, 360.f, 45.f, DamageType, ProjectileClass);
-		}
-	}
-	template<class T>
-	void FireOneToTwo(TSubclassOf<UDamageType> DamageType, TSubclassOf<T> ProjectileClass)
-	{
-		if (MonsterCombatComp)
-		{
-			MonsterCombatComp->FireOneToTwo<T>(2, 15.f, 30.f, DamageType, ProjectileClass);
-		}
-	}
-	template<class T>
-	void FireSpread8PartsFromCenter(TSubclassOf<UDamageType> DamageType, TSubclassOf<T> ProjectileClass)
-	{
-		if (MonsterCombatComp)
-		{
-			MonsterCombatComp->FireSpreadFromCenter<T>(8, 360.f, 45.f, DamageType, ProjectileClass);
-		}
-	}
-	template<class T>
-	void ThrowBomb(TSubclassOf<T> ProjectileClass, AActor* Target, TSubclassOf<UDamageType> DamageType)
-	{
-		if (MonsterCombatComp)
-		{
-			MonsterCombatComp->ThrowBomb<T>(ProjectileClass, Target, DamageType);
-		}
-	}
-
+	void FireOneToTwo(TSubclassOf<UDamageType> DamageType);
+	void ThrowBomb(AActor* Target, TSubclassOf<UDamageType> DamageType);
+	void FireIn3Parts(TSubclassOf<UDamageType> DamageType);
+	void FireIn8Parts(TSubclassOf<UDamageType> DamageType);
+	void FireSpread8PartsFromCenter(TSubclassOf<UDamageType> DamageType);
 	void Fire3Projectile(TSubclassOf<UDamageType> DamageType);
-	void Teleport();
 	void Meteor(const TSubclassOf<AMeteorActor>& Actor, AActor* Target);
-
+	void Teleport();
+	void RemoveHPWidget();
 	UPROPERTY()
 	ARLMonsterAIController* RLAIController;
+	
 private:
+	void ExecuteDestroy();
+	
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UMonsterCombatComponent* MonsterCombatComp;
-
+	
 	EKindOfMonster KindOfMonster;
-
-	EMonsterType MonsterType;
-
 	UPROPERTY(EditInstanceOnly, Meta = (AllowPrivateAccess = "true"))
 	UWidgetComponent* HPBarWidgetComp;
-	
-
+	UPROPERTY()
+	UBossHPBarWidget* BossHPBarWidget;
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UBehaviorTree* BT;
-
-	float DefaultSpeed;
-	float PatrolSpeed;
-
-	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<AOnetoAnotherProjectile> OnetoAnotherProjectileClass;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AMeteorActor> MeteorActorClass;
-	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<ABombProjectile> BombProjectileClass;
-	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<ATurretProjectile> TurretProjectileClass;
+	
+	float DefaultSpeed;
+	float PatrolSpeed;
+	EMonsterType MonsterType;
 public:
 	void SetMonsterType(EMonsterType Type) { MonsterType = Type; }
 	EMonsterType GetMonsterType() const { return MonsterType; }
 	UMonsterCombatComponent* GetMonsterCombatComp() const { return MonsterCombatComp; }
-	TSubclassOf<AOnetoAnotherProjectile> GetOnetoAnotherProjectileClass() const { return OnetoAnotherProjectileClass; }
 	TSubclassOf<AMeteorActor> GetMeteorActorClass() const { return MeteorActorClass; }
-	TSubclassOf<ABombProjectile> GetBombProjectileClass() const { return BombProjectileClass; }
-	TSubclassOf<ATurretProjectile> GetTurretProjectileClass() const { return TurretProjectileClass;  }
 	void SetKindOfMonster(EKindOfMonster Kind) { KindOfMonster = Kind; }
 	EKindOfMonster GetKindOfMonster() const { return KindOfMonster; }
+	UBossHPBarWidget* GetBossHPBarWidget() const { return BossHPBarWidget; }
+	
 };

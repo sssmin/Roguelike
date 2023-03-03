@@ -11,6 +11,7 @@ UCLASS()
 class ROGUELIKE_API ATurretProjectile : public AMonsterProjectile
 {
 	GENERATED_BODY()
+	
 public:
 	ATurretProjectile();
 

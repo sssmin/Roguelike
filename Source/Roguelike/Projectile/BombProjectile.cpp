@@ -9,6 +9,8 @@
 
 ABombProjectile::ABombProjectile()
 {
+	PrimaryActorTick.bCanEverTick = false;
+	
 	if (PMC)
 	{
 		PMC->InitialSpeed = 1000.f;

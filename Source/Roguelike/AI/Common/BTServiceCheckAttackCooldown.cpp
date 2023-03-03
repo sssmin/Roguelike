@@ -4,8 +4,6 @@
 
 UBTServiceCheckAttackCooldown::UBTServiceCheckAttackCooldown()
 {
-	CanSpecialAttackKey.SelectedKeyName = FName("CanSpacialAttack");
-
 	bSpecialAttackCooldown = false;
 	Cooltime = 0.f;
 }

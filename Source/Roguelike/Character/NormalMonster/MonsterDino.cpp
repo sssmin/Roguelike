@@ -5,5 +5,5 @@
 
 void AMonsterDino::SpecialAttack(AActor* Target)
 {
-	FireIn3Parts<AMonsterProjectile>(USpecialATKDamageType::StaticClass(), nullptr);
+	FireIn3Parts(USpecialATKDamageType::StaticClass());
 }

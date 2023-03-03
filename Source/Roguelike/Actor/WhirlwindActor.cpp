@@ -7,6 +7,8 @@
 
 #include "Roguelike/Type/DamageType/AllDamageTypes.h"
 #include "Roguelike/Character/Player/PlayerCharacter.h"
+#include "Roguelike/Character/BossMonster/BossMonsterCharacter.h"
+#include "Roguelike/Game/RLGameModeBase.h"
 
 AWhirlwindActor::AWhirlwindActor()
 {
@@ -27,12 +29,10 @@ AWhirlwindActor::AWhirlwindActor()
 void AWhirlwindActor::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	
 
 	FTimerHandle ActiveTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(ActiveTimerHandle, this, &ThisClass::ActiveThisSkill, ActiveTime, false);
-	FTimerHandle DestroyTimerHandle;
+
 	GetWorld()->GetTimerManager().SetTimer(DestroyTimerHandle, this, &ThisClass::DestroyThisSkill, DestoryTime, false);
 	if (BoxComponent)
 	{
@@ -40,6 +40,15 @@ void AWhirlwindActor::BeginPlay()
 		BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::BoxBeginOverlapped);
 		BoxComponent->OnComponentEndOverlap.AddDynamic(this, &ThisClass::BoxEndOverlapped);
 	}
+}
+
+void AWhirlwindActor::ReserveDestroy()
+{
+	if (DestroyTimerHandle.IsValid())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(DestroyTimerHandle);
+	}
+	GetWorld()->GetTimerManager().SetTimer(DestroyTimerHandle, this, &ThisClass::DestroyThisSkill, ActiveTime, false);
 }
 
 void AWhirlwindActor::Tick(float DeltaTime)
@@ -68,7 +77,6 @@ void AWhirlwindActor::ActiveThisSkill()
 		ParticleSystemComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WhirlwindParticle, GetActorTransform(), false);
 		BoxComponent->Activate();
 	}
-	
 }
 
 void AWhirlwindActor::DestroyThisSkill()
@@ -77,6 +85,7 @@ void AWhirlwindActor::DestroyThisSkill()
 	{
 		ParticleSystemComp->DestroyComponent();
 	}
+	Cast<ABossMonsterCharacter>(GetOwner())->RemoveSpawnedWhirlwindActor(this);
 	Destroy();
 }
 
@@ -95,4 +104,3 @@ void AWhirlwindActor::BoxEndOverlapped(UPrimitiveComponent* OverlappedComponent,
 		Player = nullptr;
 	}
 }
-

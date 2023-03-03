@@ -11,11 +11,8 @@ UCLASS()
 class ROGUELIKE_API AMonsterPrimeHelix : public AMonsterCharacter
 {
 	GENERATED_BODY()
+	
 public:
-
-protected:
 	virtual void SpecialAttack(AActor* Target) override;
 
-
-	
 };

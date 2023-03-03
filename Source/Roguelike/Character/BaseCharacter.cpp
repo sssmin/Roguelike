@@ -3,9 +3,12 @@
 #include "GameFramework/CharacterMovementComponent.h"
 
 #include "Roguelike/Component/ManagerComponent.h"
+#include "Roguelike/Game/RLGameModeBase.h"
 
 ABaseCharacter::ABaseCharacter()
 {
+	PrimaryActorTick.bCanEverTick = false;
+	
 	ManagerComponent = CreateDefaultSubobject<UManagerComponent>(TEXT("ManagerComp"));
 
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
@@ -57,6 +60,12 @@ FCombatManager ABaseCharacter::GetCombatManager() const
 	return FCombatManager();
 }
 
+void ABaseCharacter::Destroyed()
+{
+	Super::Destroyed();
+
+}
+
 bool ABaseCharacter::IsDead()
 {
 	bool Return = false;
@@ -67,9 +76,11 @@ bool ABaseCharacter::IsDead()
 	return Return;
 }
 
-
-
 void ABaseCharacter::Dead()
 {
-	GetMovementComponent()->SetActive(false);
+	if (GetMovementComponent() && GetMesh())
+	{
+		GetMovementComponent()->SetActive(false);
+		GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
 }

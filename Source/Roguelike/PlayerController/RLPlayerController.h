@@ -25,6 +25,9 @@ class ROGUELIKE_API ARLPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 public:
+	virtual void SetupInputComponent() override;
+	virtual void BeginPlay() override;
+	virtual void PlayerTick(float DeltaTime);
 	/* widget */
 	UFUNCTION()
 	void DeactiveOnceItemListWidget();
@@ -36,46 +39,40 @@ public:
 	void RemoveSelectWidget();
 	void MoveMapFade();
 	void InitOnceItemWidget();
-	
-
+	/*------------*/
 	UFUNCTION(BlueprintCallable)
 	void Init();
-	virtual void SetupInputComponent() override;
-	virtual void BeginPlay() override;
-	virtual void PlayerTick(float DeltaTime);
-
 	void SetMapInfo(FVector2Int MapSize, TArray<FCell> Board, int32 PlayerCurrentCell);
 	void ResumeController();
 	void StopFire();
-	
 	void RegisterItemEmptySlot(UItemInfo* Item) const;
 	UFUNCTION()
 	void RequestItemSwap(const UItemInfo* OldItem, const UItemInfo* NewItem);
 	UFUNCTION()
 	TArray<UItemInfo*> GetRandItem();
-
 	void RecallStart();
 	FRecallCompleteSuccessfully RecallCompleteSuccessfully;
+	
 protected:
 	virtual void OnPossess(APawn* aPawn) override;
 	void MoveForward(float Value);
 	void MoveRight(float Value);
+	
 private:
-	/* Map */
-	TArray<FCell> Board;
-	FVector2Int MapSize;
-	int32 PlayerCell;
+	UFUNCTION()
+	void RecallTimerFinished();
+	UFUNCTION()
+	void RestorePC();
+	void RecallCancel();
+	void RecallEnd();
 	void DrawMap();
 	void ToggleMap();
-	bool bVisibleMap;
+	void LookAtCursor();
 
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UMinimapWidget> MinimapWidgetClass;
 	UPROPERTY()
 	UMinimapWidget* MinimapWidget;
-
-	/****************************/
-	void LookAtCursor();
 	FRotator LookRot;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UNoticeWidget> NoticeWidgetClass;
@@ -91,14 +88,12 @@ private:
 	UMainUIWidget* MainUIWidget;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UUserWidget> FadeWidgetClass;
-
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<APlayersCamera> PlayersCameraClass;
 	UPROPERTY()
 	APlayerCharacter* PlayerCharacter;
 	UPROPERTY()
 	APlayersCamera* CurrentPlayersCamera;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Meta = (AllowPrivateAccess = "true"))
 	FTimerHandle RecallTimerHandle;
 	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Meta = (AllowPrivateAccess = "true"))
@@ -113,15 +108,12 @@ private:
 	UParticleSystemComponent* RecallStartParticleComp;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* RecallEndParticle;
-
-	UFUNCTION()
-	void RecallTimerFinished();
-	void RecallCancel();
-	void RecallEnd();
-
-	UFUNCTION()
-	void RestorePC();
-
-public:
+	UPROPERTY()
+	TArray<FCell> Board;
+	
+	FVector2Int MapSize;
+	int32 PlayerCell;
+	bool bVisibleMap;
+	
 	
 };

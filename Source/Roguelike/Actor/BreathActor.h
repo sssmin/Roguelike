@@ -1,5 +1,4 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -17,22 +16,20 @@ class ROGUELIKE_API ABreathActor : public ABaseSkillActor
 public:	
 	ABreathActor();
 	virtual void Tick(float DeltaTime) override;
-
-protected:
 	virtual void BeginPlay() override;
 
-private:	
-	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	UBoxComponent* BoxComponent;
-
-	float ActiveTime;
-	bool IsActive;
-	float ApplyTime;
-	UPROPERTY()
-	APlayerCharacter* Player;
-
+private:
 	UFUNCTION()
 	void OnBeginOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 	void OnEndOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UBoxComponent* BoxComponent;
+	UPROPERTY()
+	APlayerCharacter* Player;
+	
+	float ActiveTime;
+	bool IsActive;
+	float ApplyTime;
 };

@@ -37,44 +37,47 @@ public:
 	void ClearThisCell();
 	void AteHealThisCell();
 	void ReadyToRecall();
-	void ShowSelectItemWidget();
 
 	void TestPrintMap();
 
 	URLListenerManager* GetListenerManager();
 	
 	FOnInitOnceItem InitOnceItemDelegate;
+	
 private:
+	int32 CalcNextCell(int32 Dir);
+	void CheckEarlyDiscoveredBossCell();
+	void Recall();
+	void MoveProcess(int32 TargetCell, int32 Dir);
+	
 	TSharedPtr<DFSAgrt> DFS;
 	UPROPERTY()
 	ARLGameStateBase* RLGameState;
 	UPROPERTY()
 	ARLGameModeBase* RLGameMode;
-
-	FVector2Int MapSize;
-	int32 ClearCount; //¹æ Å¬¸®¾î °¹¼ö
+	UPROPERTY()
+	URLListenerManager* ListenerManager;
+	UPROPERTY()
+	TMap<uint8, uint8> FixMaxNum;
+	UPROPERTY()
 	TArray<FCell> Board;
+	
+	FVector2Int MapSize;
+	int32 ClearCount; //ë°© í´ë¦¬ì–´ ê°¯ìˆ˜
 	FVector StartPos;
 	int32 StartCell;
-	int32 PlayerCurrentCell; //¸Ê ÀÌµ¿ÇÒ ¶§¸¶´Ù ¹Ù²ñ
-	int32 StageLevel; //Å¬¸®¾îÇÏ¸é 1 Áõ°¡
+	int32 PlayerCurrentCell;
+	int32 StageLevel; 
 	int32 BossCell;
-	int32 BossPrevCell; //ÇÃ·¹ÀÌ¾î°¡ ¿©±â À§Ä¡ÇÏ¸é BossCell ¹ß°ß
-	int32 TotalCellNum; // ¹æ ÃÑ°³¼ö. ½ÃÀÛÁöÁ¡ ¹ÌÆ÷ÇÔ. Total - 1 == ClearCount¸é º¸½º ÀÔÀå °¡´É
+	int32 BossPrevCell;
+	int32 TotalCellNum; // ë°© ì´ê°œìˆ˜. ì‹œì‘ì§€ì  ë¯¸í¬í•¨. Total - 1 == ClearCountë©´ ë³´ìŠ¤ ì…ì¥ ê°€ëŠ¥
 	bool bIsEarlyDiscoveredBoss;
-	
 	FHealthManager HealthManager;
 	FCombatManager CombatManager;
 	FItemManager ItemManager;
 	uint8 Buff;
-	TMap<uint8, uint8> FixMaxNum;
-
-	int32 CalcNextCell(int32 Dir);
-	void CheckEarlyDiscoveredBossCell();
-	void Recall();
-	void MoveProcess(int32 TargetCell, int32 Dir);
-	UPROPERTY()
-	URLListenerManager* ListenerManager;
+	
+	
 public:
 	void GetManager(OUT FHealthManager& OutHealthManager, OUT FCombatManager& OutCombatManager, OUT uint8& OutBuff)
 	{ 
@@ -87,7 +90,6 @@ public:
 	{
 		OutItemManager = ItemManager;
 		OutFixMaxNum = FixMaxNum;
-
 	}
 	void SetManager(const FHealthManager& InHealthManager, const FCombatManager& InCombatManager, const uint8& InBuff)
 	{

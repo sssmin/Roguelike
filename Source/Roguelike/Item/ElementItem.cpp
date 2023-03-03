@@ -6,16 +6,13 @@
 
 AElementItem::AElementItem()
 {
-	
+	PrimaryActorTick.bCanEverTick = false;
 }
 
 void AElementItem::BeginPlay()
 {
-
 	Super::BeginPlay();
 }
-
-
 
 void AElementItem::SetParticle()
 {

@@ -10,6 +10,7 @@
 
 class AMonsterCharacter;
 class ABossMonsterCharacter;
+class AMonsterBossEgo;
 class AElementItem;
 class AHealItem;
 class ACellActor;
@@ -26,12 +27,28 @@ public:
 	void RequestSpawnBoss(int32 StageLevel);
 	void RequestSpawnCell(int32 CellIndex, uint8 TempWall, int32 Dir = -1);
 	void RequestSpawnHealItem();
-	void CreateSidePortal();
-	void CreateCenterPortal();
-	void CreatePrevBossPortal();
+	void CreateSidePortal() const;
+	void CreateCenterPortal() const;
+	void CreatePrevBossPortal() const;
 	TArray<UItemInfo*> CreateRandItem();
-	FVector GetBossCellScale();
+	FVector GetBossCellScale() const;
+	
 private:
+	void InitItemInfoFromTable();
+	FCombatManager& SetRandomElement(int32 StageLevel, FCombatManager& CombatManager);
+	void SpawnCounterElementItem(EElement Element);
+	void SetMonsterManager(int32 StageLevel, OUT FHealthManager& HealthManager, OUT FCombatManager& CombatManager) const;
+	void SetPlayerLocation(int32 Dir) const;
+	TArray<AMonsterCharacter*> SpawnMob(int32 MobCount, EKindOfMonster KindOfMonster, FCombatManager& CombatManager, FHealthManager& HealthManager);
+	void SpawnBoss(EKindOfBossMonster KindOfMonster, FCombatManager& CombatManager, FHealthManager& HealthManager);
+	TSubclassOf<AMonsterCharacter> GetNormalMonsterClass(EKindOfMonster KindOfMonster) const;
+	TSubclassOf<ABossMonsterCharacter> GetBossMonsterClass(EKindOfBossMonster KindOfMonster) const;
+	void ConnectTurret(AMonsterCharacter* Turret, TArray<AMonsterCharacter*> SpawnedMobs);
+	AMonsterCharacter* SpawnBossEgo(const FCombatManager& CombatManager, AMonsterCharacter* Boss);
+	void DestroySpawnedActors();
+	
+	UPROPERTY()
+	TArray<UItemInfo*> ItemInfos;
 	UPROPERTY()
 	TArray<UItemInfo*> SelectedItem;
 	UPROPERTY()
@@ -48,14 +65,8 @@ private:
 	ACellActor* SpawnedCell;
 	UPROPERTY()
 	AElementItem* SpawnedElementItem;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AMonsterBossEgo> BossEgoClass;
 
-	FCombatManager& SetRandomElement(int32 StageLevel, FCombatManager& CombatManager);
-	void SpawnCounterElementItem(EElement Element);
-	void SetMonsterManager(int32 StageLevel, OUT FHealthManager& HealthManager, OUT FCombatManager& CombatManager);
-	void SetPlayerLocation(int32 Dir);
-	TArray<AMonsterCharacter*> SpawnMob(int32 MobCount, EKindOfMonster KindOfMonster, FCombatManager& CombatManager, FHealthManager& HealthManager);
-	void SpawnBoss(EKindOfBossMonster KindOfMonster, FCombatManager& CombatManager, FHealthManager& HealthManager);
-	TSubclassOf<AMonsterCharacter> GetNormalMonsterClass(EKindOfMonster KindOfMonster);
-	TSubclassOf<ABossMonsterCharacter> GetBossMonsterClass(EKindOfBossMonster KindOfMonster);
-	void ConnectTurret(AMonsterCharacter* Turret, TArray<AMonsterCharacter*> SpawnedMobs);
+	
 };

@@ -4,7 +4,6 @@
 
 UBTServiceCheckBossSkillCooldown::UBTServiceCheckBossSkillCooldown()
 {
-	CanUseSkillKey.SelectedKeyName = FName("CanUseSkill");
 	Cooltime = 0.f;
 	bSkillCooldown = false;
 }

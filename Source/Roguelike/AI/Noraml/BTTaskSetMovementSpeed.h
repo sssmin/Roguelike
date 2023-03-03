@@ -17,8 +17,11 @@ class ROGUELIKE_API UBTTaskSetMovementSpeed : public UBTTaskNode
 {
 	GENERATED_BODY()
 	
-private:
+public:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+	
+private:
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	EMovementType MovementType;
+	
 };

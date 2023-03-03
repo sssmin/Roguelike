@@ -17,6 +17,7 @@ class ROGUELIKE_API UMinimapCellWidget : public UUserWidget
 
 public:
 	void Init(ECellState RoomState);
+	
 private:
 	UPROPERTY(Meta = (BindWidget))
 	UBorder* Cell;

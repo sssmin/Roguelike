@@ -24,10 +24,13 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void OnHit(const FCombatManager& EnemyCombatManager, const FItemManager& EnemyItemManager, AActor* Attacker, AActor* DamageCauser, TSubclassOf<UDamageType> DamageType);
 	virtual void Attack();
-	void Dead();
+	virtual void Dead();
 	bool IsDead();
-
+	FCombatManager GetCombatManager() const;
+	
 protected:
+	virtual void Destroyed() override;
+	
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UManagerComponent* ManagerComponent;
 	
@@ -36,7 +39,6 @@ private:
 	void OnExplodeHit(AActor* DamagedActor, float Damage, const UDamageType* DamageType, FVector Origin, FHitResult HitInfo, AController* InstigatedBy, AActor* DamageCauser);
 
 public:
-	FCombatManager GetCombatManager() const;
 	UFUNCTION(BlueprintCallable)
 	UManagerComponent* GetManagerComp() const { return ManagerComponent;  }
 };

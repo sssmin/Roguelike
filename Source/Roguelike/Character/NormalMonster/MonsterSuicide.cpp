@@ -13,6 +13,7 @@
 
 AMonsterSuicide::AMonsterSuicide()
 {
+	PrimaryActorTick.bCanEverTick = false;
 	static ConstructorHelpers::FObjectFinder<UBehaviorTree> BTObject(TEXT("/Game/Blueprints/AI/BT_SuicideMonster"));
 	if (BTObject.Succeeded())
 	{
@@ -44,32 +45,33 @@ void AMonsterSuicide::GiveBTToController()
 	}
 }
 
-void AMonsterSuicide::Destroyed()
+void AMonsterSuicide::Dead()
 {
-	Super::Destroyed();
+	Super::Dead();
 
 	//소리 파티클 재생
-	
-	if (ManagerComponent)
-	{
-		TArray<AActor*> IgnoreActor;
-		const float ATK = ManagerComponent->GetCombatManager().ATK * 5.f;
-		UGameplayStatics::ApplyRadialDamage(
-			this,
-			ATK,
-			GetActorLocation(),
-			150.f,
-			USkillDamageType::StaticClass(),
-			IgnoreActor,
-			this,
-			GetController(),
-			true
-		);
-	}
+    	
+    if (ManagerComponent)
+    {
+    	TArray<AActor*> IgnoreActor;
+    	const float ATK = ManagerComponent->GetCombatManager().ATK * 5.f;
+    	UGameplayStatics::ApplyRadialDamage(
+    		this,
+    		ATK,
+    		GetActorLocation(),
+    		150.f,
+    		USkillDamageType::StaticClass(),
+    		IgnoreActor,
+    		this,
+    		GetController(),
+    		true
+    	);
+    }
 }
 
 void AMonsterSuicide::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (IsDead()) return;
 	RLAIController = RLAIController == nullptr ? Cast<ARLMonsterAIController>(GetController()) : RLAIController;
 	if (OtherActor)
 	{

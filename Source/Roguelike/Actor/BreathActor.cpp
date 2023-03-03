@@ -66,4 +66,3 @@ void ABreathActor::Tick(float DeltaTime)
 		}
 	}
 }
-

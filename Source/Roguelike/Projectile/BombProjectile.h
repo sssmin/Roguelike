@@ -10,11 +10,12 @@ UCLASS()
 class ROGUELIKE_API ABombProjectile : public AMonsterProjectile
 {
 	GENERATED_BODY()
+	
 public:
 	ABombProjectile();
 	virtual void SetVelocity(const FVector& Dir) override;
 
-
 protected:
 	virtual void OnHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
+	
 };

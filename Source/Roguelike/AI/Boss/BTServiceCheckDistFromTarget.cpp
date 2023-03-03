@@ -11,8 +11,7 @@ UBTServiceCheckDistFromTarget::UBTServiceCheckDistFromTarget()
 void UBTServiceCheckDistFromTarget::OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	Super::OnBecomeRelevant(OwnerComp, NodeMemory);
-
-
+	
 	UBlackboardComponent* BBComp = OwnerComp.GetBlackboardComponent();
 	if (BBComp)
 	{

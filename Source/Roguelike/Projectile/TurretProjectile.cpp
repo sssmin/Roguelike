@@ -9,6 +9,7 @@
 
 ATurretProjectile::ATurretProjectile()
 {
+	PrimaryActorTick.bCanEverTick = false;
 	if (PMC)
 	{
 		PMC->InitialSpeed = 700.f;

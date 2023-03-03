@@ -5,12 +5,6 @@
 
 #include "Roguelike/Character/NormalMonster/MonsterCharacter.h"
 
-UBTTaskSpeicalAttack::UBTTaskSpeicalAttack()
-{
-	TargetKey = "Target";
-	CanSpecialAttackKey = "CanSpecialAttack";
-}
-
 EBTNodeResult::Type UBTTaskSpeicalAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	Super::ExecuteTask(OwnerComp, NodeMemory);
@@ -19,10 +13,10 @@ EBTNodeResult::Type UBTTaskSpeicalAttack::ExecuteTask(UBehaviorTreeComponent& Ow
 	UBlackboardComponent* BBComp = OwnerComp.GetBlackboardComponent();
 	if (AIPawn && BBComp)
 	{
-		AActor* Target = Cast<AActor>(BBComp->GetValueAsObject(TargetKey));
+		AActor* Target = Cast<AActor>(BBComp->GetValueAsObject("Target"));
 		
 		AIPawn->SpecialAttack(Target);
-		BBComp->SetValueAsBool(CanSpecialAttackKey, false);
+		BBComp->SetValueAsBool("CanSpecialAttack", false);
 		return EBTNodeResult::Succeeded;
 	}
 	UE_LOG(LogTemp, Warning, TEXT("Attack Failed"));

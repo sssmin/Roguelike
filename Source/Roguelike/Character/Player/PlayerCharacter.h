@@ -18,10 +18,10 @@ UCLASS()
 class ROGUELIKE_API APlayerCharacter : public ABaseCharacter
 {
 	GENERATED_BODY()
+	
 public:
 	APlayerCharacter();
 	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTime) override;
 	FOnPressedFreeCam OnPressedFreeCam;
 	void GetElementFromItem(EElement Element);
 	void IncreaseMovementSpeed();
@@ -31,39 +31,40 @@ public:
 	void RequestItemSwap(const UItemInfo* OldItem, const UItemInfo* NewItem);
 	UFUNCTION(BlueprintImplementableEvent)
 	void ApplyElementParticle();
-
 	void OnSkillHit(AActor* Attacker, AActor* DamageCauser, const FCombatManager& EnemyManager, TSubclassOf<UDamageType> DamageType);
+	virtual void Dead() override;
+	void StopFire();
+	
 protected:
-
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void Attack() override;
 
 private:
-	UPROPERTY()
-	APlayerController* PC;
-	FRotator LookRot;
-
-	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	UItemComponent* ItemComp;
-	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	UPlayerCombatComponent* PlayerCombatComp;
-	void Test1();
-	void Test2();
-	void Test3();
-
+	FItemManager GetItemManager() const;
+	void AttackReleased();
 	void Interact();
 	void PressedFreeCam();
 	void ReleasedFreeCam();
 	void Recall();
-
+	
+	UPROPERTY()
+	APlayerController* PC;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UItemComponent* ItemComp;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UPlayerCombatComponent* PlayerCombatComp;
+	
+	FRotator LookRot;
 	bool bPressedAttackButton;
-	FItemManager GetItemManager() const;
-
-	void AttackReleased();
+	
+	void Test1();
+	void Test2();
+	void Test3();
+	
 public:
 	FRotator GetLookRot() const { return LookRot; }
 	void SetLookRot(FRotator Rot) { LookRot = Rot; }
 	UItemComponent* GetItemComp() const { return ItemComp; }
-	void StopFire();
+	
 	
 };

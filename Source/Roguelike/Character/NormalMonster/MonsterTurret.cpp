@@ -9,6 +9,7 @@
 
 AMonsterTurret::AMonsterTurret()
 {
+	PrimaryActorTick.bCanEverTick = false;
 	static ConstructorHelpers::FObjectFinder<UBehaviorTree> BTObject(TEXT("/Game/Blueprints/AI/BT_TurretMonster"));
 	if (BTObject.Succeeded())
 	{
@@ -19,7 +20,7 @@ AMonsterTurret::AMonsterTurret()
 void AMonsterTurret::GiveBTToController()
 {
 	RLAIController = RLAIController == nullptr ? Cast<ARLMonsterAIController>(GetController()) : RLAIController;
-	if (RLAIController && RLAIController->GetBlackboardComponent())
+	if (RLAIController)
 	{
 		RLAIController->SetBehaviorTree(TurretBT);
 	}
@@ -27,14 +28,6 @@ void AMonsterTurret::GiveBTToController()
 
 void AMonsterTurret::SpecialAttack(AActor* Target)
 {
-	FireSpread8PartsFromCenter<ATurretProjectile>(USpecialATKDamageType::StaticClass(), GetTurretProjectileClass());
-}
-
-void AMonsterTurret::Destroyed()
-{
-	if (RLAIController && RLAIController->GetBlackboardComponent())
-	{
-		RLAIController->GetBlackboardComponent()->SetValueAsBool("DestroyTurret", true);
-	}
+	FireSpread8PartsFromCenter(USpecialATKDamageType::StaticClass());
 }
 

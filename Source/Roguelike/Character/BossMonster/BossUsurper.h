@@ -12,7 +12,10 @@ class ROGUELIKE_API ABossUsurper : public ABossMonsterCharacter
 	GENERATED_BODY()
 	
 public:
+	ABossUsurper();
 	virtual void ExecuteSkill() override;
-	virtual void SpecialAttack(AActor* Target) override;
+
+protected:
+	virtual void Destroyed() override;
 	
 };

@@ -6,9 +6,19 @@
 #include "Engine/DataTable.h"
 #include "DTForGM.generated.h"
 
-
 class AMonsterCharacter;
 class ABossMonsterCharacter;
+
+enum class EMonsterType : uint8
+{
+	NONE,
+	NORMAL,
+	ELITE,
+	BOSS,
+	EGO,
+
+	MAX
+};
 
 USTRUCT(BlueprintType)
 struct FMonsterStatTable : public FTableRowBase

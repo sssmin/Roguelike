@@ -1,5 +1,4 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -7,6 +6,7 @@
 #include "Roguelike/Interface/DFSInterface.h"
 #include "RLGameStateBase.generated.h"
 
+class ARLPlayerController;
 class ARLGameModeBase;
 class URLGameInstance;
 
@@ -27,24 +27,26 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Init();
 	void SpawnPrevBossPortal();
+	
 private:
-	/* 셀 목표 */
-	int32 ObjectiveNum; //목표 킬수
-	int32 CurrentNum; //현재 킬수
-
-	/* 정보 */
-	FCell CellInfo;
-	int32 StageLevel;
+	void ClearThisCell();
+	void SetObjective();
+	void CreateCenterPortal();
+	void CreateSidePortal();
 
 	UPROPERTY()
 	ARLGameModeBase* RLGameMode;
 	UPROPERTY()
 	URLGameInstance* RLGameInst;
-
-	void ClearThisCell();
-	void SetObjective();
-	void CreateCenterPortal();
-	void CreateSidePortal();
+	UPROPERTY()
+	ARLPlayerController* RLPlayerController;
+	
+	int32 ObjectiveNum; //목표 킬수
+	int32 CurrentNum; //현재 킬수
+	
+	FCell CellInfo;
+	int32 StageLevel;
+	
 public:
 	void SetCellInfo(const FCell& Info) { CellInfo = Info;  }
 	

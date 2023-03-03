@@ -6,6 +6,8 @@
 
 AMonsterProjectile::AMonsterProjectile()
 {
+	PrimaryActorTick.bCanEverTick = false;
+	
 	if (PMC)
 	{
 		PMC->InitialSpeed = 1200.f;
@@ -16,18 +18,14 @@ AMonsterProjectile::AMonsterProjectile()
 void AMonsterProjectile::BeginPlay()
 {
 	Super::BeginPlay();
-
-
-	SetParticle(MonsterProjectileParticle);
-
+	
 	SpawnParticle();
 }
 
-
 void AMonsterProjectile::Destroyed()
 {
-	if (HitParticle)
+	if (GetHitParticle())
 	{
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitParticle, GetActorTransform());
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), GetHitParticle(), GetActorTransform());
 	}
 }

@@ -17,7 +17,7 @@ class ROGUELIKE_API ACellActor : public AActor
 	
 public:	
 	ACellActor();
-	virtual void Tick(float DeltaTime) override;
+	virtual void BeginPlay() override;
 	void CreateSidePortal();
 	void CreateCenterPortal();
 	void CreatePrevBossPortal();
@@ -25,28 +25,23 @@ public:
 	void CreateWall();
 	UFUNCTION(BlueprintImplementableEvent)
 	FVector GetPlaneScale();
+	
 protected:
-	virtual void BeginPlay() override;
 	virtual void Destroyed() override;
 
-private:	
+private:
+	bool IsExistWall(uint8 Wall);
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (Bitmask, BitmaskEnum = ETempWall, AllowPrivateAccess = "true"))
 	uint8 TempWall;
-
 	UPROPERTY()
 	int32 CellClass;
-
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UPortalComponent* PortalComp;
-
-
-	bool IsExistWall(uint8 Wall);
-
-	TArray<AWallActor*> Walls;
-
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AWallActor> WallActorClass;
-
+	UPROPERTY()
+	TArray<AWallActor*> Walls;
 	
 public:
 	void SetTempWall(int32 CellIndex, uint8 Value) 

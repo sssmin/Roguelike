@@ -8,6 +8,7 @@
 
 AMonsterSkeleton::AMonsterSkeleton()
 {
+	PrimaryActorTick.bCanEverTick = false;
 	static ConstructorHelpers::FObjectFinder<UBehaviorTree> BTObject(TEXT("/Game/Blueprints/AI/BT_SkeletonMonster"));
 	if (BTObject.Succeeded())
 	{
@@ -31,5 +32,5 @@ void AMonsterSkeleton::GiveBTToController()
 
 void AMonsterSkeleton::SpecialAttack(AActor* Target)
 {
-	ThrowBomb<ABombProjectile>(GetBombProjectileClass(), Target, USpecialATKDamageType::StaticClass());
+	ThrowBomb(Target, USpecialATKDamageType::StaticClass());
 }

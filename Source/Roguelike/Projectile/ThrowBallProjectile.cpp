@@ -9,6 +9,7 @@
 
 AThrowBallProjectile::AThrowBallProjectile()
 {
+	PrimaryActorTick.bCanEverTick = false;
 	if (PMC)
 	{
 		PMC->InitialSpeed = 3000.f;

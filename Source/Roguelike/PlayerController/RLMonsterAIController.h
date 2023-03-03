@@ -11,6 +11,7 @@ class UBlackboardComponent;
 class UBehaviorTreeComponent;
 class AMonsterCharacter;
 class UHPBarWidget;
+class UBossHPBarWidget;
 class UAISenseConfig_Sight;
 class UBehaviorTree;
 
@@ -22,44 +23,37 @@ public:
 	ARLMonsterAIController();
 	virtual void BeginPlay() override;
 	virtual void OnPossess(APawn* InPawn) override;
-	virtual void Tick(float DeltaTime) override;
 	void OnSkillEnd();
-
 	UFUNCTION()
 	void OnPercptionUpdated(AActor* Actor, FAIStimulus Stimulus);
-
+	void SetBehaviorTree(UBehaviorTree* BT);
+	void SetTarget(AActor* Target);
+	
 private:
+	UFUNCTION()
+	void RunBT();
+	
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UBlackboardComponent* BBComp;
-
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UBehaviorTreeComponent* BTComp;
-
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UBehaviorTree* BehaviorTree;
-
 	UPROPERTY()
 	AMonsterCharacter* Monster;
-
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UHPBarWidget> HPBarWidgetClass;
-
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UBossHPBarWidget> BossHPBarWidgetClass;
 	UPROPERTY()
 	UHPBarWidget* HPBarWidget;
-
+	UPROPERTY()
+	UAISenseConfig_Sight* SightConfig;
+	
 	float AISightRadius;
 	float AISightAge;
 	float AILoseSightRadius;
 	float AIFieldOfView;
-	UPROPERTY()
-	UAISenseConfig_Sight* SightConfig;
-
-	FName TargetKey;
-	FName OutofSightKey;
-
-	UFUNCTION()
-	void RunBT();
-public:
-	void SetBehaviorTree(UBehaviorTree* BT);
-	void SetTarget(AActor* Target);
+	
+	
 };

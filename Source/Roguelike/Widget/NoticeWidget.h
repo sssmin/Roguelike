@@ -13,6 +13,7 @@ UCLASS()
 class ROGUELIKE_API UNoticeWidget : public UUserWidget
 {
 	GENERATED_BODY()
+	
 public:
 	void SetText(const FString& Text);
 

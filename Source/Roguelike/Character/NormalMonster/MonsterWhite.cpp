@@ -6,12 +6,13 @@
 
 void AMonsterWhite::SpecialAttack(AActor* Target)
 {
-	
 }
 
-void AMonsterWhite::Destroyed()
+void AMonsterWhite::Dead()
 {
-	Super::Destroyed();
-
-	FireIn8Parts<AMonsterProjectile>(USpecialATKDamageType::StaticClass(),  nullptr);
+	Super::Dead();
+	
+	FireIn8Parts(USpecialATKDamageType::StaticClass());
 }
+
+

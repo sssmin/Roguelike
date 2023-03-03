@@ -10,6 +10,8 @@ UBTServiceCheckHealCooldown::UBTServiceCheckHealCooldown()
 
 void UBTServiceCheckHealCooldown::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
+	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
+
 	if (bHealCooldown) return;
 
 	UBlackboardComponent* BBComp = OwnerComp.GetBlackboardComponent();

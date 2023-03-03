@@ -26,15 +26,13 @@ class ROGUELIKE_API UBTServiceCheckState : public UBTService
 	GENERATED_BODY()
 public:
 	UBTServiceCheckState();
-
-protected:
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 	
 private:
 	void CheckState(UBehaviorTreeComponent& OwnerComp);
+	
 	UPROPERTY(Meta = (Bitmask, BitmaskEnum = EState))
 	uint8 CurrentState;
-
 	UPROPERTY(EditAnywhere)
 	FBlackboardKeySelector StateKey;
 

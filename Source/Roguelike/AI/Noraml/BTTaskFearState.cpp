@@ -3,11 +3,6 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "AIController.h"
 
-UBTTaskFearState::UBTTaskFearState()
-{
-	LocKey = "FearLocation";
-}
-
 EBTNodeResult::Type UBTTaskFearState::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	Super::ExecuteTask(OwnerComp, NodeMemory);
@@ -23,11 +18,8 @@ EBTNodeResult::Type UBTTaskFearState::ExecuteTask(UBehaviorTreeComponent& OwnerC
 			FVector ReverseToTargetVector = Monster->GetActorLocation() - Target->GetActorLocation();
 			ReverseToTargetVector = ReverseToTargetVector.GetSafeNormal();
 			FVector ToGoVector = Monster->GetActorLocation() + ReverseToTargetVector * 1000.f;
-			BBComp->SetValueAsVector(LocKey, ToGoVector);
+			BBComp->SetValueAsVector("FearLocation", ToGoVector);
 		}
 	}
-	
-
-	
 	return EBTNodeResult::Succeeded;
 }

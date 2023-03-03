@@ -10,20 +10,20 @@ UCLASS()
 class ROGUELIKE_API UBTServiceCheckHealCooldown : public UBTService
 {
 	GENERATED_BODY()
+	
 public:
 	UBTServiceCheckHealCooldown();
-
-protected:
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 
 private:
+	UFUNCTION()
+	void CooldownFinished(UBlackboardComponent* BBComp);
+	void SetCooltime(UBlackboardComponent* BBComp);
+	
 	UPROPERTY(EditAnywhere)
 	FBlackboardKeySelector CanHealKey;
 	
 	bool bHealCooldown;
 	float Cooltime;
-
-	void SetCooltime(UBlackboardComponent* BBComp);
-	UFUNCTION()
-	void CooldownFinished(UBlackboardComponent* BBComp);
+	
 };

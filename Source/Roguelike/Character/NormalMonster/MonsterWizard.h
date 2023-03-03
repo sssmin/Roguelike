@@ -11,7 +11,7 @@ class ROGUELIKE_API AMonsterWizard : public AMonsterCharacter
 {
 	GENERATED_BODY()
 	
-protected:
+public:
 	virtual void SpecialAttack(AActor* Target) override;
 	
 };

@@ -15,9 +15,8 @@ class ROGUELIKE_API AMonsterTurret : public AMonsterCharacter
 public:
 	AMonsterTurret();
 	virtual void GiveBTToController() override;
-protected:
 	virtual void SpecialAttack(AActor* Target) override;
-	virtual void Destroyed() override;
+
 private:
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UBehaviorTree* TurretBT;

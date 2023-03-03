@@ -4,10 +4,12 @@
 
 #include "RLGameInstance.h"
 #include "RLGameModeBase.h"
+#include "Roguelike/PlayerController/RLPlayerController.h"
 
 
 ARLGameStateBase::ARLGameStateBase()
 {
+	PrimaryActorTick.bCanEverTick = false;
 	ObjectiveNum = 0;
 	CurrentNum = 0;
 	StageLevel = 0;
@@ -22,6 +24,7 @@ void ARLGameStateBase::Init()
 {
 	RLGameMode = Cast<ARLGameModeBase>(UGameplayStatics::GetGameMode(this));
 	RLGameInst = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
+	RLPlayerController = Cast<ARLPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
 	check(RLGameMode);
 	check(RLGameInst);
 	
@@ -53,6 +56,8 @@ void ARLGameStateBase::SetObjective()
 
 	check(RLGameInst);
 	check(RLGameMode);
+	check(RLPlayerController);
+	
 	if (CellInfo.IsCleared)
 	{
 		CreateSidePortal();
@@ -82,7 +87,7 @@ void ARLGameStateBase::SetObjective()
 			if (!CellInfo.SelectedBonusItem)
 			{
 				RLGameInst->SetSelectedBonusItem(true);
-				RLGameInst->ShowSelectItemWidget();
+				RLPlayerController->ShowSelectItemWidget();
 			}
 			CreateSidePortal();
 			break;
@@ -93,8 +98,8 @@ void ARLGameStateBase::SetObjective()
 void ARLGameStateBase::KillBoss()
 {
 	CreateCenterPortal();
-	check(RLGameInst);
-	RLGameInst->ShowSelectItemWidget();
+	check(RLPlayerController);
+	RLPlayerController->ShowSelectItemWidget();
 }
 
 void ARLGameStateBase::KillScored()

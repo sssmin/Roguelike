@@ -15,7 +15,6 @@ EBTNodeResult::Type UBTTaskBossSkill::ExecuteTask(UBehaviorTreeComponent& OwnerC
 		BBComp->SetValueAsBool("CanUseSkill", false);
 		BBComp->SetValueAsBool("MustStop", true);
 
-
 		return EBTNodeResult::Succeeded;
 	}
 	return EBTNodeResult::Failed;

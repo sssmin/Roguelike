@@ -287,13 +287,10 @@ void UManagerComponent::Dead()
 			if (Cast<ABossMonsterCharacter>(GetOwner())) //죽은게 보스
 			{
 				RLGameState->KillBoss();
-				GetOwner()->Destroy();
 			}
 			else //일반 몹
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Kill"));
 				RLGameState->KillScored();
-				GetOwner()->Destroy();
 			}
 		}
 	}

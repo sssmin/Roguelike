@@ -3,19 +3,10 @@
 
 ABaseSkillActor::ABaseSkillActor()
 {
-	PrimaryActorTick.bCanEverTick = true;
-
+	PrimaryActorTick.bCanEverTick = false;
 }
 
 void ABaseSkillActor::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
-
-void ABaseSkillActor::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-

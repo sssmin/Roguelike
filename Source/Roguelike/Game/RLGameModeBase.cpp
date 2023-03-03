@@ -4,6 +4,7 @@
 
 #include "Roguelike/Character/NormalMonster/MonsterCharacter.h"
 #include "Roguelike/Character/BossMonster/BossMonsterCharacter.h"
+#include "Roguelike/Character/NormalMonster/MonsterBossEgo.h"
 #include "Roguelike/Component/ManagerComponent.h"
 #include "Roguelike/Component/MonsterCombatComponent.h"
 #include "Roguelike/Item/ElementItem.h"
@@ -12,6 +13,7 @@
 
 ARLGameModeBase::ARLGameModeBase()
 {
+	PrimaryActorTick.bCanEverTick = false;
 	MobSpawnPoints.Add(FVector(-300.f, 0.f, 200.f));
 	MobSpawnPoints.Add(FVector(0.f, -300.f, 200.f));
 	MobSpawnPoints.Add(FVector(300.f, 0.f, 200.f));
@@ -37,16 +39,16 @@ void ARLGameModeBase::RequestSpawnMob(int32 StageLevel, int32 MobCount)
 	AMonsterCharacter* Turret = nullptr;
 	TArray<AMonsterCharacter*> SpawnedMobs;
 
-	Turret = SpawnMob(1, EKindOfMonster::TURRET, CombatManager, HealthManager)[0]; 	//≈Õ∑ø
-
-	for (int32 i = 0; i < 2; ++i)
-	{
-		EKindOfMonster RandMonster = static_cast<EKindOfMonster>(FMath::RandRange(1, static_cast<uint8>(EKindOfMonster::MAX) - 1));
-		SpawnedMobs.Append(SpawnMob(MobCount / 2, RandMonster, CombatManager, HealthManager));
-	}
-
-	ConnectTurret(Turret, SpawnedMobs);
-	//SpawnBoss(EKindOfBossMonster::USURPER, CombatManager, HealthManager); //TEST
+	// Turret = SpawnMob(1, EKindOfMonster::TURRET, CombatManager, HealthManager)[0]; 	//≈Õ∑ø
+	//
+	// for (int32 i = 0; i < 2; ++i)
+	// {
+	// 	const EKindOfMonster RandMonster = static_cast<EKindOfMonster>(FMath::RandRange(1, static_cast<uint8>(EKindOfMonster::MAX) - 1));
+	// 	SpawnedMobs.Append(SpawnMob(MobCount / 2, RandMonster, CombatManager, HealthManager));
+	// }
+	//
+	// ConnectTurret(Turret, SpawnedMobs);
+	SpawnBoss(EKindOfBossMonster::USURPER, CombatManager, HealthManager); //TEST
 }
 
 TArray<AMonsterCharacter*> ARLGameModeBase::SpawnMob(int32 MobCount, EKindOfMonster KindOfMonster, FCombatManager& CombatManager, FHealthManager& HealthManager)
@@ -76,7 +78,6 @@ TArray<AMonsterCharacter*> ARLGameModeBase::SpawnMob(int32 MobCount, EKindOfMons
 	return SpawnedMobs;
 }
 
-
 void ARLGameModeBase::RequestSpawnBoss(int32 StageLevel)
 {
 	FCombatManager CombatManager;
@@ -85,25 +86,48 @@ void ARLGameModeBase::RequestSpawnBoss(int32 StageLevel)
 	CombatManager = SetRandomElement(StageLevel, CombatManager);
 
 	EKindOfBossMonster RandMonster = static_cast<EKindOfBossMonster>(FMath::RandRange(0, static_cast<uint8>(EKindOfBossMonster::MAX) - 1));
+	RandMonster = EKindOfBossMonster::USURPER; //TEST
 	SpawnBoss(RandMonster, CombatManager, HealthManager);
 }
 
 void ARLGameModeBase::SpawnBoss(EKindOfBossMonster KindOfMonster, FCombatManager& CombatManager, FHealthManager& HealthManager)
 {
-	TSubclassOf<ABossMonsterCharacter> BossClass = GetBossMonsterClass(KindOfMonster);
+	const TSubclassOf<ABossMonsterCharacter> BossClass = GetBossMonsterClass(KindOfMonster);
 
-	AMonsterCharacter* Mob = GetWorld()->SpawnActor<AMonsterCharacter>(BossClass, MobSpawnPoints[6], FRotator::ZeroRotator);
+	AMonsterCharacter* Boss = GetWorld()->SpawnActor<AMonsterCharacter>(BossClass, MobSpawnPoints[6], FRotator::ZeroRotator);
+	if (Boss && Boss->GetManagerComp())
+	{
+		Boss->SetMonsterType(EMonsterType::BOSS);
+		Boss->SpawnDefaultController();
+		Boss->GiveBTToController();
+		CombatManager.ATK *= 5.f;
+		HealthManager.MaxHP *= 10.f;
+		HealthManager.CurrentHP = HealthManager.MaxHP;
+		Boss->GetManagerComp()->SetManager(HealthManager, CombatManager);
+		Cast<ABossMonsterCharacter>(Boss)->SetKindOfBossMonster(KindOfMonster);
+		AMonsterCharacter* Ego = SpawnBossEgo(CombatManager, Boss);
+		if (Ego)
+		{
+			Cast<ABossMonsterCharacter>(Boss)->SetBossEgo(Ego);
+		}
+	}
+}
+
+AMonsterCharacter* ARLGameModeBase::SpawnBossEgo(const FCombatManager& CombatManager, AMonsterCharacter* Boss)
+{
+	AMonsterCharacter* Mob = GetWorld()->SpawnActor<AMonsterCharacter>(BossEgoClass, MobSpawnPoints[5], FRotator::ZeroRotator);
+	
 	if (Mob && Mob->GetManagerComp())
 	{
+		Mob->SetMonsterType(EMonsterType::EGO);
 		Mob->SpawnDefaultController();
 		Mob->GiveBTToController();
-		Mob->SetMonsterType(EMonsterType::BOSS);
-		CombatManager.ATK *= 5.f;
-		HealthManager.MaxHP *= 5.f;
-		HealthManager.CurrentHP = HealthManager.MaxHP;
-		Mob->GetManagerComp()->SetManager(HealthManager, CombatManager);
-		Cast<ABossMonsterCharacter>(Mob)->SetKindOfBossMonster(KindOfMonster);
+		Cast<AMonsterBossEgo>(Mob)->SetBoss(Boss);
+		
+		Mob->SetKindOfMonster(EKindOfMonster::DINO);
+		Mob->GetManagerComp()->SetManager(FHealthManager(), CombatManager);
 	}
+	return Mob;
 }
 
 void ARLGameModeBase::ConnectTurret(AMonsterCharacter* Turret, TArray<AMonsterCharacter*> SpawnedMobs)
@@ -117,26 +141,25 @@ void ARLGameModeBase::ConnectTurret(AMonsterCharacter* Turret, TArray<AMonsterCh
 	}
 }
 
-TSubclassOf<AMonsterCharacter> ARLGameModeBase::GetNormalMonsterClass(EKindOfMonster KindOfMonster)
+TSubclassOf<AMonsterCharacter> ARLGameModeBase::GetNormalMonsterClass(EKindOfMonster KindOfMonster) const
 {
-	FString NormalMonsterTablePath = FString(TEXT("/Game/DataTable/NormalMonsterClass"));
+	const FString NormalMonsterTablePath = FString(TEXT("/Game/DataTable/NormalMonsterClass"));
 	UDataTable* NormalMonsterTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *NormalMonsterTablePath));
 	if (NormalMonsterTableObject)
 	{
-		FString RowName = FString::FromInt(static_cast<uint8>(KindOfMonster));
+		const FString RowName = FString::FromInt(static_cast<uint8>(KindOfMonster));
 		FNormalMonsterClassTable* FindRow = NormalMonsterTableObject->FindRow<FNormalMonsterClassTable>(FName(RowName), "");
 		if (FindRow)
 		{
 			return FindRow->MonsterClass;
 		}
 	}
-
 	return TSubclassOf<AMonsterCharacter>();
 }
 
-TSubclassOf<ABossMonsterCharacter> ARLGameModeBase::GetBossMonsterClass(EKindOfBossMonster KindOfMonster)
+TSubclassOf<ABossMonsterCharacter> ARLGameModeBase::GetBossMonsterClass(EKindOfBossMonster KindOfMonster) const
 {
-	FString BossMonsterTablePath = FString(TEXT("/Game/DataTable/BossMonsterClass"));
+	const FString BossMonsterTablePath = FString(TEXT("/Game/DataTable/BossMonsterClass"));
 	UDataTable* BossMonsterTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *BossMonsterTablePath));
 	if (BossMonsterTableObject)
 	{
@@ -153,6 +176,23 @@ TSubclassOf<ABossMonsterCharacter> ARLGameModeBase::GetBossMonsterClass(EKindOfB
 
 void ARLGameModeBase::RequestSpawnCell(int32 CellIndex, uint8 TempWall, int32 Dir)
 {
+	DestroySpawnedActors();
+
+	if (CellClasses.IsValidIndex(CellIndex))
+	{
+		SpawnedCell = GetWorld()->SpawnActor<ACellActor>(CellClasses[CellIndex], FVector::ZeroVector, FRotator::ZeroRotator);
+		if (SpawnedCell)
+		{
+			SpawnedCell->SetTempWall(CellIndex, TempWall);
+			SpawnedCell->CreateWall();
+
+			SetPlayerLocation(Dir);
+		}
+	}
+}
+
+void ARLGameModeBase::DestroySpawnedActors()
+{
 	if (SpawnedElementItem)
 	{
 		SpawnedElementItem->Destroy();
@@ -168,21 +208,10 @@ void ARLGameModeBase::RequestSpawnCell(int32 CellIndex, uint8 TempWall, int32 Di
 		SpawnedHealItem->Destroy();
 		SpawnedHealItem = nullptr;
 	}
-
-	if (CellClasses.IsValidIndex(CellIndex))
-	{
-		SpawnedCell = GetWorld()->SpawnActor<ACellActor>(CellClasses[CellIndex], FVector::ZeroVector, FRotator::ZeroRotator);
-		if (SpawnedCell)
-		{
-			SpawnedCell->SetTempWall(CellIndex, TempWall);
-			SpawnedCell->CreateWall();
-
-			SetPlayerLocation(Dir);
-		}
-	}
 }
 
-void ARLGameModeBase::SetPlayerLocation(int32 Dir)
+
+void ARLGameModeBase::SetPlayerLocation(int32 Dir) const
 {
 	FVector PlayerLocation{ FVector::ZeroVector };
 	if (Dir != -1)
@@ -192,7 +221,7 @@ void ARLGameModeBase::SetPlayerLocation(int32 Dir)
 	ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(this, 0);
 	if (PlayerCharacter)
 	{
-		FVector PlayerLoc = PlayerCharacter->GetActorLocation();
+		const FVector PlayerLoc = PlayerCharacter->GetActorLocation();
 		PlayerCharacter->SetActorLocation(FVector(PlayerLocation.X, PlayerLocation.Y, PlayerLoc.Z));
 	}
 }
@@ -205,9 +234,9 @@ void ARLGameModeBase::RequestSpawnHealItem()
 	}
 }
 
-void ARLGameModeBase::SetMonsterManager(int32 StageLevel, OUT FHealthManager& HealthManager, OUT FCombatManager& CombatManager)
+void ARLGameModeBase::SetMonsterManager(int32 StageLevel, OUT FHealthManager& HealthManager, OUT FCombatManager& CombatManager) const
 {
-	FString MonsterStatTablePath = FString(TEXT("/Game/DataTable/MonsterStat"));
+	const FString MonsterStatTablePath = FString(TEXT("/Game/DataTable/MonsterStat"));
 	UDataTable* MonsterStatTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *MonsterStatTablePath));
 	if (MonsterStatTableObject)
 	{
@@ -258,8 +287,6 @@ void ARLGameModeBase::SpawnCounterElementItem(EElement Element)
 		break;
 	}
 
-	ItemElement = EElement::DARKNESS; //TEST
-
 	if (ElementItemClass && GetWorld())
 	{
 		SpawnedElementItem = GetWorld()->SpawnActor<AElementItem>(ElementItemClass);
@@ -271,7 +298,7 @@ void ARLGameModeBase::SpawnCounterElementItem(EElement Element)
 	}
 }
 
-void ARLGameModeBase::CreateSidePortal()
+void ARLGameModeBase::CreateSidePortal() const
 {
 	if (SpawnedCell)
 	{
@@ -279,7 +306,7 @@ void ARLGameModeBase::CreateSidePortal()
 	}
 }
 
-void ARLGameModeBase::CreateCenterPortal()
+void ARLGameModeBase::CreateCenterPortal() const
 {
 	if (SpawnedCell)
 	{
@@ -287,7 +314,7 @@ void ARLGameModeBase::CreateCenterPortal()
 	}
 }
 
-void ARLGameModeBase::CreatePrevBossPortal()
+void ARLGameModeBase::CreatePrevBossPortal() const
 {
 	if (SpawnedCell)
 	{
@@ -298,39 +325,46 @@ void ARLGameModeBase::CreatePrevBossPortal()
 TArray<UItemInfo*> ARLGameModeBase::CreateRandItem()
 {
 	SelectedItem.Empty();
-	FString ItemInfoTablePath = FString(TEXT("/Game/DataTable/ItemInfo"));
-	UDataTable* ItemInfoTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *ItemInfoTablePath));
-	if (ItemInfoTableObject)
-	{
-		TArray<FItemInfoTable*> Items;
-		ItemInfoTableObject->GetAllRows<FItemInfoTable>(TEXT("AllItem"), Items);
-		if (!Items.IsEmpty())
-		{
-			int32 ItemNum = Items.Num();
-			UItemInfo* NewItemInfo = nullptr;
-			while (true)
-			{
-				int32 Rand = FMath::RandRange(0, ItemNum - 1);
 
-				if (!SelectedItem.IsEmpty())
-				{
-					if (SelectedItem[0]->ItemName != (Items[Rand]->ItemName))
-					{
-						NewItemInfo = UItemInfo::ConstructItemInfo(Items[Rand]->ItemsType, Items[Rand]->DetailType, Items[Rand]->ItemName, Items[Rand]->ItemDesc, Items[Rand]->ItemIcon);
-						SelectedItem.Add(NewItemInfo);
-						break;
-					}
-					continue;
-				}
-				NewItemInfo = UItemInfo::ConstructItemInfo(Items[Rand]->ItemsType, Items[Rand]->DetailType, Items[Rand]->ItemName, Items[Rand]->ItemDesc, Items[Rand]->ItemIcon);
-				SelectedItem.Add(NewItemInfo);
+	if (ItemInfos.IsEmpty()) InitItemInfoFromTable();
+	
+	while (true)
+	{
+		const int32 Rand = FMath::RandRange(0, ItemInfos.Num() - 1);
+
+		if (!SelectedItem.IsEmpty())
+		{
+			if (SelectedItem[0]->ItemName != (ItemInfos[Rand]->ItemName))
+			{
+				SelectedItem.Add(ItemInfos[Rand]);
+				break;
 			}
+			continue;
 		}
+		SelectedItem.Add(ItemInfos[Rand]);
 	}
 	return SelectedItem;
 }
 
-FVector ARLGameModeBase::GetBossCellScale()
+void ARLGameModeBase::InitItemInfoFromTable()
+{
+	if (ItemInfos.IsEmpty())
+	{
+		const FString ItemInfoTablePath = FString(TEXT("/Game/DataTable/ItemInfo"));
+		UDataTable* ItemInfoTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *ItemInfoTablePath));
+		if (ItemInfoTableObject)
+		{
+			TArray<FItemInfoTable*> Items;
+			ItemInfoTableObject->GetAllRows<FItemInfoTable>(TEXT("AllItem"), Items);
+			for (auto ItemInfo : Items)
+			{
+				ItemInfos.Add(UItemInfo::ConstructItemInfo(ItemInfo->ItemsType, ItemInfo->DetailType, ItemInfo->ItemName, ItemInfo->ItemDesc, ItemInfo->ItemIcon));
+			}
+		}
+	}
+}
+
+FVector ARLGameModeBase::GetBossCellScale() const
 {
 	if (SpawnedCell)
 	{

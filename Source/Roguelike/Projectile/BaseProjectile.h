@@ -21,35 +21,45 @@ class ROGUELIKE_API ABaseProjectile : public AActor
 public:	
 	ABaseProjectile();
 	virtual void Tick(float DeltaTime) override;
+	virtual void BeginPlay() override;
 	virtual void Destroyed() override;
 	void SetCombatManage(const FCombatManager& InManager);
-protected:
-	virtual void BeginPlay() override;
-	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	UProjectileMovementComponent* PMC;
+	virtual void SetVelocity(const FVector& Dir);
+	void SetRange(float InRange);
 	
+protected:
 	virtual void SpawnParticle();
-	FCombatManager CombatManager; //공격자의 공격력과 속성 들어있음.
-	FItemManager ItemManager; //공격자의 아이템
-	UParticleSystem* HitParticle;
-	UParticleSystem* ProjectileParticle;
 	UFUNCTION()
 	virtual void OnHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-	void PlayHitEffect(); //캐릭터 맞췄을 때
-	void PlayDestroyEffect(); //벽에 맞고 파괴됐을때
+	void PlayHitEffect();
+	void PlayDestroyEffect();
 	void CheckAttackerBeHealed(AActor* Other, APlayerCharacter* Player);
-	TSubclassOf<UDamageType> ProjectileDamageType;
+	
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UProjectileMovementComponent* PMC;
+	FCombatManager CombatManager;
+	FItemManager ItemManager;
+	
 
 private:	
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	USphereComponent* Sphere;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* HitParticle;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* ProjectileParticle;
+	UPROPERTY()
+	TSubclassOf<UDamageType> ProjectileDamageType;
+	
 	FVector StartLocation;
 	float Range;
+	
 public:
-	virtual void SetVelocity(const FVector& Dir);
 	void SetItemManager(FItemManager InManager) { ItemManager = InManager; }
-	void SetRange(float InRange);
+	void SetProjectileParticle(UParticleSystem* Particle) { ProjectileParticle = Particle; }
+	UParticleSystem* GetProjectileParticle() const { return ProjectileParticle; }
+	void SetHitParticle(UParticleSystem* Particle) { HitParticle = Particle; }
+	UParticleSystem* GetHitParticle() const { return HitParticle; }
 	void SetDamageType(TSubclassOf<UDamageType> Type) { ProjectileDamageType; }
 	TSubclassOf<UDamageType> GetDamageType() const { return ProjectileDamageType; }
-	void SetParticle(UParticleSystem* Particle) { ProjectileParticle = Particle; }
 };

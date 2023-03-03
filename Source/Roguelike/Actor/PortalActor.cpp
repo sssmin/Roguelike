@@ -52,7 +52,7 @@ void APortalActor::BeginPlay()
 
 void APortalActor::PortalActivate()
 {
-	if (SphereComp && (PortalType == EPortalType::SIDE))
+	if (SphereComp && ((PortalType == EPortalType::SIDE) || (PortalType == EPortalType::CENTER)))
 	{
 		SphereComp->OnComponentBeginOverlap.AddUniqueDynamic(this, &APortalActor::BeginOverlapped);
 		SphereComp->Activate();

@@ -11,9 +11,9 @@ UCLASS()
 class ROGUELIKE_API AMonsterWhite : public AMonsterCharacter
 {
 	GENERATED_BODY()
-	
-protected:
+
+public:
 	virtual void SpecialAttack(AActor* Target) override;
-	virtual void Destroyed() override;
+	virtual void Dead() override;
 	
 };
