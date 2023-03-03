@@ -70,6 +70,7 @@ private:
 	float DefaultSpeed;
 	float PatrolSpeed;
 	EMonsterType MonsterType;
+	
 public:
 	void SetMonsterType(EMonsterType Type) { MonsterType = Type; }
 	EMonsterType GetMonsterType() const { return MonsterType; }

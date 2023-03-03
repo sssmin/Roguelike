@@ -46,7 +46,6 @@ void ARLPlayerController::BeginPlay()
 void ARLPlayerController::Init()
 {
 	bShowMouseCursor = true;
-	FVector PlayerLocation = GetPawn()->GetActorLocation();
 	FTransform SpawnTransform = FTransform(FRotator::ZeroRotator, GetPawn()->GetActorLocation(), FVector(1.f, 1.f, 1.f));
 	FActorSpawnParameters Params;
 	Params.Owner = GetPawn();

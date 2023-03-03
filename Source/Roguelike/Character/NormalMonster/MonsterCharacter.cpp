@@ -36,6 +36,7 @@ AMonsterCharacter::AMonsterCharacter()
 		AIControllerClass = AIController.Class;
 	}
 	MonsterCombatComp = CreateDefaultSubobject<UMonsterCombatComponent>(TEXT("MonsterCombatComp"));
+	
 	DefaultSpeed = 650.f;
 	PatrolSpeed = 400.f;
 	GetCharacterMovement()->MaxWalkSpeed = DefaultSpeed;
@@ -52,7 +53,7 @@ AMonsterCharacter::AMonsterCharacter()
 void AMonsterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	if (MonsterCombatComp)
 	{
 		MonsterCombatComp->GetCombatManager.BindUObject(this, &ABaseCharacter::GetCombatManager);
@@ -327,4 +328,3 @@ void AMonsterCharacter::Meteor(const TSubclassOf<AMeteorActor>& MeteorClass, AAc
 		}
 	}
 }
-

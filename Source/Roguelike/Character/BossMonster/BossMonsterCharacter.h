@@ -5,6 +5,7 @@
 #include "Roguelike/Character/NormalMonster/MonsterCharacter.h"
 #include "BossMonsterCharacter.generated.h"
 
+class UBossCombatComponent;
 class AMeteorActor;
 class AWhirlwindActor;
 class ABreathActor;
@@ -20,7 +21,6 @@ class ROGUELIKE_API ABossMonsterCharacter : public AMonsterCharacter
 public:
 	ABossMonsterCharacter();
 	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTime) override;
 	virtual void ExecuteSkill();
 	virtual void GiveBTToController() override;
 	void OnSkillEnd();
@@ -42,18 +42,6 @@ protected:
 	virtual void Destroyed() override;
 
 private:
-	FVector GetRandomFloor();
-	void SpawnBreathActor();
-	FVector GetRandomLoc(const FVector& CellScale);
-	FVector GetRandomDir(const FVector& CellScale, const FVector& RandomLoc);
-	void FireToDir(const FVector& SpawnLoc, const FVector& Dir, TSubclassOf<UDamageType> DamageType);
-	
-	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<AWhirlwindActor> WhirlwindActorClass;
-	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<ABreathActor> BreathActorClass;
-	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<AThrowBallProjectile> ThrowProjectileClass;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* BreathMontage;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
@@ -66,16 +54,12 @@ private:
 	UBehaviorTree* BossBT;
 	UPROPERTY()
 	AMonsterCharacter* BossEgo;
-	UPROPERTY()
-	TArray<AWhirlwindActor*> SpawnedWhirlwindActors;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UBossCombatComponent* BossCombatComp;
 
 	EKindOfBossMonster KindOfBossMonster;
 	bool bSkillFlipflop;
-	bool bIsActiveBreath;
-	int32 SpawnedBreathNum;
-	float BreathSpawnTime;
-	float BreathDegree;
-	int32 BreathMaxSpawnNum;
+	
 	
 public:
 	void SetSkillFlipflop(bool Boolean) { bSkillFlipflop = Boolean; }

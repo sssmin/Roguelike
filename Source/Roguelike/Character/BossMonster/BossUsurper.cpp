@@ -6,6 +6,11 @@ ABossUsurper::ABossUsurper()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
+void ABossUsurper::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
 void ABossUsurper::ExecuteSkill()
 {
 	if (GetSkillFlipflop())
@@ -35,6 +40,7 @@ void ABossUsurper::ExecuteSkill()
 		SetSkillFlipflop(true);
 	}
 }
+
 
 void ABossUsurper::Destroyed()
 {

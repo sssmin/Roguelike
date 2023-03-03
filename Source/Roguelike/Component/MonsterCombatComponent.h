@@ -23,8 +23,8 @@ public:
 	void RequestHeal();
 	void FireOneToTwo(int32 Parts, float StartDegree, float DeltaDegree, TSubclassOf<UDamageType> DamageType);
 	void ThrowBomb(AActor* Target, TSubclassOf<UDamageType> DamageType);
-	void FireToDir(const FVector& SpawnLoc, const FVector& Dir, TSubclassOf<UDamageType> DamageType);
-	void ThrowBall(const FVector& SpawnLoc, const FVector& Dir, TSubclassOf<UDamageType> DamageType);
+	virtual void FireToDir(const FVector& SpawnLoc, const FVector& Dir, TSubclassOf<UDamageType> DamageType);
+	
 	void FireInParts(int32 Parts, float StartDegree, float DeltaDegree, TSubclassOf<UDamageType> DamageType);
 	void FireSpreadFromCenter(int32 Parts, float StartDegree, float DeltaDegree, TSubclassOf<UDamageType> DamageType);
 	
@@ -43,8 +43,10 @@ private:
 	TSubclassOf<ATurretProjectile> TurretProjectileClass;
 	UPROPERTY()
 	AActor* Turret;
+
+
 	
 public:
 	void SetTurret(AActor* Actor) { Turret = Actor; }
-	
+	TSubclassOf<AMonsterProjectile> GetProjectileClass() const { return ProjectileClass; }
 };

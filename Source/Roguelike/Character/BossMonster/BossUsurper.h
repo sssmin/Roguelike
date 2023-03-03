@@ -14,7 +14,8 @@ class ROGUELIKE_API ABossUsurper : public ABossMonsterCharacter
 public:
 	ABossUsurper();
 	virtual void ExecuteSkill() override;
-
+	virtual void BeginPlay() override;
+	
 protected:
 	virtual void Destroyed() override;
 	

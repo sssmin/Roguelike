@@ -22,7 +22,6 @@ void UCombatComponent::PlayFireMontage()
 {
 	if (Cast<ACharacter>(GetOwner()) && Cast<ACharacter>(GetOwner())->GetMesh() && Cast<ACharacter>(GetOwner())->GetMesh()->GetAnimInstance() && FireMontage)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PlayFireMongate"));
 		Cast<ACharacter>(GetOwner())->PlayAnimMontage(FireMontage, 1.f, GetRandomMontageSection());
 	}
 }

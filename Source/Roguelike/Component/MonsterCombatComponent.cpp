@@ -10,6 +10,8 @@
 UMonsterCombatComponent::UMonsterCombatComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+
+	
 }
 
 FVector UMonsterCombatComponent::CalcThrowVector(AActor* Target)
@@ -55,11 +57,6 @@ void UMonsterCombatComponent::FireToDir(const FVector& SpawnLoc, const FVector& 
 			}
 		}
 	}
-}
-
-void UMonsterCombatComponent::ThrowBall(const FVector& SpawnLoc, const FVector& Dir, TSubclassOf<UDamageType> DamageType)
-{
-	
 }
 
 void UMonsterCombatComponent::FireInParts(int32 Parts, float StartDegree, float DeltaDegree, TSubclassOf<UDamageType> DamageType)
