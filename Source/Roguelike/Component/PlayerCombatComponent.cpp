@@ -13,7 +13,9 @@ UPlayerCombatComponent::UPlayerCombatComponent()
 	bFireCooldown = false;
 	Delay = 0.5f;
 	MutliShotTime = 0.2f;
-	
+	MaxDashChargeNum = 5;
+	CurrentDashChargeNum = MaxDashChargeNum;
+	DashChargeCooltime = 5.f;
 }
 
 void UPlayerCombatComponent::ReadyToFire(bool bPressed)
@@ -170,5 +172,30 @@ bool UPlayerCombatComponent::HaveItem(const FItemManager& Manage, EOnceEquippedI
 	return Manage.OnceEquippedItem & static_cast<uint8>(ItemType);
 }
 
+bool UPlayerCombatComponent::CanDash() const
+{
+	return (CurrentDashChargeNum <= 0) ? false : true;
+}
 
+void UPlayerCombatComponent::SetDashCooldown()
+{
+	CurrentDashChargeNum = FMath::Clamp(CurrentDashChargeNum - 1, 0, MaxDashChargeNum);
+	if (OnSetDashCooldownDelegate.IsBound()) OnSetDashCooldownDelegate.Broadcast();
+	if (GetWorld()->GetTimerManager().IsTimerActive(DashChargeTimerHandle)) return;
+	GetWorld()->GetTimerManager().SetTimer(DashChargeTimerHandle, this, &ThisClass::DashCooldownComplete, DashChargeCooltime, false);
+}
 
+void UPlayerCombatComponent::DashCooldownComplete()
+{
+	CurrentDashChargeNum = FMath::Clamp(CurrentDashChargeNum + 1, 0, MaxDashChargeNum);
+	if (OnDashCooldownCompleteDelegate.IsBound()) OnDashCooldownCompleteDelegate.Broadcast();
+	if (CurrentDashChargeNum != MaxDashChargeNum)
+	{
+		GetWorld()->GetTimerManager().SetTimer(DashChargeTimerHandle, this, &ThisClass::DashCooldownComplete, DashChargeCooltime, false);
+	}
+}
+
+float UPlayerCombatComponent::GetDashCurrentCooltime() const
+{
+	return GetWorld()->GetTimerManager().GetTimerRemaining(DashChargeTimerHandle);
+}

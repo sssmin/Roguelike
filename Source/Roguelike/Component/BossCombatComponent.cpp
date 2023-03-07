@@ -16,16 +16,15 @@ UBossCombatComponent::UBossCombatComponent()
 	bIsActiveBreath = false;
 	SpawnedBreathNum = 0;
 	BreathSpawnTime = 0.f;
-	BreathDegree = 0.f;
+	BreathDegree = 30.f;
 	BreathMaxSpawnNum = 9;
-
 	WhirlwindMaxNum = 6;
+	BreathSpawnLocaton = FVector();
 }
 
 void UBossCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
 	
 	if (bIsActiveBreath && (SpawnedBreathNum < BreathMaxSpawnNum))
 	{
@@ -51,15 +50,20 @@ void UBossCombatComponent::SpawnBreathActor()
 	Params.Owner = GetOwner();
 	Params.Instigator = Cast<APawn>(GetOwner());
 
-	if (SpawnedBreathNum == 0)
+	FVector Dir = FVector();
+	switch (BreathType)
 	{
-		BreathDegree = 30.f;
+	case EBreathType::RADIAL:
+		Dir = UKismetMathLibrary::CreateVectorFromYawPitch(GetOwner()->GetActorRotation().Yaw + BreathDegree, 0.f);
+		BreathDegree -= 7.5f;
+		break;
+	case EBreathType::FORWARD:
+		BreathDegree = FMath::RandRange(-7.5f, 7.5f);
+		Dir = UKismetMathLibrary::CreateVectorFromYawPitch(GetOwner()->GetActorRotation().Yaw + BreathDegree, 0.f);
+		break;
 	}
-	const FVector Dir = UKismetMathLibrary::CreateVectorFromYawPitch(GetOwner()->GetActorRotation().Yaw + BreathDegree, 0.f);
 
-	BreathDegree -= 7.5f;
-
-	const FTransform SpawnTransform = FTransform(Dir.Rotation(), GetOwner()->GetActorLocation() + Dir * 400.f, FVector(1.f, 1.f, 1.f));
+	const FTransform SpawnTransform = FTransform(Dir.Rotation(), BreathSpawnLocaton + Dir * 350.f, FVector(1.f, 1.f, 1.f));
 
 	if (BreathActorClass)
 	{
@@ -75,16 +79,24 @@ void UBossCombatComponent::SpawnBreathActor()
 
 	if (SpawnedBreathNum == BreathMaxSpawnNum)
 	{
-		bIsActiveBreath = false;
-		SpawnedBreathNum = 0;
-		SetComponentTickEnabled(false);
+		DeactivateBreath();
 	}
 }
 
-void UBossCombatComponent::Breath()
+void UBossCombatComponent::Breath(EBreathType Type, FVector SpawnLocation)
 {
 	bIsActiveBreath = true;
+	BreathType = Type;
 	SetComponentTickEnabled(true);
+	BreathSpawnLocaton = SpawnLocation;
+}
+
+void UBossCombatComponent::DeactivateBreath()
+{
+	if (BreathType == EBreathType::RADIAL) BreathDegree = 30.f;
+	bIsActiveBreath = false;
+	SpawnedBreathNum = 0;
+	SetComponentTickEnabled(false);
 }
 
 void UBossCombatComponent::Whirlwind()

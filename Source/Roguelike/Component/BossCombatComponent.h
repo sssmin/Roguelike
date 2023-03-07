@@ -9,6 +9,14 @@ class AWhirlwindActor;
 class ABreathActor;
 class AThrowBallProjectile;
 
+
+enum class EBreathType : uint8
+{
+	NONE,
+	RADIAL,
+	FORWARD
+};
+
 UCLASS()
 class ROGUELIKE_API UBossCombatComponent : public UMonsterCombatComponent
 {
@@ -19,7 +27,7 @@ public:
 	void ThrowBall();
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	virtual void BeginPlay() override;
-	void Breath();
+	void Breath(EBreathType Type, FVector Location);
 	void Whirlwind();
 	void RemoveSpawnedWhirlwindActor(AWhirlwindActor* WhirlwindActor);
 	void ReserveDestroySpawnedWhirlwind();
@@ -32,6 +40,7 @@ private:
 	FVector GetRandomLoc(const FVector& CellScale) const;
 	FVector GetRandomDir(const FVector& CellScale, const FVector& RandomLoc);
 	void FireThrowBall(const FVector& SpawnLoc, const FVector& Dir, TSubclassOf<UDamageType> DamageType) const;
+	void DeactivateBreath();
 	
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AWhirlwindActor> WhirlwindActorClass;
@@ -43,12 +52,13 @@ private:
 	TArray<AWhirlwindActor*> SpawnedWhirlwindActors;
 	
 	bool bIsActiveBreath;
+	EBreathType BreathType;
 	int32 SpawnedBreathNum;
 	float BreathSpawnTime;
 	float BreathDegree;
 	int32 BreathMaxSpawnNum;
-
 	int32 WhirlwindMaxNum;
+	FVector BreathSpawnLocaton;
 	
 };
 

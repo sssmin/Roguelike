@@ -104,7 +104,7 @@ void UManagerComponent::SendManager() const
 void UManagerComponent::ReceiveDamage(const FCombatManager& EnemyCombatManager, const FItemManager& EnemyItemManager, AActor* Attacker, AActor* DamageCauser, TSubclassOf<UDamageType> DamageType)
 {
 	if (CheckState(static_cast<uint8>(EState::DEAD))) return;
-
+	
 	float RiskReturn = 1.f;
 	if (ItemComponent)
 	{
@@ -123,7 +123,7 @@ void UManagerComponent::ReceiveDamage(const FCombatManager& EnemyCombatManager, 
 	const float Coefficient = CalcCounter(EnemyCombatManager.Element); //계수
 	float EnemyATK = EnemyCombatManager.ATK;
 	const float CriticalPer = CalcCritical(EnemyCombatManager);
-
+	
 	if (Cast<USkillDamageType>(DamageType.GetDefaultObject()))
 	{
 		EnemyATK *= 5.f;

@@ -25,6 +25,7 @@ public:
 	virtual void GiveBTToController() override;
 	void OnSkillEnd();
 	void OnExecuteBreath();
+	void OnExecuteBreathForward();
 	void OnExecuteThrowBall();
 	void OnExecuteWhirlwind();
 	void OnExecuteSquare();
@@ -40,6 +41,7 @@ protected:
 	virtual void Breath();
 	virtual void Square();
 	virtual void Destroyed() override;
+	virtual void BreathForward();
 
 private:
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
@@ -50,17 +52,20 @@ private:
 	UAnimMontage* WhirlwindMontage;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* SquareMontage;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* BreathForwardMontage;
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UBehaviorTree* BossBT;
 	UPROPERTY()
 	AMonsterCharacter* BossEgo;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UBossCombatComponent* BossCombatComp;
-
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UArrowComponent* BreathLocationComp;
+	
 	EKindOfBossMonster KindOfBossMonster;
 	bool bSkillFlipflop;
-	
-	
+
 public:
 	void SetSkillFlipflop(bool Boolean) { bSkillFlipflop = Boolean; }
 	bool GetSkillFlipflop() const { return bSkillFlipflop; }

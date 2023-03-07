@@ -15,5 +15,6 @@
     <file url="file://$PROJECT_DIR$/Source/Roguelike/Projectile/BombProjectile.cpp" charset="x-windows-949" />
     <file url="file://$PROJECT_DIR$/Source/Roguelike/Projectile/ThrowBallProjectile.cpp" charset="x-windows-949" />
     <file url="file://$PROJECT_DIR$/Source/Roguelike/Projectile/TurretProjectile.cpp" charset="x-windows-949" />
+    <file url="file://$PROJECT_DIR$/Source/Roguelike/Type/Types.h" charset="x-windows-949" />
   </component>
 </project>

@@ -17,11 +17,11 @@ class ROGUELIKE_API UMainUIWidget : public UUserWidget
 	GENERATED_BODY()
 	
 public:
-	void ItemListAnimPlay(UItemInfo* Item);
-	void RegisterItemEmptySlot(UItemInfo* Item);
-	void DeactiveOnceItemListWidget();
-	void SetOwner(APawn* OwnerPawn);
-	void InitOnceItemList();
+	void ItemListAnimPlay(UItemInfo* Item) const;
+	void RegisterItemEmptySlot(UItemInfo* Item) const;
+	void DeactivateOnceItemListWidget() const;
+	void SetOwner(APawn* OwnerPawn) const;
+	void InitOnceItemList() const;
 	
 private:
 	UPROPERTY(Meta = (BindWidget))

@@ -2,6 +2,8 @@
 #include "BTServiceCheckAttackCooldown.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
+#include "Roguelike/Character/NormalMonster/MonsterCharacter.h"
+
 UBTServiceCheckAttackCooldown::UBTServiceCheckAttackCooldown()
 {
 	bSpecialAttackCooldown = false;
@@ -10,18 +12,42 @@ UBTServiceCheckAttackCooldown::UBTServiceCheckAttackCooldown()
 
 void UBTServiceCheckAttackCooldown::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
+	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
+	
 	if (bSpecialAttackCooldown) return;
-
+	
 	UBlackboardComponent* BBComp = OwnerComp.GetBlackboardComponent();
 	if (BBComp)
 	{
 		bool CanSpecialAttack = BBComp->GetValueAsBool(CanSpecialAttackKey.SelectedKeyName);
 		if (!CanSpecialAttack)
 		{
+			
+			
 			bSpecialAttackCooldown = true;
-			SetRandCooltime(BBComp);
+			if (Cast<AMonsterCharacter>(OwnerComp.GetOwner()->GetInstigator()))
+			{
+				if (Cast<AMonsterCharacter>(OwnerComp.GetOwner()->GetInstigator())->GetKindOfMonster() == EKindOfMonster::SKELETON)
+				{
+					SetFixCooltime(BBComp);
+				}
+				else
+				{
+					SetRandCooltime(BBComp);
+				}
+			}
+			
 		}
 	}
+}
+
+void UBTServiceCheckAttackCooldown::SetFixCooltime(UBlackboardComponent* BBComp)
+{
+	Cooltime = FMath::RandRange(1.f, 1.5f);
+	FTimerHandle TimerHandle;
+	FTimerDelegate TimerDelegate;
+	TimerDelegate.BindUFunction(this, FName("CooldownFinished"), BBComp);
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, Cooltime, false);
 }
 
 void UBTServiceCheckAttackCooldown::SetRandCooltime(UBlackboardComponent* BBComp)

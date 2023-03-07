@@ -1,6 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "BreathActor.h"
 #include "Components/BoxComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
+
 #include "Roguelike/Character/Player/PlayerCharacter.h"
 #include "Roguelike/Type/DamageType/AllDamageTypes.h"
 
@@ -13,56 +15,61 @@ ABreathActor::ABreathActor()
 	BoxComponent->SetupAttachment(RootComponent);
 
 	ActiveTime = 0.f;
-	ApplyTime = 0.f;
 }
 
 void ABreathActor::BeginPlay()
 {
 	Super::BeginPlay();
 	BoxComponent->SetVisibility(true);
-	BoxComponent->SetBoxExtent(FVector(600.f, 30.f, 62.f));
+	BoxComponent->SetBoxExtent(FVector(350.f, 30.f, 60.f));
 
-	BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnBeginOverlapped);
-	BoxComponent->OnComponentEndOverlap.AddDynamic(this, &ThisClass::OnEndOverlapped);
-}
-
-void ABreathActor::OnBeginOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	if (Cast<APlayerCharacter>(OtherActor))
-	{
-		Player = Cast<APlayerCharacter>(OtherActor);
-		IsActive = true;
-	}
-}
-
-void ABreathActor::OnEndOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	if (Cast<APlayerCharacter>(OtherActor))
-	{
-		Player = nullptr;
-	}
+	OnBeginOverlapped();
 }
 
 void ABreathActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 	ActiveTime += DeltaTime;
+	
 	if (ActiveTime >= 0.5f)
 	{
 		Destroy();
 	}
+}
 
-	if (IsActive)
+void ABreathActor::OnBeginOverlapped()
+{
+	const FVector Start = GetActorLocation() + GetActorForwardVector();
+	const FVector End = GetActorLocation() + GetActorForwardVector();
+	const FVector HalfSize = BoxComponent->GetScaledBoxExtent();
+	const FRotator Oritentation = GetActorRotation();
+	TArray<TEnumAsByte<EObjectTypeQuery>> CollisionObjectType;
+	TEnumAsByte<EObjectTypeQuery> Pawn = UEngineTypes::ConvertToObjectType(ECC_CharacterBlockProjectile);
+	CollisionObjectType.Add(Pawn);
+	TArray<AActor*> ActorsToIgnore;
+
+	ActorsToIgnore.Add(GetOwner());
+	
+	FHitResult HitResult;
+	UKismetSystemLibrary::BoxTraceSingleForObjects(
+		this,
+		Start,
+		End,
+		HalfSize,
+		Oritentation,
+		CollisionObjectType,
+		false,
+		ActorsToIgnore,
+		EDrawDebugTrace::ForDuration,
+		HitResult,
+		true,
+		FLinearColor::Red,
+		FLinearColor::Blue,
+		5.f
+	);
+	
+	if(Cast<APlayerCharacter>(HitResult.GetActor()))
 	{
-		ApplyTime += DeltaTime;
-		if (ApplyTime > 0.2f)
-		{
-			if (Player)
-			{
-				Player->OnSkillHit(GetOwner(), this, GetCombatManager(), USkillDamageType::StaticClass());
-			}
-			ApplyTime = 0.f;
-		}
+		Cast<APlayerCharacter>(HitResult.GetActor())->OnSkillHit(GetOwner(), this, GetCombatManager(), USkillDamageType::StaticClass());
 	}
 }

@@ -15,7 +15,7 @@ struct FCell
 	{
 		Visited = false;
 		Status.Init(false, 4);
-		CellState = ECellState::DEACTIVE;
+		CellState = ECellState::DEACTIVATE;
 		CellType = ECellType::NONE;
 		IsCleared = false;
 		TempWall = 0;

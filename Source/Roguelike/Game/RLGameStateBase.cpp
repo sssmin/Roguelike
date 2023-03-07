@@ -75,7 +75,6 @@ void ARLGameStateBase::SetObjective()
 			{
 				ObjectiveNum = 6;
 			}
-			//ObjectiveNum = 1;//TEST
 			RLGameMode->RequestSpawnMob(StageLevel, ObjectiveNum++); //±‚∫ª ≈Õ∑ø 1 ++
 			break;
 		case ECellType::BOSS:

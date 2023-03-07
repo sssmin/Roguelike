@@ -39,23 +39,24 @@ void ARLGameModeBase::RequestSpawnMob(int32 StageLevel, int32 MobCount)
 	AMonsterCharacter* Turret = nullptr;
 	TArray<AMonsterCharacter*> SpawnedMobs;
 
-	// Turret = SpawnMob(1, EKindOfMonster::TURRET, CombatManager, HealthManager)[0]; 	//≈Õ∑ø
-	//
-	// for (int32 i = 0; i < 2; ++i)
-	// {
-	// 	const EKindOfMonster RandMonster = static_cast<EKindOfMonster>(FMath::RandRange(1, static_cast<uint8>(EKindOfMonster::MAX) - 1));
-	// 	SpawnedMobs.Append(SpawnMob(MobCount / 2, RandMonster, CombatManager, HealthManager));
-	// }
-	//
-	// ConnectTurret(Turret, SpawnedMobs);
-	SpawnBoss(EKindOfBossMonster::USURPER, CombatManager, HealthManager); //TEST
+	Turret = SpawnMob(1, EKindOfMonster::TURRET, CombatManager, HealthManager)[0]; 	//≈Õ∑ø
+	
+	for (int32 i = 0; i < 2; ++i)
+	{
+		const EKindOfMonster RandMonster = static_cast<EKindOfMonster>(FMath::RandRange(1, static_cast<uint8>(EKindOfMonster::MAX) - 1));
+		SpawnedMobs.Append(SpawnMob(MobCount / 2, RandMonster, CombatManager, HealthManager));
+	}
+	
+	ConnectTurret(Turret, SpawnedMobs);
+	//SpawnBoss(EKindOfBossMonster::SOULEATER, CombatManager, HealthManager); //TEST
 }
 
 TArray<AMonsterCharacter*> ARLGameModeBase::SpawnMob(int32 MobCount, EKindOfMonster KindOfMonster, FCombatManager& CombatManager, FHealthManager& HealthManager)
 {
 	TArray<AMonsterCharacter*> SpawnedMobs;
-	TSubclassOf<AMonsterCharacter> SpawnMonsterClass = GetNormalMonsterClass(KindOfMonster); 
-	//SpawnMonsterClass = GetNormalMonsterClass(EKindOfMonster::BEE); //TEST
+	TSubclassOf<AMonsterCharacter> SpawnMonsterClass = GetNormalMonsterClass(KindOfMonster);
+	//indOfMonster = EKindOfMonster::SKELETON; //TEST
+	//SpawnMonsterClass = GetNormalMonsterClass(EKindOfMonster::SKELETON); //TEST
 	for (int32 i = 0; i < MobCount; ++i)
 	{
 		AMonsterCharacter* Mob = GetWorld()->SpawnActor<AMonsterCharacter>(SpawnMonsterClass, MobSpawnPoints[i], FRotator::ZeroRotator);
@@ -86,7 +87,6 @@ void ARLGameModeBase::RequestSpawnBoss(int32 StageLevel)
 	CombatManager = SetRandomElement(StageLevel, CombatManager);
 
 	EKindOfBossMonster RandMonster = static_cast<EKindOfBossMonster>(FMath::RandRange(0, static_cast<uint8>(EKindOfBossMonster::MAX) - 1));
-	RandMonster = EKindOfBossMonster::USURPER; //TEST
 	SpawnBoss(RandMonster, CombatManager, HealthManager);
 }
 
@@ -94,7 +94,7 @@ void ARLGameModeBase::SpawnBoss(EKindOfBossMonster KindOfMonster, FCombatManager
 {
 	const TSubclassOf<ABossMonsterCharacter> BossClass = GetBossMonsterClass(KindOfMonster);
 
-	AMonsterCharacter* Boss = GetWorld()->SpawnActor<AMonsterCharacter>(BossClass, MobSpawnPoints[6], FRotator::ZeroRotator);
+	AMonsterCharacter* Boss = GetWorld()->SpawnActor<AMonsterCharacter>(BossClass, MobSpawnPoints[6], FRotator(0.f, -180.f, 0.f));
 	if (Boss && Boss->GetManagerComp())
 	{
 		Boss->SetMonsterType(EMonsterType::BOSS);

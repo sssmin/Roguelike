@@ -21,6 +21,7 @@ ABaseProjectile::ABaseProjectile()
 	Sphere->SetCollisionResponseToChannel(ECC_CharacterBlockProjectile, ECollisionResponse::ECR_Overlap);
 	Sphere->SetCollisionResponseToChannel(ECC_WallBlockProjectile, ECollisionResponse::ECR_Overlap);
 	Sphere->SetCollisionResponseToChannel(ECC_WorldStatic, ECollisionResponse::ECR_Overlap);
+	Sphere->SetCollisionResponseToChannel(ECC_Floor, ECollisionResponse::ECR_Block);
 	Sphere->SetSphereRadius(64.f);
 	Sphere->SetGenerateOverlapEvents(true);
 
@@ -79,7 +80,7 @@ void ABaseProjectile::OnHit(UPrimitiveComponent* OverlappedComponent, AActor* Ot
 	{
 		if (OtherActor == GetOwner()) return;
 		if (OtherActor->Implements<UMonsterInterface>() && GetOwner()->Implements<UMonsterInterface>()) return;
-		
+	
 		if (Cast<ABaseCharacter>(OtherActor)) //맞은게 상대
 		{
 			Cast<ABaseCharacter>(OtherActor)->OnHit(CombatManager, ItemManager, GetOwner(), this, GetDamageType());
@@ -109,7 +110,6 @@ void ABaseProjectile::Destroyed()
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitParticle, GetActorTransform());
 	}
-	//ARLGameModeBase::RemoveSpawnedOtherActor(this);
 }
 
 void ABaseProjectile::CheckAttackerBeHealed(AActor* Other, APlayerCharacter* Player)

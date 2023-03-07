@@ -72,8 +72,6 @@ void ARLMonsterAIController::OnPossess(APawn* InPawn)
 			}
 		}
 	}
-
-	
 }
 
 void ARLMonsterAIController::OnPercptionUpdated(AActor* Actor, FAIStimulus Stimulus)

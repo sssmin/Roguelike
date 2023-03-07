@@ -1,5 +1,4 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -23,12 +22,12 @@ public:
 	APlayerCharacter();
 	virtual void BeginPlay() override;
 	FOnPressedFreeCam OnPressedFreeCam;
-	void GetElementFromItem(EElement Element);
-	void IncreaseMovementSpeed();
-	void DecreaseMovementSpeed();
-	void HealByHit();
-	void HealByItem();
-	void RequestItemSwap(const UItemInfo* OldItem, const UItemInfo* NewItem);
+	void GetElementFromItem(EElement Element) const;
+	void IncreaseMovementSpeed() const;
+	void DecreaseMovementSpeed() const;
+	void HealByHit() const;
+	void HealByItem() const;
+	void RequestItemSwap(const UItemInfo* OldItem, const UItemInfo* NewItem) const;
 	UFUNCTION(BlueprintImplementableEvent)
 	void ApplyElementParticle();
 	void OnSkillHit(AActor* Attacker, AActor* DamageCauser, const FCombatManager& EnemyManager, TSubclassOf<UDamageType> DamageType);
@@ -42,10 +41,14 @@ protected:
 private:
 	FItemManager GetItemManager() const;
 	void AttackReleased();
-	void Interact();
+	void Interact(); 
 	void PressedFreeCam();
 	void ReleasedFreeCam();
 	void Recall();
+	void Dash();
+	void CheckToGo(OUT float& Dist) const;
+	float GetDistanceTo(FVector StandardLoc, FVector TargetLoc) const;
+	
 	
 	UPROPERTY()
 	APlayerController* PC;
@@ -56,6 +59,7 @@ private:
 	
 	FRotator LookRot;
 	bool bPressedAttackButton;
+	float MaxDashDist;
 	
 	void Test1();
 	void Test2();
@@ -65,6 +69,7 @@ public:
 	FRotator GetLookRot() const { return LookRot; }
 	void SetLookRot(FRotator Rot) { LookRot = Rot; }
 	UItemComponent* GetItemComp() const { return ItemComp; }
-	
+	UFUNCTION(BlueprintPure)
+	UPlayerCombatComponent* GetPlayerCombatComp() const { return PlayerCombatComp;}
 	
 };

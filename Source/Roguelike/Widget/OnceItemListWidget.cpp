@@ -81,7 +81,7 @@ void UOnceItemListWidget::FirstItemButtonClick()
 			GI->GetListenerManager()->RequestItemSwap(SecondItem, TempSelectItem);
 			FirstItem = TempSelectItem;
 			SetButtonStyle(FirstItem->ItemIcon, FirstItemButton);
-			DeactiveItemList();
+			DeactivateItemList();
 			GI->GetListenerManager()->RestorePC();
 		}
 	}
@@ -97,13 +97,13 @@ void UOnceItemListWidget::SecondItemButtonClick()
 			GI->GetListenerManager()->RequestItemSwap(SecondItem, TempSelectItem);
 			SecondItem = TempSelectItem;
 			SetButtonStyle(SecondItem->ItemIcon, SecondItemButton);
-			DeactiveItemList();
+			DeactivateItemList();
 			GI->GetListenerManager()->RestorePC();
 		}
 	}
 }
 
-void UOnceItemListWidget::DeactiveItemList()
+void UOnceItemListWidget::DeactivateItemList()
 {
 	if (!bIsActive) return;
 	bIsActive = false;

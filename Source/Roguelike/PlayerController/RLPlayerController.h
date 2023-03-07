@@ -30,26 +30,26 @@ public:
 	virtual void PlayerTick(float DeltaTime);
 	/* widget */
 	UFUNCTION()
-	void DeactiveOnceItemListWidget();
-	void RemoveMinimapWidget();
-	void ShowNoticeWidget(const FString& Notice);
+	void DeactivateOnceItemListWidget() const;
+	void RemoveMinimapWidget() const;
+	void ShowNoticeWidget(const FString& Notice) const;
 	void ShowGameOverWidget();
 	void ShowSelectItemWidget();
 	void ActiveOnceItemListWidget(UItemInfo* SelectItem) const;
-	void RemoveSelectWidget();
-	void MoveMapFade();
-	void InitOnceItemWidget();
+	void RemoveSelectWidget() const;
+	void MoveMapFade() const;
+	void InitOnceItemWidget() const;
 	/*------------*/
 	UFUNCTION(BlueprintCallable)
 	void Init();
 	void SetMapInfo(FVector2Int MapSize, TArray<FCell> Board, int32 PlayerCurrentCell);
 	void ResumeController();
-	void StopFire();
+	void StopFire() const;
 	void RegisterItemEmptySlot(UItemInfo* Item) const;
 	UFUNCTION()
-	void RequestItemSwap(const UItemInfo* OldItem, const UItemInfo* NewItem);
+	void RequestItemSwap(const UItemInfo* OldItem, const UItemInfo* NewItem) const;
 	UFUNCTION()
-	TArray<UItemInfo*> GetRandItem();
+	TArray<UItemInfo*> GetRandItem() const;
 	void RecallStart();
 	FRecallCompleteSuccessfully RecallCompleteSuccessfully;
 	

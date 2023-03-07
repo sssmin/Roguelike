@@ -10,7 +10,7 @@ class UItemInfo;
 DECLARE_DELEGATE_OneParam(FOnSelectItem, UItemInfo*);
 DECLARE_DELEGATE(FRestorePC);
 DECLARE_DELEGATE_TwoParams(FRequestItemSwap, const UItemInfo*, const UItemInfo*);
-DECLARE_DELEGATE(FDeactiveOnceItemList);
+DECLARE_DELEGATE(FDeactivateOnceItemList);
 DECLARE_DELEGATE_RetVal(TArray<UItemInfo*>, FGetRandItem);
 
 UCLASS()
@@ -25,8 +25,8 @@ public:
 	void RestorePC();
 	FRequestItemSwap RequestItemSwapDelegate;
 	void RequestItemSwap(const UItemInfo* OldItem, const UItemInfo* NewItem);
-	FDeactiveOnceItemList DeactiveOnceItemListDel;
-	void DeactiveOnceItemList();
+	FDeactivateOnceItemList DeactivateOnceItemListDel;
+	void DeactivateOnceItemList();
 	FGetRandItem GetRandItemDelegate;
 	TArray<UItemInfo*> GetRandItem() const;
 

@@ -45,7 +45,7 @@ APlayerCharacter::APlayerCharacter()
 
 	ItemComp = CreateDefaultSubobject<UItemComponent>(TEXT("ItemComponent"));
 	PlayerCombatComp = CreateDefaultSubobject<UPlayerCombatComponent>(TEXT("PlayerCombatComp"));
-	
+	MaxDashDist = 500.f;
 }
 
 void APlayerCharacter::BeginPlay()
@@ -91,6 +91,7 @@ void APlayerCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 	PlayerInputComponent->BindAction("FreeCam", IE_Pressed, this, &ThisClass::PressedFreeCam);
 	PlayerInputComponent->BindAction("FreeCam", IE_Released, this, &ThisClass::ReleasedFreeCam);
 	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &ThisClass::Interact);
+	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &ThisClass::Dash);
 }
 
 void APlayerCharacter::PressedFreeCam()
@@ -142,18 +143,7 @@ void APlayerCharacter::Test2()
 
 void APlayerCharacter::Test3()
 {
-	FVector Loc = GetActorLocation();
-	FRotator MovementRot = UKismetMathLibrary::MakeRotFromX(GetVelocity());
-	MovementRot.Vector();
-
-	Loc = Loc + MovementRot.Vector() * 500.f;
-	TEnumAsByte<EMoveComponentAction::Type> Val = EMoveComponentAction::Move;
-	FLatentActionInfo ActionInfo;
-	ActionInfo.CallbackTarget = this;
-
 	
-
-	UKismetSystemLibrary::MoveComponentTo(RootComponent, Loc, GetActorRotation(), false, true, 0.2f, true, Val, ActionInfo);
 	
 	/*if (GetWorld() && Cast<URLGameInstance>(GetWorld()->GetGameInstance()))
 	{
@@ -210,7 +200,7 @@ void APlayerCharacter::StopFire()
 	AttackReleased();
 }
 
-void APlayerCharacter::GetElementFromItem(EElement Element)
+void APlayerCharacter::GetElementFromItem(EElement Element) const
 {
 	if (ManagerComponent)
 	{
@@ -218,7 +208,7 @@ void APlayerCharacter::GetElementFromItem(EElement Element)
 	}
 }
 
-void APlayerCharacter::IncreaseMovementSpeed()
+void APlayerCharacter::IncreaseMovementSpeed() const
 {
 	if (GetCharacterMovement())
 	{
@@ -226,7 +216,7 @@ void APlayerCharacter::IncreaseMovementSpeed()
 	}
 }
 
-void APlayerCharacter::DecreaseMovementSpeed()
+void APlayerCharacter::DecreaseMovementSpeed() const
 {
 	if (GetCharacterMovement())
 	{
@@ -234,7 +224,7 @@ void APlayerCharacter::DecreaseMovementSpeed()
 	}
 }
 
-void APlayerCharacter::HealByHit()
+void APlayerCharacter::HealByHit() const
 {
 	if (ManagerComponent)
 	{
@@ -242,7 +232,7 @@ void APlayerCharacter::HealByHit()
 	}
 }
 
-void APlayerCharacter::HealByItem()
+void APlayerCharacter::HealByItem() const
 {
 	if (ManagerComponent)
 	{
@@ -264,7 +254,7 @@ FItemManager APlayerCharacter::GetItemManager() const
 	return FItemManager();
 }
 
-void APlayerCharacter::RequestItemSwap(const UItemInfo* OldItem, const UItemInfo* NewItem)
+void APlayerCharacter::RequestItemSwap(const UItemInfo* OldItem, const UItemInfo* NewItem) const
 {
 	if (ItemComp)
 	{
@@ -278,6 +268,66 @@ void APlayerCharacter::Recall()
 	{
 		Cast<URLGameInstance>(GetWorld()->GetGameInstance())->ReadyToRecall();
 	}
+}
+
+void APlayerCharacter::Dash()
+{
+	if (GetVelocity().Size() <= 0) return;
+	check(PlayerCombatComp);
+	
+	if (PlayerCombatComp->CanDash())
+	{
+		FVector Loc = GetActorLocation();
+		const FRotator MovementRot = UKismetMathLibrary::MakeRotFromX(GetVelocity());
+		float Dist = MaxDashDist;
+
+		CheckToGo(Dist);
+		
+		Loc = Loc + MovementRot.Vector() * Dist;
+		const TEnumAsByte<EMoveComponentAction::Type> Val = EMoveComponentAction::Move;
+		FLatentActionInfo ActionInfo;
+		ActionInfo.CallbackTarget = this;
+		
+		UKismetSystemLibrary::MoveComponentTo(
+			RootComponent,
+			Loc,
+			GetActorRotation(),
+			false,
+			true,
+			0.2f,
+			true,
+			Val,
+			ActionInfo);
+		
+		PlayerCombatComp->SetDashCooldown();
+	}
+}
+
+void APlayerCharacter::CheckToGo(OUT float& Dist) const
+{
+	FHitResult HitResult;
+    FCollisionQueryParams Params;
+    Params.AddIgnoredActor(this);
+	FVector PlayerLoc = GetActorLocation();
+    GetWorld()->LineTraceSingleByChannel(
+    	HitResult,
+    	PlayerLoc + GetVelocity().GetSafeNormal(),
+    	PlayerLoc + GetVelocity().GetSafeNormal() * MaxDashDist,
+    	ECollisionChannel::ECC_Visibility,
+    	Params
+    	);
+
+    if (HitResult.bBlockingHit)
+    {
+    	Dist = GetDistanceTo(PlayerLoc, HitResult.ImpactPoint) - 50.f;
+    }
+}
+
+float APlayerCharacter::GetDistanceTo(FVector StandardLoc, FVector TargetLoc) const
+{
+	return FMath::Sqrt(FMath::Pow(StandardLoc.X - TargetLoc.X, 2) +
+							FMath::Pow(StandardLoc.Y - TargetLoc.Y, 2) +
+							FMath::Pow(StandardLoc.Z - TargetLoc.Z, 2));
 }
 
 void APlayerCharacter::OnSkillHit(AActor* Attacker, AActor* DamageCauser, const FCombatManager& EnemyManager, TSubclassOf<UDamageType> DamageType)

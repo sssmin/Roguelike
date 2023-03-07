@@ -1,17 +1,17 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-#include "BossUsurper.h"
+#include "BossSoulEater.h"
 
-ABossUsurper::ABossUsurper()
+ABossSoulEater::ABossSoulEater()
 {
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-void ABossUsurper::BeginPlay()
+void ABossSoulEater::BeginPlay()
 {
 	Super::BeginPlay();
 }
 
-void ABossUsurper::ExecuteSkill()
+void ABossSoulEater::ExecuteSkill()
 {
 	if (GetSkillFlipflop())
 	{
@@ -22,7 +22,7 @@ void ABossUsurper::ExecuteSkill()
 		}
 		else
 		{
-			Breath();
+			BreathForward();
 		}
 		SetSkillFlipflop(false);
 	}
@@ -30,6 +30,7 @@ void ABossUsurper::ExecuteSkill()
 	{
 		if (FMath::RandBool())
 		{
+	
 			ThrowBall();
 		}
 		else
@@ -40,8 +41,7 @@ void ABossUsurper::ExecuteSkill()
 	}
 }
 
-
-void ABossUsurper::Destroyed()
+void ABossSoulEater::Destroyed()
 {
 	Super::Destroyed();
 

@@ -3,6 +3,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Components/ArrowComponent.h"
 
 #include "Roguelike/Actor/WhirlwindActor.h"
 #include "Roguelike/Component/BossCombatComponent.h"
@@ -26,6 +27,8 @@ ABossMonsterCharacter::ABossMonsterCharacter()
 	{
 		BossBT = BTObject.Object;
 	}
+	BreathLocationComp = CreateDefaultSubobject<UArrowComponent>(TEXT("BreathLocationComp"));
+	BreathLocationComp->SetupAttachment(RootComponent	);
 }
 
 void ABossMonsterCharacter::BeginPlay()
@@ -82,9 +85,25 @@ void ABossMonsterCharacter::Breath()
 
 void ABossMonsterCharacter::OnExecuteBreath()
 {
-	if (BossCombatComp)
+	if (BossCombatComp && BreathLocationComp)
 	{
-		BossCombatComp->Breath();
+		BossCombatComp->Breath(EBreathType::RADIAL, BreathLocationComp->GetComponentLocation());
+	}
+}
+
+void ABossMonsterCharacter::BreathForward()
+{
+	if (BreathForwardMontage)
+	{
+		PlayAnimMontage(BreathForwardMontage);
+	}
+}
+
+void ABossMonsterCharacter::OnExecuteBreathForward()
+{
+	if (BossCombatComp && BreathLocationComp)
+	{
+		BossCombatComp->Breath(EBreathType::FORWARD, BreathLocationComp->GetComponentLocation());
 	}
 }
 

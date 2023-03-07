@@ -74,7 +74,7 @@ void USelectItemWidget::F5ButtonClick()
 	URLGameInstance* GI = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
 	if (GI && GI->GetListenerManager())
 	{
-		GI->GetListenerManager()->DeactiveOnceItemList();
+		GI->GetListenerManager()->DeactivateOnceItemList();
 		if (!HaveEverPressed)
 		{
 			HaveEverPressed = true;

@@ -10,7 +10,7 @@ void UMinimapCellWidget::Init(ECellState CellState)
 		Color.A = 0;
 		switch (CellState)
 		{
-		case ECellState::DEACTIVE:
+		case ECellState::DEACTIVATE:
 			Cell->SetBrushColor(Color);
 			break;
 		case ECellState::NORMAL:

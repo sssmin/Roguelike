@@ -21,7 +21,7 @@ public:
 	void ItemListAnimPlay(UItemInfo* ItemInfo);
 	void RegisterItem(UItemInfo* ItemInfo);
 	virtual void NativeConstruct() override;
-	void DeactiveItemList();
+	void DeactivateItemList();
 	void InitItemList();
 
 private:

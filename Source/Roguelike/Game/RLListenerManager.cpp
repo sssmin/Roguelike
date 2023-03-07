@@ -17,9 +17,9 @@ void URLListenerManager::RequestItemSwap(const UItemInfo* OldItem, const UItemIn
 	RequestItemSwapDelegate.ExecuteIfBound(OldItem, NewItem);
 }
 
-void URLListenerManager::DeactiveOnceItemList()
+void URLListenerManager::DeactivateOnceItemList()
 {
-	DeactiveOnceItemListDel.ExecuteIfBound();
+	DeactivateOnceItemListDel.ExecuteIfBound();
 }
 
 TArray<UItemInfo*> URLListenerManager::GetRandItem() const

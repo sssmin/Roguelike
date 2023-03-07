@@ -27,9 +27,11 @@ public:
 	virtual void Init() override;
 	UFUNCTION(BlueprintCallable)
 	void NewGame();
+	UFUNCTION(BlueprintPure)
+	bool CanSaveThisCell();
 	void Initialize();
 	void GenerateMap();
-	void RequestInfo();
+	void RequestInfo() const;
 	void RequestMove(int32 Dir);
 	void RequestMoveNextStage();
 	void RequestMovePrevBossCell();
@@ -37,15 +39,18 @@ public:
 	void ClearThisCell();
 	void AteHealThisCell();
 	void ReadyToRecall();
+	void SaveGame();
+	void LoadGame();
+	
 
 	void TestPrintMap();
 
-	URLListenerManager* GetListenerManager();
+	URLListenerManager* GetListenerManager() const;
 	
 	FOnInitOnceItem InitOnceItemDelegate;
 	
 private:
-	int32 CalcNextCell(int32 Dir);
+	int32 CalcNextCell(int32 Dir) const;
 	void CheckEarlyDiscoveredBossCell();
 	void Recall();
 	void MoveProcess(int32 TargetCell, int32 Dir);
@@ -79,14 +84,13 @@ private:
 	
 	
 public:
-	void GetManager(OUT FHealthManager& OutHealthManager, OUT FCombatManager& OutCombatManager, OUT uint8& OutBuff)
+	void GetManager(OUT FHealthManager& OutHealthManager, OUT FCombatManager& OutCombatManager, OUT uint8& OutBuff) const
 	{ 
 		OutHealthManager = HealthManager;
 		OutCombatManager = CombatManager;
 		OutBuff = Buff;
-		
 	}
-	void GetManager(OUT FItemManager& OutItemManager, OUT TMap<uint8, uint8>& OutFixMaxNum)
+	void GetManager(OUT FItemManager& OutItemManager, OUT TMap<uint8, uint8>& OutFixMaxNum) const
 	{
 		OutItemManager = ItemManager;
 		OutFixMaxNum = FixMaxNum;
@@ -97,7 +101,7 @@ public:
 		CombatManager = InCombatManager;
 		Buff = InBuff;
 	}
-	void SetManager(FItemManager& InItemManager, TMap<uint8, uint8>& InFixMaxNum)
+	void SetManager(const FItemManager& InItemManager, const TMap<uint8, uint8>& InFixMaxNum)
 	{
 		ItemManager = InItemManager;
 		FixMaxNum = InFixMaxNum;

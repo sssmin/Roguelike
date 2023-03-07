@@ -14,8 +14,12 @@ class ROGUELIKE_API ABombProjectile : public AMonsterProjectile
 public:
 	ABombProjectile();
 	virtual void SetVelocity(const FVector& Dir) override;
-
+	virtual void BeginPlay() override;
+	
 protected:
 	virtual void OnHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
-	
+
+private:
+	void BombSetTimer();
+	float BombTime;
 };

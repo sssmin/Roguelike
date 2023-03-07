@@ -4,7 +4,7 @@
 enum class ECellState : uint8 //¸Ê¿¡ Ç¥½ÃÇÒ ¼¿ »óÅÂ
 {
 	NONE, 
-	DEACTIVE,
+	DEACTIVATE,
 	NORMAL,
 	BONUS,
 	DONT_FIND_BOSS,

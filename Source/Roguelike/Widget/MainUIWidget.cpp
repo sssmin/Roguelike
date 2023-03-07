@@ -4,7 +4,7 @@
 #include "OnceItemListWidget.h"
 #include "HPBarWidget.h"
 
-void UMainUIWidget::ItemListAnimPlay(UItemInfo* Item)
+void UMainUIWidget::ItemListAnimPlay(UItemInfo* Item) const
 {
 	if (OnceItemListWidget && Item) 
 	{
@@ -12,7 +12,7 @@ void UMainUIWidget::ItemListAnimPlay(UItemInfo* Item)
 	}
 }
 
-void UMainUIWidget::RegisterItemEmptySlot(UItemInfo* Item)
+void UMainUIWidget::RegisterItemEmptySlot(UItemInfo* Item) const
 {
 	if (OnceItemListWidget && Item)
 	{
@@ -20,15 +20,15 @@ void UMainUIWidget::RegisterItemEmptySlot(UItemInfo* Item)
 	}
 }
 
-void UMainUIWidget::DeactiveOnceItemListWidget()
+void UMainUIWidget::DeactivateOnceItemListWidget() const
 {
 	if (OnceItemListWidget)
 	{
-		OnceItemListWidget->DeactiveItemList();
+		OnceItemListWidget->DeactivateItemList();
 	}
 }
 
-void UMainUIWidget::SetOwner(APawn* OwnerPawn)
+void UMainUIWidget::SetOwner(APawn* OwnerPawn) const
 {
 	if (HPBarWidget && OwnerPawn)
 	{
@@ -36,7 +36,7 @@ void UMainUIWidget::SetOwner(APawn* OwnerPawn)
 	}
 }
 
-void UMainUIWidget::InitOnceItemList()
+void UMainUIWidget::InitOnceItemList() const
 {
 	if (OnceItemListWidget)
 	{

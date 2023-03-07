@@ -20,6 +20,8 @@ private:
 	UFUNCTION()
 	void AnimNotify_BreathStart();
 	UFUNCTION()
+	void AnimNotify_BreathForwardStart();
+	UFUNCTION()
 	void AnimNotify_ThrowBallStart();
 	UFUNCTION()
 	void AnimNotify_WhirlwindStart();

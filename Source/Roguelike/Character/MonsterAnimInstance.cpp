@@ -35,6 +35,14 @@ void UMonsterAnimInstance::AnimNotify_BreathStart()
 	}
 }
 
+void UMonsterAnimInstance::AnimNotify_BreathForwardStart()
+{
+	if (Cast<ABossMonsterCharacter>(Char))
+	{
+		Cast<ABossMonsterCharacter>(Char)->OnExecuteBreathForward();
+	}
+}
+
 void UMonsterAnimInstance::AnimNotify_ThrowBallStart()
 {
 	if (Cast<ABossMonsterCharacter>(Char))

@@ -38,7 +38,7 @@ void ARLPlayerController::BeginPlay()
 	{
 		GI->GetListenerManager()->RestorePCDelegate.BindUObject(this, &ThisClass::RestorePC);
 		GI->GetListenerManager()->RequestItemSwapDelegate.BindUObject(this, &ThisClass::RequestItemSwap);
-		GI->GetListenerManager()->DeactiveOnceItemListDel.BindUObject(this, &ThisClass::DeactiveOnceItemListWidget);
+		GI->GetListenerManager()->DeactivateOnceItemListDel.BindUObject(this, &ThisClass::DeactivateOnceItemListWidget);
 		GI->GetListenerManager()->GetRandItemDelegate.BindUObject(this, &ThisClass::GetRandItem);
 	}
 }
@@ -46,7 +46,7 @@ void ARLPlayerController::BeginPlay()
 void ARLPlayerController::Init()
 {
 	bShowMouseCursor = true;
-	FTransform SpawnTransform = FTransform(FRotator::ZeroRotator, GetPawn()->GetActorLocation(), FVector(1.f, 1.f, 1.f));
+	const FTransform SpawnTransform = FTransform(FRotator::ZeroRotator, GetPawn()->GetActorLocation(), FVector(1.f, 1.f, 1.f));
 	FActorSpawnParameters Params;
 	Params.Owner = GetPawn();
 	PlayerCharacter = Cast<APlayerCharacter>(GetPawn());
@@ -128,8 +128,8 @@ void ARLPlayerController::SetMapInfo(FVector2Int Size, TArray<FCell> InBoard, in
 	{
 		CurrentPlayersCamera->Destroy();
 	}
-	FVector PlayerLocation = GetPawn()->GetActorLocation();
-	FTransform SpawnTransform = FTransform(FRotator::ZeroRotator, GetPawn()->GetActorLocation(), FVector(1.f, 1.f, 1.f));
+	
+	const FTransform SpawnTransform = FTransform(FRotator::ZeroRotator, GetPawn()->GetActorLocation(), FVector(1.f, 1.f, 1.f));
 	FActorSpawnParameters Params;
 	Params.Owner = GetPawn();
 	if (PlayersCameraClass && GetWorld())
@@ -173,7 +173,7 @@ void ARLPlayerController::ToggleMap()
 	}
 }
 
-void ARLPlayerController::RemoveMinimapWidget()
+void ARLPlayerController::RemoveMinimapWidget() const
 {
 	if (MinimapWidget)
 	{
@@ -181,7 +181,7 @@ void ARLPlayerController::RemoveMinimapWidget()
 	}
 }
 
-void ARLPlayerController::ShowNoticeWidget(const FString& Notice)
+void ARLPlayerController::ShowNoticeWidget(const FString& Notice) const
 {
 	if (NoticeWidgetClass && GetWorld())
 	{
@@ -217,7 +217,7 @@ void ARLPlayerController::ShowSelectItemWidget()
 {
 	SetActorTickEnabled(false);
 	StopFire();
-	TArray<UItemInfo*> SelectedItems = GetRandItem();
+	const TArray<UItemInfo*> SelectedItems = GetRandItem();
 		
 	if (SelectItemWidgetClass && GetWorld())
 	{
@@ -235,7 +235,7 @@ void ARLPlayerController::ShowSelectItemWidget()
 	PlayerInput->FlushPressedKeys();
 }
 
-TArray<UItemInfo*> ARLPlayerController::GetRandItem()
+TArray<UItemInfo*> ARLPlayerController::GetRandItem() const
 {
 	TArray<UItemInfo*> RandItem;
 	ARLGameModeBase* GM = Cast<ARLGameModeBase>(UGameplayStatics::GetGameMode(this));
@@ -250,11 +250,11 @@ void ARLPlayerController::LookAtCursor()
 {
 	if (PlayerCharacter)
 	{
-		FVector Start = PlayerCharacter->GetActorLocation();
-		FVector Target;
+		const FVector Start = PlayerCharacter->GetActorLocation();
+		FVector Target = FVector();
 		FHitResult Hit;
 
-		GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, false, Hit);
+		GetHitResultUnderCursor(ECC_CursorTrace, false, Hit);
 		if (Hit.bBlockingHit)
 		{
 			Target = Hit.ImpactPoint;
@@ -273,7 +273,7 @@ void ARLPlayerController::ResumeController()
 	SetActorTickEnabled(true);
 }
 
-void ARLPlayerController::RemoveSelectWidget()
+void ARLPlayerController::RemoveSelectWidget() const
 {
 	if (CreatedSelectItemWidget)
 	{
@@ -297,15 +297,15 @@ void ARLPlayerController::RegisterItemEmptySlot(UItemInfo* Item) const
 	}
 }
 
-void ARLPlayerController::DeactiveOnceItemListWidget()
+void ARLPlayerController::DeactivateOnceItemListWidget() const
 {
 	if (MainUIWidget)
 	{
-		MainUIWidget->DeactiveOnceItemListWidget();
+		MainUIWidget->DeactivateOnceItemListWidget();
 	}
 }
 
-void ARLPlayerController::RequestItemSwap(const UItemInfo* OldItem, const UItemInfo* NewItem)
+void ARLPlayerController::RequestItemSwap(const UItemInfo* OldItem, const UItemInfo* NewItem) const
 {
 	if (PlayerCharacter)
 	{
@@ -313,7 +313,7 @@ void ARLPlayerController::RequestItemSwap(const UItemInfo* OldItem, const UItemI
 	}
 }
 
-void ARLPlayerController::MoveMapFade()
+void ARLPlayerController::MoveMapFade() const
 {
 	if (FadeWidgetClass && GetWorld())
 	{
@@ -321,7 +321,7 @@ void ARLPlayerController::MoveMapFade()
 	}
 }
 
-void ARLPlayerController::StopFire()
+void ARLPlayerController::StopFire() const
 {
 	if (PlayerCharacter)
 	{
@@ -380,7 +380,7 @@ void ARLPlayerController::RecallEnd()
 	}
 }
 
-void ARLPlayerController::InitOnceItemWidget()
+void ARLPlayerController::InitOnceItemWidget() const
 {
 	if (MainUIWidget)
 	{
@@ -392,5 +392,5 @@ void ARLPlayerController::RestorePC()
 {
 	ResumeController();
 	RemoveSelectWidget();
-	DeactiveOnceItemListWidget();
+	DeactivateOnceItemListWidget();
 }

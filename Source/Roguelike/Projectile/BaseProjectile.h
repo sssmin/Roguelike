@@ -60,6 +60,8 @@ public:
 	UParticleSystem* GetProjectileParticle() const { return ProjectileParticle; }
 	void SetHitParticle(UParticleSystem* Particle) { HitParticle = Particle; }
 	UParticleSystem* GetHitParticle() const { return HitParticle; }
-	void SetDamageType(TSubclassOf<UDamageType> Type) { ProjectileDamageType; }
+	void SetDamageType(TSubclassOf<UDamageType> Type) { ProjectileDamageType = Type; }
 	TSubclassOf<UDamageType> GetDamageType() const { return ProjectileDamageType; }
+	USphereComponent* GetSphereComp() const { return Sphere; }
+	
 };

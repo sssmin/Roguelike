@@ -19,17 +19,11 @@ public:
 	virtual void BeginPlay() override;
 
 private:
-	UFUNCTION()
-	void OnBeginOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-	UFUNCTION()
-	void OnEndOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	void OnBeginOverlapped();
 	
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UBoxComponent* BoxComponent;
-	UPROPERTY()
-	APlayerCharacter* Player;
 	
 	float ActiveTime;
-	bool IsActive;
-	float ApplyTime;
+	
 };

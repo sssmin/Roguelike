@@ -14,11 +14,12 @@ class ROGUELIKE_API UBTServiceCheckAttackCooldown : public UBTService
 public:
 	UBTServiceCheckAttackCooldown();
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
-
+	
 private:
 	UFUNCTION()
 	void CooldownFinished(UBlackboardComponent* BBComp);
 	void SetRandCooltime(UBlackboardComponent* BBComp);
+	void SetFixCooltime(UBlackboardComponent* BBComp);
 	
 	UPROPERTY(EditAnywhere)
 	FBlackboardKeySelector CanSpecialAttackKey;

@@ -9,3 +9,5 @@
 #define ECC_CharacterBlockProjectile ECollisionChannel::ECC_GameTraceChannel2
 #define ECC_WallBlockProjectile ECollisionChannel::ECC_GameTraceChannel3
 #define ECC_Projectile ECollisionChannel::ECC_GameTraceChannel4
+#define ECC_Floor ECollisionChannel::ECC_GameTraceChannel5
+#define ECC_CursorTrace ECollisionChannel::ECC_GameTraceChannel6

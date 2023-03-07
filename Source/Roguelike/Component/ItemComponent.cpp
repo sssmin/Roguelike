@@ -196,7 +196,7 @@ void UItemComponent::SelectItem(UItemInfo* Item)
 	check(RLPC);
 	checkf(Item, TEXT("Item is nullptr"));
 
-	RLPC->DeactiveOnceItemListWidget();
+	RLPC->DeactivateOnceItemListWidget();
 	switch (Item->ItemsType)
 	{
 		case EItemType::INF_STACK_ITEM:

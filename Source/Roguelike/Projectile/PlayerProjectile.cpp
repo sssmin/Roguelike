@@ -52,5 +52,4 @@ void APlayerProjectile::Destroyed()
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), GetHitParticle(), GetActorTransform());
 	}
-
 }

@@ -66,6 +66,16 @@ void URLGameInstance::GenerateMap()
 	bIsEarlyDiscoveredBoss = false;
 }
 
+void URLGameInstance::SaveGame()
+{
+	
+}
+
+void URLGameInstance::LoadGame()
+{
+	
+}
+
 void URLGameInstance::TestPrintMap()
 {
 	for (int32 i = 0; i < Board.Num(); ++i)
@@ -89,7 +99,7 @@ void URLGameInstance::TestPrintMap()
 	//ClearStage();
 }
 
-void URLGameInstance::RequestInfo()
+void URLGameInstance::RequestInfo() const
 {
 	if (Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld())))
 	{
@@ -167,7 +177,7 @@ void URLGameInstance::RequestMovePrevBossCell()
 	MoveProcess(BossPrevCell, -1);
 }
 
-int32 URLGameInstance::CalcNextCell(int32 Dir)
+int32 URLGameInstance::CalcNextCell(int32 Dir) const
 {
 	switch (Dir)
 	{
@@ -252,7 +262,14 @@ void URLGameInstance::MoveProcess(int32 TargetCell, int32 Dir)
 	}
 }
 
-URLListenerManager* URLGameInstance::GetListenerManager()
+URLListenerManager* URLGameInstance::GetListenerManager() const
 {
 	return ListenerManager;
+}
+
+bool URLGameInstance::CanSaveThisCell()
+{
+	if (Board.IsValidIndex(PlayerCurrentCell))
+		return (Board[PlayerCurrentCell].IsCleared) || (Board[PlayerCurrentCell].CellType == ECellType::BONUS);
+	return false;
 }

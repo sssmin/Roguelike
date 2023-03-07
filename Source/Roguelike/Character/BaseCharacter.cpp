@@ -42,13 +42,11 @@ void ABaseCharacter::OnHit(const FCombatManager& EnemyCombatManager, const FItem
 
 void ABaseCharacter::OnExplodeHit(AActor* DamagedActor, float Damage, const UDamageType* DamageType, FVector Origin, FHitResult HitInfo, AController* InstigatedBy, AActor* DamageCauser)
 {
-	/*check(ManagerComponent);
-	ManagerComponent->ReceiveExplodeDamage(Damage, InstigatedBy, DamageCauser);*/
-	FCombatManager EnemyCombatManager = GetCombatManager();
-	if (ManagerComponent)
-	{
-		ManagerComponent->ReceiveDamage(EnemyCombatManager, FItemManager(), DamagedActor, DamageCauser, DamageType->GetClass());
-	}
+	check(ManagerComponent);
+	const FCombatManager EnemyCombatManager = GetCombatManager();
+	
+	UE_LOG(LogTemp, Warning, TEXT("ExlpodeHit"));
+	ManagerComponent->ReceiveDamage(EnemyCombatManager, FItemManager(), DamagedActor, DamageCauser, DamageType->GetClass());
 }
 
 FCombatManager ABaseCharacter::GetCombatManager() const
