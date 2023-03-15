@@ -79,8 +79,8 @@ void DFSAgrt::MazeGenerator()
 		SideCells.Empty();
 
 		Board[CurrentCell].Visited = true;
-		Board[CurrentCell].CellState = ECellState::NORMAL;
-		Board[CurrentCell].CellType = ECellType::MOBS;
+		Board[CurrentCell].CellState = ECellState::Normal;
+		Board[CurrentCell].CellType = ECellType::Mobs;
 		Board[CurrentCell].CellClass = FMath::RandRange(2, 4);
 		for (int32 i = 0; i < 8; ++i)
 		{
@@ -147,8 +147,8 @@ void DFSAgrt::MazeGenerator()
 		CreatedBossCell = true;
 		BossPrevCell = BeforeCell;
 		BossCell = CurrentCell;
-		Board[BossCell].CellState = ECellState::DONT_FIND_BOSS;
-		Board[BossCell].CellType = ECellType::BOSS;
+		Board[BossCell].CellState = ECellState::DontFindBoss;
+		Board[BossCell].CellType = ECellType::Boss;
 		Board[BossCell].CellClass = 1;
 	}
 	
@@ -158,8 +158,8 @@ void DFSAgrt::MazeGenerator()
 	}
 	else
 	{
-		Board[StartCell].CellState = ECellState::IN_PLAYER;
-		Board[StartCell].CellType = ECellType::START;
+		Board[StartCell].CellState = ECellState::InPlayer;
+		Board[StartCell].CellType = ECellType::Start;
 		Board[StartCell].IsCleared = true;
 		Board[StartCell].TempWall = static_cast<uint8>(ETempWall::NONE);
 		Board[StartCell].CellClass = 0;
@@ -174,10 +174,10 @@ void DFSAgrt::MakeBonusCell()
 	while (MakedBonusCell != BonusCellNum)
 	{
 		RandCellIdx = FMath::RandRange(0, (Size.X * Size.Y) - 1);
-		if (Board[RandCellIdx].Visited && (RandCellIdx != BossCell) && (RandCellIdx != BossPrevCell) && (RandCellIdx != StartCell) && (Board[RandCellIdx].CellType != ECellType::BONUS))
+		if (Board[RandCellIdx].Visited && (RandCellIdx != BossCell) && (RandCellIdx != BossPrevCell) && (RandCellIdx != StartCell) && (Board[RandCellIdx].CellType != ECellType::Bonus))
 		{
-			Board[RandCellIdx].CellState = ECellState::BONUS;
-			Board[RandCellIdx].CellType = ECellType::BONUS;
+			Board[RandCellIdx].CellState = ECellState::Bonus;
+			Board[RandCellIdx].CellType = ECellType::Bonus;
 			Board[RandCellIdx].TempWall = static_cast<uint8>(ETempWall::NONE);
 			Board[RandCellIdx].CellClass = 0;
 			MakedBonusCell++;

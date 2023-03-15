@@ -22,26 +22,28 @@ public:
 	UManagerComponent();
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	UFUNCTION(BlueprintCallable)
+	void Init();
 	void ReceiveDamage(const FCombatManager& EnemyCombatManager, const FItemManager& EnemyItemManager, AActor* Attacker, AActor* DamageCauser, TSubclassOf<UDamageType> DamageType);
 	void ApplyPlayerElement(EElement Element);
 	void Heal(float Rate);
 	bool CanAttack() const;
 	bool CanMove() const;
 	void UpdateMaxHP(float Value);
-	void UpdateCurrentHP(float Value);
 	void UpdateCurrentAtk(float Value);
 	void UpdateCurrentCritical(float Value);
 	void UpdateCurrentRange(float Value);
 	bool HaveAnyState();
 	bool IsDead();
 	bool IsHPLow();
-	
+	void HPSync();
 	FOnUpdateCurrentHP OnUpdateCurrentHP;
 
 	static UManagerComponent* GetManagerComp(AActor* Character);
 
 private:
-	void SendManager() const;
+	UFUNCTION()
+	void SetTempManager() const;
 	float CalcCounter(EElement EnemyElement);
 	bool CheckState(uint8 State) const;
 	void ApplyState(uint8 State);
@@ -59,6 +61,7 @@ private:
 	float CalcCritical(const FCombatManager& EnemyCombatManage);
 	void InitCCStack();
 	void Dead();
+	void UpdateCurrentHP(float Value);
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	FHealthManager HealthManager;

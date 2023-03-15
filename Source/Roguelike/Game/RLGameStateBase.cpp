@@ -18,13 +18,20 @@ ARLGameStateBase::ARLGameStateBase()
 void ARLGameStateBase::BeginPlay()
 {
 	Super::BeginPlay();
+
+	RLGameMode = Cast<ARLGameModeBase>(UGameplayStatics::GetGameMode(this));
+	RLGameInst = URLGameInstance::GetRLGameInst(this);
+	RLPlayerController = Cast<ARLPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+	
+	if(RLGameInst && RLGameInst->GetListenerManager())
+	{
+		RLGameInst->GetListenerManager()->OnNewGameDelegate.AddUObject(this, &ThisClass::NewGame);
+		RLGameInst->GetListenerManager()->OnLoadGameDelegate.AddUObject(this, &ThisClass::LoadGame);
+	}
 }
 
-void ARLGameStateBase::Init()
+void ARLGameStateBase::NewGame()
 {
-	RLGameMode = Cast<ARLGameModeBase>(UGameplayStatics::GetGameMode(this));
-	RLGameInst = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
-	RLPlayerController = Cast<ARLPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
 	check(RLGameMode);
 	check(RLGameInst);
 	
@@ -32,10 +39,20 @@ void ARLGameStateBase::Init()
 	CellInfo = RLGameInst->GetCellInfo();
 	RLGameMode->RequestSpawnCell(CellInfo.CellClass, CellInfo.TempWall);
 	SetObjective();
-	
 }
 
-void ARLGameStateBase::ReconstructCuzMove(int32 Dir, int32 Level, const FCell& Info)
+void ARLGameStateBase::LoadGame()
+{
+	check(RLGameMode);
+	check(RLGameInst);
+	
+	StageLevel = RLGameInst->GetStageLevel();
+	CellInfo = RLGameInst->GetCellInfo();
+	RLGameMode->RequestSpawnCell(CellInfo.CellClass, CellInfo.TempWall, static_cast<uint8>(EDir::Load));
+	SetObjective();
+}
+
+void ARLGameStateBase::ReconstructCuzMove(uint8 Dir, int32 Level, const FCell& Info)
 {
 	StageLevel = Level;
 	CellInfo = Info;
@@ -43,12 +60,11 @@ void ARLGameStateBase::ReconstructCuzMove(int32 Dir, int32 Level, const FCell& I
 	SetObjective();
 }
 
-void ARLGameStateBase::SpawnCell(int32 Dir)
+void ARLGameStateBase::SpawnCell(uint8 Dir)
 {
 	check(RLGameMode);
 	RLGameMode->RequestSpawnCell(CellInfo.CellClass, CellInfo.TempWall, Dir);
 }
-
 
 void ARLGameStateBase::SetObjective()
 {
@@ -66,7 +82,7 @@ void ARLGameStateBase::SetObjective()
 	{
 		switch (CellInfo.CellType)
 		{
-		case ECellType::MOBS:
+		case ECellType::Mobs:
 			if (FMath::RandBool())
 			{
 				ObjectiveNum = 4;
@@ -77,11 +93,11 @@ void ARLGameStateBase::SetObjective()
 			}
 			RLGameMode->RequestSpawnMob(StageLevel, ObjectiveNum++); //±âº» ÅÍ·¿ 1 ++
 			break;
-		case ECellType::BOSS:
+		case ECellType::Boss:
 			ObjectiveNum = 1;
 			RLGameMode->RequestSpawnBoss(StageLevel);
 			break;
-		case ECellType::BONUS:
+		case ECellType::Bonus:
 			RLGameMode->RequestSpawnHealItem();
 			if (!CellInfo.SelectedBonusItem)
 			{

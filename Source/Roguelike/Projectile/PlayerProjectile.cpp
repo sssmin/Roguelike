@@ -15,27 +15,27 @@ void APlayerProjectile::BeginPlay()
 	{
 		switch (CombatManager.Element)
 		{
-		case EElement::NONE:
+		case EElement::None:
 			SetProjectileParticle(ProjectileParticles[0]);
 			SetHitParticle(HitParticles[0]);
 			break;
-		case EElement::FIRE:
+		case EElement::Fire:
 			SetProjectileParticle(ProjectileParticles[1]);
 			SetHitParticle(HitParticles[1]);
 			break;
-		case EElement::WATER:
+		case EElement::Water:
 			SetProjectileParticle(ProjectileParticles[2]);
 			SetHitParticle(HitParticles[2]);
 			break;
-		case EElement::EARTH:
+		case EElement::Earth:
 			SetProjectileParticle(ProjectileParticles[3]);
 			SetHitParticle(HitParticles[3]);
 			break;
-		case EElement::DARKNESS:
+		case EElement::Darkness:
 			SetProjectileParticle(ProjectileParticles[4]);
 			SetHitParticle(HitParticles[4]);
 			break;
-		case EElement::LIGHT:
+		case EElement::Light:
 			SetProjectileParticle(ProjectileParticles[5]);
 			SetHitParticle(HitParticles[5]);
 			break;

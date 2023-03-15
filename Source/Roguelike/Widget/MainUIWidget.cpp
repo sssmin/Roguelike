@@ -43,3 +43,11 @@ void UMainUIWidget::InitOnceItemList() const
 		OnceItemListWidget->InitItemList();
 	}
 }
+
+void UMainUIWidget::LoadItem(TArray<UItemInfo*> ItemInfos)
+{
+	if (OnceItemListWidget)
+	{
+		OnceItemListWidget->LoadItem(ItemInfos);
+	}
+}

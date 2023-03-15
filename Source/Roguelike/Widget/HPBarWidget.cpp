@@ -25,26 +25,27 @@ void UHPBarWidget::UpdateCurrentHP(float CurrentHP, float MaxHP)
 
 void UHPBarWidget::SetMonsterType(EMonsterType Type)
 {
+	UE_LOG(LogTemp, Warning, TEXT("HPBarWidget SetMonsterType"));
 	if (HPBar)
 	{
 		switch (Type)
 		{
-		case EMonsterType::NORMAL:
+		case EMonsterType::Normal:
 			HPBar->SetFillColorAndOpacity(FLinearColor::Green);
 			break;
-		case EMonsterType::ELITE:
+		case EMonsterType::Elite:
 			HPBar->SetFillColorAndOpacity(FLinearColor::Red);
 			break;
 		}
 	}
-	
 }
 
-void UHPBarWidget::SetOwnerPlayer(APawn* OwnerPawn)
+void UHPBarWidget::SetOwnerPlayer(APawn* Owner)
 {
-	UManagerComponent* ManagerComp = UManagerComponent::GetManagerComp(OwnerPawn);
+	UManagerComponent* ManagerComp = UManagerComponent::GetManagerComp(Owner);
 	if (ManagerComp)
 	{
 		ManagerComp->OnUpdateCurrentHP.AddDynamic(this, &ThisClass::UpdateCurrentHP);
+		ManagerComp->HPSync();
 	}
 }

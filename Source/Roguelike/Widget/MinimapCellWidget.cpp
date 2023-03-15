@@ -10,29 +10,29 @@ void UMinimapCellWidget::Init(ECellState CellState)
 		Color.A = 0;
 		switch (CellState)
 		{
-		case ECellState::DEACTIVATE:
+		case ECellState::Deactivate:
 			Cell->SetBrushColor(Color);
 			break;
-		case ECellState::NORMAL:
+		case ECellState::Normal:
 			Cell->SetBrushColor(FLinearColor::White);
 			break;
-		case ECellState::BONUS:
+		case ECellState::Bonus:
 			Cell->SetBrushColor(FLinearColor::Yellow);
 			break;
-		case ECellState::DONT_FIND_BOSS:
+		case ECellState::DontFindBoss:
 			Cell->SetBrushColor(FLinearColor::White);
 			break;
-		case ECellState::DISCOVERED_BOSS:
+		case ECellState::DiscoveredBoss:
 			Cell->SetBrushColor(FLinearColor::Red);
 			break;
-		case ECellState::IN_PLAYER:
+		case ECellState::InPlayer:
 			Cell->SetBrushColor(FLinearColor::Black);
 			if (FlikerAnim)
 			{
 				PlayAnimation(FlikerAnim, 0.f, 0);
 			}
 			break;
-		case ECellState::CLEAR:
+		case ECellState::Clear:
 			Cell->SetBrushColor(FLinearColor::Gray);
 			break;
 

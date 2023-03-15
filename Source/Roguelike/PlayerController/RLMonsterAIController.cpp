@@ -60,9 +60,9 @@ void ARLMonsterAIController::OnPossess(APawn* InPawn)
 		Monster = Cast<AMonsterCharacter>(InPawn);
 		if (Monster && HPBarWidgetClass && BossHPBarWidgetClass)
 		{
-			if (Monster->GetMonsterType() == EMonsterType::EGO) return;
+			if (Monster->GetMonsterType() == EMonsterType::Ego) return;
 			
-			if (Monster->GetMonsterType() == EMonsterType::BOSS)
+			if (Monster->GetMonsterType() == EMonsterType::Boss)
 			{
 				Monster->SetHPBarWidget(BossHPBarWidgetClass);
 			}

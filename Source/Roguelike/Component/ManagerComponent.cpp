@@ -1,18 +1,16 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "ManagerComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystemComponent.h"
 
+#include "ItemComponent.h"
 #include "Roguelike/Game/RLGameInstance.h"
 #include "Roguelike/Game/RLGameStateBase.h"
-#include "Roguelike/Game/RLListenerManager.h"
 #include "Roguelike/PlayerController/RLPlayerController.h"
 #include "Roguelike/PlayerController/RLMonsterAIController.h"
 #include "Roguelike/Character/Player/PlayerCharacter.h"
 #include "Roguelike/Character/BossMonster/BossMonsterCharacter.h"
-#include "Particles/ParticleSystemComponent.h"
-#include "ItemComponent.h"
 #include "Roguelike/Type/DamageType/AllDamageTypes.h"
-
 
 UManagerComponent::UManagerComponent()
 {
@@ -29,8 +27,6 @@ UManagerComponent::UManagerComponent()
 	bShouldApplyCC = false;
 	bIsBurn = false;
 	BurnTime = 0.f;
-	
-
 }
 
 UManagerComponent* UManagerComponent::GetManagerComp(AActor* Character)
@@ -39,7 +35,6 @@ UManagerComponent* UManagerComponent::GetManagerComp(AActor* Character)
 	{
 		return Character->FindComponentByClass<UManagerComponent>();
 	}
-	
 	return nullptr;
 }
 
@@ -47,14 +42,15 @@ void UManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	URLGameInstance* GI = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
-	if (GI)
+	FString LevelName = UGameplayStatics::GetCurrentLevelName(this, true);
+
+	URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
+	if (GI && GI->GetListenerManager())
 	{
-		GI->GetManager(HealthManager, CombatManager, CurrentBuff);
-		ApplyBuff(CurrentBuff);
+		GI->SetTempManageDelegate.AddUObject(this, &ThisClass::SetTempManager);
+		GI->GetListenerManager()->OnLoadGameDelegate.AddUObject(this, &ThisClass::Init);
 	}
 }
-
 
 void UManagerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
@@ -91,10 +87,20 @@ void UManagerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	}
 }
 
-void UManagerComponent::SendManager() const
+void UManagerComponent::Init()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ManagerComp SendManager."));
-	URLGameInstance* GI = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
+	URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
+	if (GI)
+	{
+		GI->GetManager(HealthManager, CombatManager, CurrentBuff);
+		ApplyPlayerElement(CombatManager.Element);
+		ApplyBuff(CurrentBuff);
+	}
+}
+
+void UManagerComponent::SetTempManager() const
+{
+	URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
 	if (GI)
 	{
 		GI->SetManager(HealthManager, CombatManager, CurrentBuff);
@@ -103,16 +109,16 @@ void UManagerComponent::SendManager() const
 
 void UManagerComponent::ReceiveDamage(const FCombatManager& EnemyCombatManager, const FItemManager& EnemyItemManager, AActor* Attacker, AActor* DamageCauser, TSubclassOf<UDamageType> DamageType)
 {
-	if (CheckState(static_cast<uint8>(EState::DEAD))) return;
+	if (CheckState(static_cast<uint8>(EState::Dead))) return;
 	
 	float RiskReturn = 1.f;
 	if (ItemComponent)
 	{
-		if (ItemComponent->CheckOnceItem(static_cast<uint8>(EOnceEquippedItem::RISK_RETURN)))
+		if (ItemComponent->CheckOnceItem(static_cast<uint8>(EOnceEquippedItem::RiskReturn)))
 		{
 			RiskReturn = 3.f;
 		}
-		if (ItemComponent->CheckOnceItem(static_cast<uint8>(EOnceEquippedItem::DODGE)))
+		if (ItemComponent->CheckOnceItem(static_cast<uint8>(EOnceEquippedItem::Dodge)))
 		{
 			if (IsDodge()) return;
 		}
@@ -175,7 +181,7 @@ void UManagerComponent::ApplyBuff(uint8 Buff)
 {
 	CurrentBuff |= Buff;
 
-	if (Buff == static_cast<uint8>(EBuff::MOVEMENT_BUFF))
+	if (Buff == static_cast<uint8>(EBuff::MovementBuff))
 	{
 		if (Cast<APlayerCharacter>(GetOwner()))
 		{
@@ -188,7 +194,7 @@ void UManagerComponent::RemoveBuff(uint8 Buff)
 {
 	CurrentBuff ^= Buff;
 
-	if (Buff == static_cast<uint8>(EBuff::MOVEMENT_BUFF))
+	if (Buff == static_cast<uint8>(EBuff::MovementBuff))
 	{
 		if (Cast<APlayerCharacter>(GetOwner()))
 		{
@@ -203,47 +209,47 @@ float UManagerComponent::CalcCounter(EElement EnemyElement)//상성. 받을 대�
 
 	switch (CombatManager.Element)
 	{
-	case EElement::NONE:
+	case EElement::None:
 		Ret = 1.f;
 		break;
-	case EElement::FIRE:
-		if (EnemyElement == EElement::WATER)
+	case EElement::Fire:
+		if (EnemyElement == EElement::Water)
 		{
 			Ret = 2.f;
 		}
-		else if (EnemyElement == EElement::EARTH)
+		else if (EnemyElement == EElement::Earth)
 		{
 			Ret = 0.5f;
 		}
 		break;
-	case EElement::WATER:
-		if (EnemyElement == EElement::EARTH)
+	case EElement::Water:
+		if (EnemyElement == EElement::Earth)
 		{
 			Ret = 2.f;
 		}
-		else if (EnemyElement == EElement::FIRE)
+		else if (EnemyElement == EElement::Fire)
 		{
 			Ret = 0.5f;
 		}
 		break;
-	case EElement::EARTH:
-		if (EnemyElement == EElement::FIRE)
+	case EElement::Earth:
+		if (EnemyElement == EElement::Fire)
 		{
 			Ret = 2.f;
 		}
-		else if (EnemyElement == EElement::WATER)
+		else if (EnemyElement == EElement::Water)
 		{
 			Ret = 0.5f;
 		}
 		break;
-	case EElement::DARKNESS:
-		if (EnemyElement == EElement::LIGHT)
+	case EElement::Darkness:
+		if (EnemyElement == EElement::Light)
 		{
 			Ret = 2.f;
 		}
 		break;
-	case EElement::LIGHT:
-		if (EnemyElement == EElement::DARKNESS)
+	case EElement::Light:
+		if (EnemyElement == EElement::Darkness)
 		{
 			Ret = 2.f;
 		}
@@ -264,7 +270,7 @@ float UManagerComponent::CalcCritical(const FCombatManager& EnemyCombatManage)
 
 void UManagerComponent::Dead()
 {
-	ApplyState(static_cast<uint8>(EState::DEAD));
+	ApplyState(static_cast<uint8>(EState::Dead));
 
 	if (Cast<ABaseCharacter>(GetOwner()))
 	{
@@ -298,7 +304,7 @@ void UManagerComponent::Dead()
 
 bool UManagerComponent::IsDead()
 {
-	return CheckState(static_cast<uint8>(EState::DEAD));
+	return CheckState(static_cast<uint8>(EState::Dead));
 }
 
 bool UManagerComponent::IsHPLow()
@@ -314,17 +320,17 @@ void UManagerComponent::ApplyPlayerElement(EElement Element)
 
 	switch (CombatManager.Element)
 	{
-	case EElement::FIRE:
+	case EElement::Fire:
 		break;
-	case EElement::WATER:
+	case EElement::Water:
 		break;
-	case EElement::EARTH:
-		ApplyBuff(static_cast<uint8>(EBuff::MOVEMENT_BUFF));
+	case EElement::Earth:
+		ApplyBuff(static_cast<uint8>(EBuff::MovementBuff));
 		break;
-	case EElement::DARKNESS:
+	case EElement::Darkness:
 		break;
-	case EElement::LIGHT:
-		ApplyBuff(static_cast<uint8>(EBuff::HEAL_BUFF));
+	case EElement::Light:
+		ApplyBuff(static_cast<uint8>(EBuff::HealBuff));
 		break;
 	}
 	if (Cast<APlayerCharacter>(GetOwner()))
@@ -335,13 +341,13 @@ void UManagerComponent::ApplyPlayerElement(EElement Element)
 
 void UManagerComponent::InitElemBuff()
 {
-	if (CombatManager.Element == EElement::EARTH)
+	if (CombatManager.Element == EElement::Earth)
 	{
-		RemoveBuff(static_cast<uint8>(EBuff::MOVEMENT_BUFF));
+		RemoveBuff(static_cast<uint8>(EBuff::MovementBuff));
 	}
-	else if (CombatManager.Element == EElement::LIGHT)
+	else if (CombatManager.Element == EElement::Light)
 	{
-		RemoveBuff(static_cast<uint8>(EBuff::HEAL_BUFF));
+		RemoveBuff(static_cast<uint8>(EBuff::HealBuff));
 	}
 }
 
@@ -377,8 +383,8 @@ void UManagerComponent::CalcCC(const FCombatManager& EnemyCombatManager)
 {
 	switch (EnemyCombatManager.Element)
 	{
-		case EElement::FIRE:
-			if (CheckState(static_cast<uint8>(EState::BURN)))
+		case EElement::Fire:
+			if (CheckState(static_cast<uint8>(EState::Burn)))
 			{
 				return;
 			}
@@ -386,11 +392,11 @@ void UManagerComponent::CalcCC(const FCombatManager& EnemyCombatManager)
 			if (++CCStack == 4)
 			{
 				InitCCStack();
-				ApplyState(static_cast<uint8>(EState::BURN));
+				ApplyState(static_cast<uint8>(EState::Burn));
 			}
 			break;
-		case EElement::WATER:
-			if (CheckState(static_cast<uint8>(EState::FROZEN)))
+		case EElement::Water:
+			if (CheckState(static_cast<uint8>(EState::Frozen)))
 			{
 				return;
 			}
@@ -398,11 +404,11 @@ void UManagerComponent::CalcCC(const FCombatManager& EnemyCombatManager)
 			if (++CCStack == 4)
 			{
 				InitCCStack();
-				ApplyState(static_cast<uint8>(EState::FROZEN));
+				ApplyState(static_cast<uint8>(EState::Frozen));
 			}
 			break;
-		case EElement::DARKNESS:
-			if (CheckState(static_cast<uint8>(EState::FEAR)))
+		case EElement::Darkness:
+			if (CheckState(static_cast<uint8>(EState::Fear)))
 			{
 				return;
 			}
@@ -410,7 +416,7 @@ void UManagerComponent::CalcCC(const FCombatManager& EnemyCombatManager)
 			if (++CCStack == 4)
 			{
 				InitCCStack();
-				ApplyState(static_cast<uint8>(EState::FEAR));
+				ApplyState(static_cast<uint8>(EState::Fear));
 			}
 			break;
 	}
@@ -418,22 +424,22 @@ void UManagerComponent::CalcCC(const FCombatManager& EnemyCombatManager)
 
 bool UManagerComponent::HaveAnyState() //dead가 아닌 어떠한 상태
 {
-	return (CurrentState != 0) && !CheckState(static_cast<uint8>(EState::DEAD));
+	return (CurrentState != 0) && !CheckState(static_cast<uint8>(EState::Dead));
 }
 
 void UManagerComponent::ApplyCC()
 {
-	if (CheckState(static_cast<uint8>(EState::BURN)))
+	if (CheckState(static_cast<uint8>(EState::Burn)))
 	{
 		CCDuration = 5.1f;
 		bIsBurn = true;
 	}
-	else if (CheckState(static_cast<uint8>(EState::FROZEN)))
+	else if (CheckState(static_cast<uint8>(EState::Frozen)))
 	{
 		CCDuration = 2.5f;
 
 	}
-	else if (CheckState(static_cast<uint8>(EState::FEAR)))
+	else if (CheckState(static_cast<uint8>(EState::Fear)))
 	{
 		CCDuration = 2.5f;
 	}
@@ -454,12 +460,12 @@ void UManagerComponent::ApplyBurnDamage()
 
 bool UManagerComponent::CanAttack() const
 {
-	return !CheckState(static_cast<uint8>(EState::FROZEN));
+	return !CheckState(static_cast<uint8>(EState::Frozen));
 }
 
 bool UManagerComponent::CanMove() const
 {
-	return !CheckState(static_cast<uint8>(EState::FROZEN));
+	return !CheckState(static_cast<uint8>(EState::Frozen));
 }
 
 void UManagerComponent::UpdateMaxHP(float Value)
@@ -487,6 +493,14 @@ void UManagerComponent::UpdateCurrentHP(float Value)
 		{
 			Dead();
 		}
+	}
+}
+
+void UManagerComponent::HPSync()
+{
+	if (OnUpdateCurrentHP.IsBound())
+	{
+		OnUpdateCurrentHP.Broadcast(HealthManager.CurrentHP, HealthManager.MaxHP);
 	}
 }
 

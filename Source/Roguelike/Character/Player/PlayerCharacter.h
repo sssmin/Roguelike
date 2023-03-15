@@ -68,6 +68,7 @@ private:
 public:
 	FRotator GetLookRot() const { return LookRot; }
 	void SetLookRot(FRotator Rot) { LookRot = Rot; }
+	UFUNCTION(BlueprintPure)
 	UItemComponent* GetItemComp() const { return ItemComp; }
 	UFUNCTION(BlueprintPure)
 	UPlayerCombatComponent* GetPlayerCombatComp() const { return PlayerCombatComp;}

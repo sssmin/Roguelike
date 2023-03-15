@@ -1,5 +1,4 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -10,12 +9,23 @@
 #include "Roguelike/Game/RLListenerManager.h"
 #include "RLGameInstance.generated.h"
 
+UENUM(BlueprintType)
+enum class ELoadState : uint8
+{
+	None,
+	NewGame,
+	LoadGame,
+	LevelTravel
+};
+
+class URoguelikeSaveGame;
 class DFSAgrt;
 class ARLGameStateBase;
 class ARLGameModeBase;
+struct FInfoRecord;
 
 DECLARE_DELEGATE(FOnInitOnceItem)
-
+DECLARE_MULTICAST_DELEGATE(FSetTempManage)
 
 UCLASS()
 class ROGUELIKE_API URLGameInstance : public UGameInstance
@@ -25,36 +35,55 @@ class ROGUELIKE_API URLGameInstance : public UGameInstance
 public:
 	URLGameInstance();
 	virtual void Init() override;
+	virtual void LoadComplete(const float LoadTime, const FString& MapName) override;
 	UFUNCTION(BlueprintCallable)
 	void NewGame();
 	UFUNCTION(BlueprintPure)
 	bool CanSaveThisCell();
+	UFUNCTION(BlueprintCallable)
+	void SaveGame(UPARAM(ref) FTransform& PlayerTransform);
+	UFUNCTION(BlueprintCallable)
+	void LoadGame();
+	UFUNCTION(BlueprintCallable)
+	bool CanBind(FName MappingName, FKey Key);
+	UFUNCTION(BlueprintCallable)
+	int32 GetMappingNum(FName MappingName);
+	UFUNCTION(BlueprintCallable)
+	void RemoveBindKey(FKey Key);
+	UFUNCTION(BlueprintCallable)
+	void ChangeBindKey(FName MappingName, FKey Key, float ValueIfAxis);
+	UFUNCTION(BlueprintCallable)
+	void RollbackBindKey(FName MappingName, FKey Key, float ValueIfAxis);
 	void Initialize();
 	void GenerateMap();
 	void RequestInfo() const;
-	void RequestMove(int32 Dir);
+	void RequestMove(uint8 Dir);
 	void RequestMoveNextStage();
 	void RequestMovePrevBossCell();
-	TArray<int32> GetConnectedDir();
+	TArray<uint8> GetConnectedDir();
 	void ClearThisCell();
 	void AteHealThisCell();
 	void ReadyToRecall();
-	void SaveGame();
-	void LoadGame();
-	
+	void GetManager(OUT FHealthManager& OutHealthManager, OUT FCombatManager& OutCombatManager, OUT uint8& OutBuff) const;
+	void GetManager(OUT FItemManager& OutItemManager, OUT TMap<uint8, uint8>& OutFixMaxNum, OUT TArray<UItemInfo*>& OutItemInfos) const;
+	void SetManager(const FHealthManager& InHealthManager, const FCombatManager& InCombatManager, const uint8& InBuff);
+	void SetManager(const FItemManager& InItemManager, const TMap<uint8, uint8>& InFixMaxNum, const TArray<UItemInfo*>& InItemInfos);
+	void SetSelectedBonusItem(bool Boolean);
+	FCell GetCellInfo() const ;
+	URLListenerManager* GetListenerManager() const;
+
+	FOnInitOnceItem InitOnceItemDelegate;
+	FSetTempManage SetTempManageDelegate;
 
 	void TestPrintMap();
-
-	URLListenerManager* GetListenerManager() const;
-	
-	FOnInitOnceItem InitOnceItemDelegate;
-	
+	static URLGameInstance* GetRLGameInst(const UObject* WorldContextObject);
 private:
-	int32 CalcNextCell(int32 Dir) const;
+	int32 CalcNextCell(uint8 Dir) const;
 	void CheckEarlyDiscoveredBossCell();
 	void Recall();
-	void MoveProcess(int32 TargetCell, int32 Dir);
-	
+	void MoveProcess(int32 TargetCell, uint8 Dir);
+	void LoadDataSetting(const FInfoRecord& Record);
+	void RemoveNoneAxis(FName MappingName);
 	TSharedPtr<DFSAgrt> DFS;
 	UPROPERTY()
 	ARLGameStateBase* RLGameState;
@@ -62,10 +91,19 @@ private:
 	ARLGameModeBase* RLGameMode;
 	UPROPERTY()
 	URLListenerManager* ListenerManager;
-	UPROPERTY()
-	TMap<uint8, uint8> FixMaxNum;
+
+	/*
+	 *  GameInstance에서 관리 또는 저장 시 필요한 변수들
+	 */
+	
 	UPROPERTY()
 	TArray<FCell> Board;
+	UPROPERTY()
+	URoguelikeSaveGame* RLSaveGame;
+	UPROPERTY()
+	TArray<UItemInfo*> TempItemInfos;
+	UPROPERTY()
+	TMap<uint8, uint8> TempFixMaxNum;
 	
 	FVector2Int MapSize;
 	int32 ClearCount; //방 클리어 갯수
@@ -77,50 +115,23 @@ private:
 	int32 BossPrevCell;
 	int32 TotalCellNum; // 방 총개수. 시작지점 미포함. Total - 1 == ClearCount면 보스 입장 가능
 	bool bIsEarlyDiscoveredBoss;
-	FHealthManager HealthManager;
-	FCombatManager CombatManager;
-	FItemManager ItemManager;
-	uint8 Buff;
 	
-	
-public:
-	void GetManager(OUT FHealthManager& OutHealthManager, OUT FCombatManager& OutCombatManager, OUT uint8& OutBuff) const
-	{ 
-		OutHealthManager = HealthManager;
-		OutCombatManager = CombatManager;
-		OutBuff = Buff;
-	}
-	void GetManager(OUT FItemManager& OutItemManager, OUT TMap<uint8, uint8>& OutFixMaxNum) const
-	{
-		OutItemManager = ItemManager;
-		OutFixMaxNum = FixMaxNum;
-	}
-	void SetManager(const FHealthManager& InHealthManager, const FCombatManager& InCombatManager, const uint8& InBuff)
-	{
-		HealthManager = InHealthManager;
-		CombatManager = InCombatManager;
-		Buff = InBuff;
-	}
-	void SetManager(const FItemManager& InItemManager, const TMap<uint8, uint8>& InFixMaxNum)
-	{
-		ItemManager = InItemManager;
-		FixMaxNum = InFixMaxNum;
-	}
-	void SetSelectedBonusItem(bool Boolean)
-	{
-		if (Board.IsValidIndex(PlayerCurrentCell))
-		{
-			Board[PlayerCurrentCell].SelectedBonusItem = Boolean;
-		}
-	}
-	FCell GetCellInfo() const 
-	{ 
-		if (Board.IsValidIndex(PlayerCurrentCell))
-		{
-			return Board[PlayerCurrentCell];
-		}
-		return FCell();
-	}
+	FHealthManager TempHealthManager;
+	FCombatManager TempCombatManager;
+	FItemManager TempItemManager;
+	uint8 TempBuff;
+	FTransform TempPlayerTransform;
+	int32 TempDashChargeNum;
 
+	/*******************************************/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = "true"))
+	ELoadState LoadState;
+	int32 AxisRollbackCount;
+public:
 	int32 GetStageLevel() const { return StageLevel; }
+	TArray<UItemInfo*> GetItemInfos() const { return TempItemInfos; }
+	FTransform GetTempPlayerTransform() const { return TempPlayerTransform; }
+	void SetTempDashChargeNum(int32 InNum) { TempDashChargeNum = InNum; }
+	int32 GetTempDashChargeNum() const { return TempDashChargeNum; }
+	
 };

@@ -114,7 +114,7 @@ void ABaseProjectile::Destroyed()
 
 void ABaseProjectile::CheckAttackerBeHealed(AActor* Other, APlayerCharacter* Player)
 {
-	if ((CombatManager.Element == EElement::LIGHT) && Cast<AMonsterCharacter>(Other) && Player)
+	if ((CombatManager.Element == EElement::Light) && Cast<AMonsterCharacter>(Other) && Player)
 	{
 		if (FMath::RandRange(1, 100) < 8)
 		{

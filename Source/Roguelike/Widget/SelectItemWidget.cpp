@@ -71,7 +71,7 @@ void USelectItemWidget::CreateCellWidget()
 
 void USelectItemWidget::F5ButtonClick()
 {
-	URLGameInstance* GI = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
+	URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
 	if (GI && GI->GetListenerManager())
 	{
 		GI->GetListenerManager()->DeactivateOnceItemList();
@@ -87,7 +87,7 @@ void USelectItemWidget::F5ButtonClick()
 
 void USelectItemWidget::ExitButtonClick()
 {
-	URLGameInstance* GI = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
+	URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
 	if (GI && GI->GetListenerManager())
 	{
 		GI->GetListenerManager()->RestorePC();

@@ -37,12 +37,12 @@ public:
 	void CreateCenterPortal();
 	void CreatePrevBossPortal();
 	void DestroyPortal();
-	FVector GetArrowLocation(int32 Dir);
+	FVector GetArrowLocation(uint8 Dir);
 
 private:
 	void SetLocationPotal();
-	void CreatePortal(TArray<int32> Dirs);
-	FVector CalcLocation(int32 Dir);
+	void CreatePortal(TArray<uint8> Dirs);
+	FVector CalcLocation(uint8 Dir);
 
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<APortalActor> PortalActorClass;

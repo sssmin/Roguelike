@@ -25,7 +25,7 @@ AMonsterCharacter::AMonsterCharacter()
 	
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	GetCapsuleComponent()->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
-	MonsterType = EMonsterType::NORMAL;
+	MonsterType = EMonsterType::Normal;
 
 	HPBarWidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("HPBarWidgetComp"));
 	HPBarWidgetComp->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
@@ -232,7 +232,7 @@ void AMonsterCharacter::SetHPBarWidget(const TSubclassOf<UBossHPBarWidget>& Widg
 
 void AMonsterCharacter::RemoveHPWidget()
 {
-	if (MonsterType == EMonsterType::NORMAL || MonsterType == EMonsterType::ELITE)
+	if (MonsterType == EMonsterType::Normal || MonsterType == EMonsterType::Elite)
 	{
 		if (HPBarWidgetComp)
 		{

@@ -109,24 +109,25 @@ void APlayerCharacter::ReleasedFreeCam()
 */
 void APlayerCharacter::Test1()
 {
-	FVector OutVector;
-	UGameplayStatics::SuggestProjectileVelocity_CustomArc(
-		this,
-		OutVector,
-		GetActorLocation(),
-		GetActorLocation() + GetActorForwardVector() * 1000.f,
-		GetWorld()->GetGravityZ()
-	);
-	FPredictProjectilePathParams Params(20.f, GetActorLocation(), OutVector, 15.f);
-	Params.DrawDebugTime = 15.f;
-	Params.DrawDebugType = EDrawDebugTrace::Type::ForDuration;
-	Params.OverrideGravityZ = GetWorld()->GetGravityZ();
-	FPredictProjectilePathResult Result;
-	UGameplayStatics::PredictProjectilePath(
-		this,
-		Params,
-		Result
-	);
+	// FVector OutVector;
+	// UGameplayStatics::SuggestProjectileVelocity_CustomArc(
+	// 	this,
+	// 	OutVector,
+	// 	GetActorLocation(),
+	// 	GetActorLocation() + GetActorForwardVector() * 1000.f,
+	// 	GetWorld()->GetGravityZ()
+	// );
+	// FPredictProjectilePathParams Params(20.f, GetActorLocation(), OutVector, 15.f);
+	// Params.DrawDebugTime = 15.f;
+	// Params.DrawDebugType = EDrawDebugTrace::Type::ForDuration;
+	// Params.OverrideGravityZ = GetWorld()->GetGravityZ();
+	// FPredictProjectilePathResult Result;
+	// UGameplayStatics::PredictProjectilePath(
+	// 	this,
+	// 	Params,
+	// 	Result
+	// );
+	
 }
 
 void APlayerCharacter::Test2()
@@ -258,15 +259,16 @@ void APlayerCharacter::RequestItemSwap(const UItemInfo* OldItem, const UItemInfo
 {
 	if (ItemComp)
 	{
-		return ItemComp->ItemSwap(OldItem, NewItem);
+		return ItemComp->ItemSwap(const_cast<UItemInfo*>(OldItem), const_cast<UItemInfo*>(NewItem));
 	}
 }
 
 void APlayerCharacter::Recall()
 {
-	if (GetWorld() && Cast<URLGameInstance>(GetWorld()->GetGameInstance()))
+	URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
+	if (GI)
 	{
-		Cast<URLGameInstance>(GetWorld()->GetGameInstance())->ReadyToRecall();
+		GI->ReadyToRecall();
 	}
 }
 
@@ -299,7 +301,7 @@ void APlayerCharacter::Dash()
 			Val,
 			ActionInfo);
 		
-		PlayerCombatComp->SetDashCooldown();
+		PlayerCombatComp->DecCurrentDashChargeNum();
 	}
 }
 

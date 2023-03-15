@@ -15,8 +15,8 @@ struct FCell
 	{
 		Visited = false;
 		Status.Init(false, 4);
-		CellState = ECellState::DEACTIVATE;
-		CellType = ECellType::NONE;
+		CellState = ECellState::Deactivate;
+		CellType = ECellType::None;
 		IsCleared = false;
 		TempWall = 0;
 		CellClass = 2;
@@ -31,6 +31,20 @@ struct FCell
 	uint8 TempWall;
 	int32 CellClass;
 	bool SelectedBonusItem;
+
+	friend FArchive& operator<<(FArchive& Ar, FCell& Cell)
+	{
+		Ar << Cell.Visited;
+		Ar << Cell.Status;
+		Ar << Cell.CellState;
+		Ar << Cell.CellType;
+		Ar << Cell.IsCleared;
+		Ar << Cell.TempWall;
+		Ar << Cell.CellClass;
+		Ar << Cell.SelectedBonusItem;
+		
+		return Ar;
+	}
 };
 
 USTRUCT()
@@ -45,6 +59,14 @@ struct FVector2Int
 	int32 X;
 	UPROPERTY(EditAnywhere)
 	int32 Y;
+
+	friend FArchive& operator<<(FArchive& Ar, FVector2Int& Vector2Int)
+	{
+		Ar << Vector2Int.X;
+		Ar << Vector2Int.Y;
+
+		return Ar;
+	}
 
 };
 

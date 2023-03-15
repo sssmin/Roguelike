@@ -2,6 +2,7 @@
 #include "PlayerCombatComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/Character.h"
+#include "Roguelike/Game/RLGameInstance.h"
 
 #include "Roguelike/Projectile/BaseProjectile.h"
 
@@ -16,6 +17,18 @@ UPlayerCombatComponent::UPlayerCombatComponent()
 	MaxDashChargeNum = 5;
 	CurrentDashChargeNum = MaxDashChargeNum;
 	DashChargeCooltime = 5.f;
+}
+
+void UPlayerCombatComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
+	if (GI && GI->GetListenerManager())
+	{
+		GI->SetTempManageDelegate.AddUObject(this, &ThisClass::SetTempDashChargeNum);
+		GI->GetListenerManager()->OnLoadGameDelegate.AddUObject(this, &UPlayerCombatComponent::LoadGame);
+	}
 }
 
 void UPlayerCombatComponent::ReadyToFire(bool bPressed)
@@ -36,18 +49,18 @@ void UPlayerCombatComponent::ReadyToFire(bool bPressed)
 
 			if (ItemManager.EquippedItemCount > 0) //OnceEquipItem
 			{
-				if (HaveItem(ItemManager, EOnceEquippedItem::RISK_RETURN))
+				if (HaveItem(ItemManager, EOnceEquippedItem::RiskReturn))
 				{
 					CombatManager.ATK *= 2.f;
 				}
-				if (HaveItem(ItemManager, EOnceEquippedItem::MULTI_SHOT))
+				if (HaveItem(ItemManager, EOnceEquippedItem::MultiShot))
 				{
 					FTimerDelegate MultiShotTimerDelegate;
 					FTimerHandle MultiShotTimerHandle;
 					MultiShotTimerDelegate.BindUFunction(this, FName("Multishot"), CombatManager, ItemManager);
 					GetWorld()->GetTimerManager().SetTimer(MultiShotTimerHandle, MultiShotTimerDelegate, MutliShotTime, false);
 				}
-				if (HaveItem(ItemManager, EOnceEquippedItem::TRIPLE))
+				if (HaveItem(ItemManager, EOnceEquippedItem::Triple))
 				{
 					Triple(CombatManager, ItemManager);
 					return;
@@ -141,7 +154,7 @@ bool UPlayerCombatComponent::TripleFire(const FCombatManager& CombatManager, con
 
 void UPlayerCombatComponent::Multishot(const FCombatManager& CombatManager, const FItemManager& ItemManager)
 {
-	if (HaveItem(ItemManager, EOnceEquippedItem::TRIPLE))
+	if (HaveItem(ItemManager, EOnceEquippedItem::Triple))
 	{
 		TripleFire(CombatManager, ItemManager);
 	}
@@ -177,12 +190,27 @@ bool UPlayerCombatComponent::CanDash() const
 	return (CurrentDashChargeNum <= 0) ? false : true;
 }
 
-void UPlayerCombatComponent::SetDashCooldown()
+void UPlayerCombatComponent::DecCurrentDashChargeNum()
 {
 	CurrentDashChargeNum = FMath::Clamp(CurrentDashChargeNum - 1, 0, MaxDashChargeNum);
+	SetDashCooldown();
+}
+
+void UPlayerCombatComponent::SetDashCooldown()
+{
+	if (MaxDashChargeNum == CurrentDashChargeNum) return;
 	if (OnSetDashCooldownDelegate.IsBound()) OnSetDashCooldownDelegate.Broadcast();
 	if (GetWorld()->GetTimerManager().IsTimerActive(DashChargeTimerHandle)) return;
 	GetWorld()->GetTimerManager().SetTimer(DashChargeTimerHandle, this, &ThisClass::DashCooldownComplete, DashChargeCooltime, false);
+}
+
+void UPlayerCombatComponent::SetTempDashChargeNum()
+{
+	URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
+	if (GI)
+	{
+		GI->SetTempDashChargeNum(CurrentDashChargeNum);
+	}
 }
 
 void UPlayerCombatComponent::DashCooldownComplete()
@@ -198,4 +226,14 @@ void UPlayerCombatComponent::DashCooldownComplete()
 float UPlayerCombatComponent::GetDashCurrentCooltime() const
 {
 	return GetWorld()->GetTimerManager().GetTimerRemaining(DashChargeTimerHandle);
+}
+
+void UPlayerCombatComponent::LoadGame()
+{
+	URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
+	if (GI)
+	{
+		CurrentDashChargeNum = GI->GetTempDashChargeNum();
+		SetDashCooldown();
+	}
 }

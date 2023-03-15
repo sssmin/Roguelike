@@ -33,11 +33,11 @@ void UBTServiceCheckState::CheckState(UBehaviorTreeComponent& OwnerComp)
 			{
 				CurrentState = ManagerComp->GetCurrentState();
 
-				if (CurrentState & static_cast<uint8>(EState::FROZEN))
+				if (CurrentState & static_cast<uint8>(EState::Frozen))
 				{
 					BBComp->SetValueAsEnum(StateKey.SelectedKeyName, MonsterState::FROZEN);
 				}
-				if (CurrentState & static_cast<uint8>(EState::FEAR))
+				if (CurrentState & static_cast<uint8>(EState::Fear))
 				{
 					BBComp->SetValueAsEnum(StateKey.SelectedKeyName, MonsterState::FEAR);
 				}

@@ -2,13 +2,14 @@
 #include "Engine/DataTable.h"
 #include "ItemManage.generated.h"
 
+class UItemInfo;
 UENUM()
 enum class EItemType : uint8 //아이템 종류
 {
-	NONE,
-	INF_STACK_ITEM, 
-	FIX_MAX_STACK_ITEM, 
-	ONCE_EQUIP_ITEM, 
+	None,
+	InfStackItem,
+	FixMaxStackItem,
+	OnceEquipItem,
 
 	MAX
 };
@@ -16,9 +17,9 @@ enum class EItemType : uint8 //아이템 종류
 UENUM()
 enum class EINFStackItem : uint8
 {
-	NONE = 0,
-	INCREASE_ATK,
-	INCREASE_MAXHP,
+	None = 0,
+	IncreaseAtk,
+	IncreaseMaxHp,
 
 	MAX
 };
@@ -26,9 +27,9 @@ enum class EINFStackItem : uint8
 UENUM()
 enum class EFixMaxStackItem : uint8
 {
-	NONE = 0,
-	INCREASE_RANGE,
-	INCREASE_CRITICAL_PER,
+	None = 0,
+	IncreaseRange,
+	IncreaseCriticalPer,
 
 	MAX
 };
@@ -37,11 +38,11 @@ enum class EFixMaxStackItem : uint8
 UENUM(Meta = (Bitflags))
 enum class EOnceEquippedItem : uint8
 {
-	DEFAULT = 0,
-	RISK_RETURN = 1 << 0,
-	MULTI_SHOT = 1 << 1,
-	DODGE = 1 << 2,
-	TRIPLE = 1 << 3,
+	Default = 0,
+	RiskReturn = 1 << 0,
+	MultiShot = 1 << 1,
+	Dodge = 1 << 2,
+	Triple = 1 << 3,
 
 	MAX
 };
@@ -52,9 +53,9 @@ struct FItemType
 {
 	GENERATED_BODY()
 	FItemType():
-		INFStackItem(EINFStackItem::NONE), 
-		FixMaxStackItem(EFixMaxStackItem::NONE),
-		OnceEquipItem(EOnceEquippedItem::DEFAULT) {}
+		INFStackItem(EINFStackItem::None), 
+		FixMaxStackItem(EFixMaxStackItem::None),
+		OnceEquipItem(EOnceEquippedItem::Default) {}
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EINFStackItem INFStackItem;
@@ -62,6 +63,15 @@ struct FItemType
 	EFixMaxStackItem FixMaxStackItem;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EOnceEquippedItem OnceEquipItem;
+
+	friend FArchive& operator<<(FArchive& Ar, FItemType& Type)
+	{
+		Ar << Type.INFStackItem;
+		Ar << Type.FixMaxStackItem;
+		Ar << Type.OnceEquipItem;
+		
+		return Ar;
+	}
 
 };
 
@@ -75,7 +85,15 @@ struct FItemManager
 	UPROPERTY(Meta = (Bitmask, BitmaskEnum = EOnceEquippedItem))
 	uint8 OnceEquippedItem;
 
-	int8 EquippedItemCount; //2개까지
+	int8 EquippedItemCount;
+
+	friend FArchive& operator<<(FArchive& Ar, FItemManager& ItemManager)
+	{
+		Ar << ItemManager.OnceEquippedItem;
+		Ar << ItemManager.EquippedItemCount;
+		
+		return Ar;
+	}
 };
 
 UCLASS()
@@ -84,7 +102,7 @@ class UItemInfo : public UObject
 	GENERATED_BODY()
 public:
 	UItemInfo() :
-		ItemsType(EItemType::NONE),
+		ItemsType(EItemType::None),
 		DetailType(FItemType()),
 		ItemName(FString()),
 		ItemDesc(FString()),
@@ -98,14 +116,27 @@ public:
 
 	FString ItemDesc;
 
-	UPROPERTY()
 	UTexture2D* ItemIcon;
+
+	TArray<uint8> ByteData;
 
 	static UItemInfo* ConstructItemInfo(EItemType InItemType, FItemType InDetailType, FString InItemName, FString InItemDesc, UTexture2D* InItemIcon)
 	{
 		UItemInfo* Info = NewObject<UItemInfo>();
 		Info->Init(InItemType, InDetailType, InItemName, InItemDesc, InItemIcon);
 		return Info;
+	}
+
+
+	friend FArchive& operator<<(FArchive& Ar, UItemInfo& Info)
+	{
+		Ar << Info.ItemsType;
+		Ar << Info.DetailType;
+		Ar << Info.ItemName;
+		Ar << Info.ItemDesc;
+		Ar << Info.ItemIcon;
+		
+		return Ar;
 	}
 
 private:
@@ -126,7 +157,7 @@ struct FItemInfoTable : public FTableRowBase
 {
 	GENERATED_BODY()
 		FItemInfoTable() :
-		ItemsType(EItemType::NONE), 
+		ItemsType(EItemType::None), 
 		DetailType(FItemType()),
 		ItemName(FString()),
 		ItemDesc(FString()),
@@ -152,9 +183,9 @@ struct FItemInfoTable : public FTableRowBase
 
 enum class EOnceEquipItemFlag
 {
-	SUCCESS,
-	EQUIPPED_ALREADY_THIS_ITEM,
-	EQUIPPED_TWO_OTHER_ITEMS
+	Success,
+	EquippedAlreadyThisItem,
+	EquippedTwoOtherItems
 };
 
 

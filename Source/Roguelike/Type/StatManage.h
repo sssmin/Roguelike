@@ -4,12 +4,12 @@
 UENUM()
 enum class EElement : uint8
 {
-	NONE UMETA(DisplayName = "NONE"),
-	FIRE UMETA(DisplayName = "FIRE"),
-	WATER UMETA(DisplayName = "WATER"),
-	EARTH UMETA(DisplayName = "EARTH"),
-	DARKNESS UMETA(DisplayName = "DARKNESS"),
-	LIGHT UMETA(DisplayName = "LIGHT"),
+	None UMETA(DisplayName = "NONE"),
+	Fire UMETA(DisplayName = "FIRE"),
+	Water UMETA(DisplayName = "WATER"),
+	Earth UMETA(DisplayName = "EARTH"),
+	Darkness UMETA(DisplayName = "DARKNESS"),
+	Light UMETA(DisplayName = "LIGHT"),
 
 	MAX
 };
@@ -26,13 +26,20 @@ struct FHealthManager
 	float MaxHP;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	float CurrentHP;
+
+	friend FArchive& operator<<(FArchive& Ar, FHealthManager& HealthManager)
+	{
+		Ar << HealthManager.MaxHP;
+		Ar << HealthManager.CurrentHP;
+		return Ar;
+	}
 };
 
 USTRUCT(BlueprintType)
 struct FCombatManager
 {
 	GENERATED_BODY()
-	FCombatManager() : ATK(5.f), Element(EElement::NONE), Critical(0.f), Range(900.f) {}
+	FCombatManager() : ATK(5.f), Element(EElement::None), Critical(0.f), Range(900.f) {}
 	FCombatManager(float InATK, EElement InElement) :
 		ATK(InATK), Element(InElement), Critical(0.f), Range(900.f) {}
 
@@ -45,18 +52,28 @@ struct FCombatManager
 	float Critical;
 	UPROPERTY(VisibleAnywhere)
 	float Range;
+
+	friend FArchive& operator<<(FArchive& Ar, FCombatManager& CombatManager)
+	{
+		Ar << CombatManager.ATK;
+		Ar << CombatManager.Element;
+		Ar << CombatManager.Critical;
+		Ar << CombatManager.Range;
+		
+		return Ar;
+	}
 };
 
 
 UENUM(Meta = (Bitflags))
 enum class EState : uint8
 {
-	DEFAULT			= 0,
-	BURN			= 1 << 0,
-	FROZEN			= 1 << 1, 
-	POISON			= 1 << 2,
-	FEAR			= 1 << 3, 
-	DEAD			= 1 << 4, 
+	Default			= 0,
+	Burn			= 1 << 0,
+	Frozen			= 1 << 1, 
+	Poison			= 1 << 2,
+	Fear			= 1 << 3, 
+	Dead			= 1 << 4, 
 
 	MAX
 };
@@ -65,10 +82,10 @@ ENUM_CLASS_FLAGS(EState);
 UENUM(Meta = (Bitflags))
 enum class EBuff : uint8
 {
-	DEFAULT			= 0,
-	MOVEMENT_BUFF	= 1 << 0,
-	ATK_BUFF		= 1 << 1,
-	HEAL_BUFF		= 1 << 2,
+	Default			= 0,
+	MovementBuff	= 1 << 0,
+	AtkBuff		= 1 << 1,
+	HealBuff		= 1 << 2,
 	
 	MAX
 };

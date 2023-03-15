@@ -21,11 +21,11 @@ public:
 	ARLGameStateBase();
 	void KillScored();
 	void KillBoss();
-	void SpawnCell(int32 Dir);
+	void SpawnCell(uint8 Dir);
 	void AteHealThisCell();
-	void ReconstructCuzMove(int32 Dir, int32 Level, const FCell& Info);
-	UFUNCTION(BlueprintCallable)
-	void Init();
+	void ReconstructCuzMove(uint8 Dir, int32 Level, const FCell& Info);
+	void NewGame();
+	void LoadGame();
 	void SpawnPrevBossPortal();
 	
 private:

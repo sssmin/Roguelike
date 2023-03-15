@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "RLPlayerController.h"
 #include "Blueprint/UserWidget.h"
+#include "GameFramework/InputSettings.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -33,13 +34,15 @@ void ARLPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	URLGameInstance* GI = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
+	URLGameInstance* GI = Cast<URLGameInstance>(GetGameInstance());
 	if (GI && GI->GetListenerManager())
 	{
 		GI->GetListenerManager()->RestorePCDelegate.BindUObject(this, &ThisClass::RestorePC);
 		GI->GetListenerManager()->RequestItemSwapDelegate.BindUObject(this, &ThisClass::RequestItemSwap);
 		GI->GetListenerManager()->DeactivateOnceItemListDel.BindUObject(this, &ThisClass::DeactivateOnceItemListWidget);
 		GI->GetListenerManager()->GetRandItemDelegate.BindUObject(this, &ThisClass::GetRandItem);
+		GI->GetListenerManager()->OnNewGameDelegate.AddUObject(this, &ThisClass::Init);
+		GI->GetListenerManager()->OnLoadGameDelegate.AddUObject(this, &ThisClass::LoadGame);
 	}
 }
 
@@ -69,7 +72,17 @@ void ARLPlayerController::Init()
 		}
 	}
 	SetActorTickEnabled(true);
-	
+}
+
+void ARLPlayerController::LoadGame()
+{
+	Init();
+	URLGameInstance* GI = Cast<URLGameInstance>(GetGameInstance());
+	if (GI)
+	{
+		LoadItem(GI->GetItemInfos());
+		GetPawn()->SetActorTransform(GI->GetTempPlayerTransform(), false, nullptr, ETeleportType::TeleportPhysics);
+	}
 }
 
 void ARLPlayerController::PlayerTick(float DeltaTime)
@@ -83,7 +96,12 @@ void ARLPlayerController::OnPossess(APawn* aPawn)
 {
 	Super::OnPossess(aPawn);
 
-	Cast<URLGameInstance>(GetGameInstance())->RequestInfo();
+	URLGameInstance* GI = Cast<URLGameInstance>(GetGameInstance());
+	if (GI)
+	{
+		GI->RequestInfo();
+	}
+	
 }
 
 void ARLPlayerController::MoveForward(float Value)
@@ -393,4 +411,17 @@ void ARLPlayerController::RestorePC()
 	ResumeController();
 	RemoveSelectWidget();
 	DeactivateOnceItemListWidget();
+}
+
+void ARLPlayerController::LoadItem(TArray<UItemInfo*> ItemInfos)
+{
+	ARLGameModeBase* GM = Cast<ARLGameModeBase>(UGameplayStatics::GetGameMode(this));
+	if (GM)
+	{
+		GM->SetItemIcon(ItemInfos);
+	}
+	if (MainUIWidget)
+	{
+		MainUIWidget->LoadItem(ItemInfos);
+	}
 }

@@ -2,20 +2,28 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/NoExportTypes.h"
 #include "Engine/DataTable.h"
 #include "DTForGM.generated.h"
 
 class AMonsterCharacter;
 class ABossMonsterCharacter;
 
+enum class EDir : uint8
+{
+	Up,
+	Down,
+	Right,
+	Left ,
+	Load 
+};
+
 enum class EMonsterType : uint8
 {
-	NONE,
-	NORMAL,
-	ELITE,
-	BOSS,
-	EGO,
+	None,
+	Normal,
+	Elite,
+	Boss,
+	Ego,
 
 	MAX
 };
@@ -35,14 +43,14 @@ struct FMonsterStatTable : public FTableRowBase
 UENUM()
 enum class EKindOfMonster : uint8
 {
-	TURRET = 0,
-	DINO,
-	BEE,
-	WHITE,
-	PRIMEHELIX,
-	SKELETON,
-	SUICIDE,
-	WIZARD,
+	Turret = 0,
+	Dino,
+	Bee,
+	White,
+	PrimeHelix,
+	Skeleton,
+	Suicide,
+	Wizard,
 
 	MAX
 };
@@ -63,9 +71,9 @@ struct FNormalMonsterClassTable : public FTableRowBase
 UENUM()
 enum class EKindOfBossMonster : uint8
 {
-	USURPER = 0,
-	SOULEATER,
-	TERRORBRINGER,
+	Usurper = 0,
+	SoulEater,
+	TerrorBringer,
 
 	MAX
 };

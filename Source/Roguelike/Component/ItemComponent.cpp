@@ -16,13 +16,11 @@ UItemComponent::UItemComponent()
 	ItemManager = FItemManager();
 	IncreaseAtkValue = 3.f;
 	IncreaseMaxHpValue = 15.f;
-
 }
 
 void UItemComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
-
 	
 }
 
@@ -30,12 +28,13 @@ void UItemComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	URLGameInstance* GI = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
-	if (GI)
+	URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
+	if (GI && GI->GetListenerManager())
 	{
-		GI->GetManager(ItemManager, FixMaxNum);
 		GI->InitOnceItemDelegate.BindUObject(this, &ThisClass::InitEquipItems);
 		GI->GetListenerManager()->OnSelectItemDelegate.BindUObject(this, &ThisClass::SelectItem);
+		GI->SetTempManageDelegate.AddUObject(this, &ThisClass::SetTempManager);
+		GI->GetListenerManager()->OnLoadGameDelegate.AddUObject(this, &ThisClass::Init);
 	}
 }
 
@@ -43,6 +42,15 @@ void UItemComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+}
+
+void UItemComponent::Init()
+{
+	URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
+	if (GI)
+	{
+		GI->GetManager(ItemManager, FixMaxNum, ItemInfos);
+	}
 }
 
 bool UItemComponent::CheckOnceItem(uint8 Item)
@@ -66,10 +74,10 @@ void UItemComponent::ApplyInfItem(EINFStackItem Item)
 	{
 		switch (Item)
 		{
-		case EINFStackItem::INCREASE_ATK:
+		case EINFStackItem::IncreaseAtk:
 			ManagerComp->UpdateCurrentAtk(IncreaseAtkValue);
 			break;
-		case EINFStackItem::INCREASE_MAXHP:
+		case EINFStackItem::IncreaseMaxHp:
 			ManagerComp->UpdateMaxHP(IncreaseMaxHpValue);
 			break;
 		}
@@ -82,23 +90,23 @@ bool UItemComponent::ApplyFixMaxItem(EFixMaxStackItem Item)
 	{
 		switch (Item)
 		{
-			case EFixMaxStackItem::INCREASE_RANGE:
+			case EFixMaxStackItem::IncreaseRange:
 			{
-				uint8 Value = GetFixMaxStack(EFixMaxStackItem::INCREASE_RANGE);
+				uint8 Value = GetFixMaxStack(EFixMaxStackItem::IncreaseRange);
 				if (Value < FIX_MAX_STACK)
 				{
-					IncreaseFixMaxStack(EFixMaxStackItem::INCREASE_RANGE);
+					IncreaseFixMaxStack(EFixMaxStackItem::IncreaseRange);
 					ManagerComp->UpdateCurrentRange(50.f);
 					return true;
 				}
 				return false;
 			}
-			case EFixMaxStackItem::INCREASE_CRITICAL_PER:
+			case EFixMaxStackItem::IncreaseCriticalPer:
 			{
-				uint8 Value = GetFixMaxStack(EFixMaxStackItem::INCREASE_CRITICAL_PER);
+				uint8 Value = GetFixMaxStack(EFixMaxStackItem::IncreaseCriticalPer);
 				if (Value < FIX_MAX_STACK)
 				{
-					IncreaseFixMaxStack(EFixMaxStackItem::INCREASE_CRITICAL_PER);
+					IncreaseFixMaxStack(EFixMaxStackItem::IncreaseCriticalPer);
 					ManagerComp->UpdateCurrentCritical(1.f);
 					return true;
 				}
@@ -115,7 +123,7 @@ bool UItemComponent::ApplyOnceEquipItem(const UItemInfo* Item, OUT EOnceEquipIte
 	{
 		if (CheckOnceItem(static_cast<uint8>(Item->DetailType.OnceEquipItem)))
 		{
-			Flag = EOnceEquipItemFlag::EQUIPPED_ALREADY_THIS_ITEM;
+			Flag = EOnceEquipItemFlag::EquippedAlreadyThisItem;
 			return true;
 		}
 		else
@@ -123,14 +131,13 @@ bool UItemComponent::ApplyOnceEquipItem(const UItemInfo* Item, OUT EOnceEquipIte
 			if (ItemManager.EquippedItemCount < 2)
 			{
 				ApplyOnceItem(static_cast<uint8>(Item->DetailType.OnceEquipItem));
-				ItemIcons.Add(static_cast<uint8>(Item->DetailType.OnceEquipItem), Item->ItemIcon);
 				ItemManager.EquippedItemCount++;
-				Flag = EOnceEquipItemFlag::SUCCESS;
+				Flag = EOnceEquipItemFlag::Success;
 				return true;
 			}
 			else
 			{
-				Flag = EOnceEquipItemFlag::EQUIPPED_TWO_OTHER_ITEMS;
+				Flag = EOnceEquipItemFlag::EquippedTwoOtherItems;
 
 				return false;
 			}
@@ -163,23 +170,17 @@ void UItemComponent::IncreaseFixMaxStack(EFixMaxStackItem Item)
 	}
 }
 
-void UItemComponent::ItemSwap(const UItemInfo* OldItem, const UItemInfo* NewItem)
+void UItemComponent::ItemSwap(UItemInfo* OldItem, UItemInfo* NewItem)
 {
 	if (OldItem && NewItem)
 	{
 		RemoveOnceItem(static_cast<uint8>(OldItem->DetailType.OnceEquipItem));
 		ApplyOnceItem(static_cast<uint8>(NewItem->DetailType.OnceEquipItem));
-		ItemIcons.Remove(static_cast<uint8>(OldItem->DetailType.OnceEquipItem));
-		ItemIcons.Add(static_cast<uint8>(NewItem->DetailType.OnceEquipItem), NewItem->ItemIcon);
-	}
-}
-
-void UItemComponent::SendManager()
-{
-	URLGameInstance* GI = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
-	if (GI)
-	{
-		GI->SetManager(ItemManager, FixMaxNum);
+		int32 Idx = ItemInfos.Find(OldItem);
+		if (Idx != INDEX_NONE)
+		{
+			ItemInfos[Idx] = NewItem;
+		}
 	}
 }
 
@@ -199,14 +200,14 @@ void UItemComponent::SelectItem(UItemInfo* Item)
 	RLPC->DeactivateOnceItemListWidget();
 	switch (Item->ItemsType)
 	{
-		case EItemType::INF_STACK_ITEM:
+		case EItemType::InfStackItem:
 		{
 			ApplyInfItem(Item->DetailType.INFStackItem);
 			ResumeController(RLPC);
 			//이펙트, 소리
 			break;
 		}
-		case EItemType::FIX_MAX_STACK_ITEM:
+		case EItemType::FixMaxStackItem:
 		{
 			bool Ret = ApplyFixMaxItem(Item->DetailType.FixMaxStackItem);
 			if (!Ret)
@@ -217,7 +218,7 @@ void UItemComponent::SelectItem(UItemInfo* Item)
 			ResumeController(RLPC);
 			break;
 		}
-		case EItemType::ONCE_EQUIP_ITEM:
+		case EItemType::OnceEquipItem:
 		{
 			EOnceEquipItemFlag Flag;
 			bool Ret = ApplyOnceEquipItem(Item, Flag);
@@ -225,11 +226,12 @@ void UItemComponent::SelectItem(UItemInfo* Item)
 			{
 				switch (Flag)
 				{
-				case EOnceEquipItemFlag::SUCCESS:
+				case EOnceEquipItemFlag::Success:
 					ResumeController(RLPC);
 					RLPC->RegisterItemEmptySlot(Item);
+					ItemInfos.Add(Item);
 					break;
-				case EOnceEquipItemFlag::EQUIPPED_ALREADY_THIS_ITEM:
+				case EOnceEquipItemFlag::EquippedAlreadyThisItem:
 					RLPC->ShowNoticeWidget(TEXT("이미 장착되어 있는 아이템이에요."));
 					break;
 				}
@@ -251,5 +253,14 @@ void UItemComponent::InitEquipItems()
 	if (RLPC)
 	{
 		RLPC->InitOnceItemWidget();
+	}
+}
+
+void UItemComponent::SetTempManager() const
+{
+	URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
+	if (GI)
+	{
+		GI->SetManager(ItemManager, FixMaxNum, ItemInfos);
 	}
 }

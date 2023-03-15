@@ -17,9 +17,10 @@ class ROGUELIKE_API UPlayerCombatComponent : public UCombatComponent
 	
 public:
 	UPlayerCombatComponent();
+	virtual void BeginPlay() override;
 	virtual void ReadyToFire(bool bPressed) override;
 	bool CanDash() const;
-	void SetDashCooldown();
+	void DecCurrentDashChargeNum();
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	float GetDashCurrentCooltime() const;
 	UFUNCTION()
@@ -40,6 +41,9 @@ private:
 	void StartFireTimer();
 	void FireTimerFinished();
 	bool HaveItem(const FItemManager& Manager, EOnceEquippedItem ItemType);
+	void SetDashCooldown();
+	void SetTempDashChargeNum();
+	void LoadGame();
 	
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<ABaseProjectile> ProjectileClass;

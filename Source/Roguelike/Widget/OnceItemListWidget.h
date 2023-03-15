@@ -23,6 +23,7 @@ public:
 	virtual void NativeConstruct() override;
 	void DeactivateItemList();
 	void InitItemList();
+	void LoadItem(TArray<UItemInfo*> ItemInfos);
 
 private:
 	UFUNCTION()

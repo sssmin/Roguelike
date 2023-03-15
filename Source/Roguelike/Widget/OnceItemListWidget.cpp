@@ -75,7 +75,7 @@ void UOnceItemListWidget::FirstItemButtonClick()
 {
 	if (FirstItemButton && FirstItem && TempSelectItem)
 	{
-		URLGameInstance* GI = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
+		URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
 		if (GI && GI->GetListenerManager())
 		{
 			GI->GetListenerManager()->RequestItemSwap(SecondItem, TempSelectItem);
@@ -91,7 +91,7 @@ void UOnceItemListWidget::SecondItemButtonClick()
 {
 	if (SecondItemButton && SecondItem && TempSelectItem)
 	{
-		URLGameInstance* GI = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
+		URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
 		if (GI && GI->GetListenerManager())
 		{
 			GI->GetListenerManager()->RequestItemSwap(SecondItem, TempSelectItem);
@@ -121,8 +121,26 @@ void UOnceItemListWidget::InitItemList()
 	FirstItem = nullptr;
 	SecondItem = nullptr;
 	TempSelectItem = nullptr;
-
 	
 	SetButtonStyle(OriginSlotImg, FirstItemButton);
 	SetButtonStyle(OriginSlotImg, SecondItemButton);
+}
+
+void UOnceItemListWidget::LoadItem(TArray<UItemInfo*> ItemInfos)
+{
+	for (int32 i = 0; i < ItemInfos.Num(); ++i)
+	{
+		if (i == 0)
+		{
+			FirstItem = ItemInfos[i];
+			if (FirstItem && FirstItemButton)
+				SetButtonStyle(FirstItem->ItemIcon, FirstItemButton);
+		}
+		else
+		{
+			SecondItem = ItemInfos[i];
+			if (SecondItem && SecondItemButton)
+			SetButtonStyle(SecondItem->ItemIcon, SecondItemButton);
+		}
+	}
 }

@@ -27,7 +27,7 @@ void UBTServiceCheckAttackCooldown::TickNode(UBehaviorTreeComponent& OwnerComp, 
 			bSpecialAttackCooldown = true;
 			if (Cast<AMonsterCharacter>(OwnerComp.GetOwner()->GetInstigator()))
 			{
-				if (Cast<AMonsterCharacter>(OwnerComp.GetOwner()->GetInstigator())->GetKindOfMonster() == EKindOfMonster::SKELETON)
+				if (Cast<AMonsterCharacter>(OwnerComp.GetOwner()->GetInstigator())->GetKindOfMonster() == EKindOfMonster::Skeleton)
 				{
 					SetFixCooltime(BBComp);
 				}

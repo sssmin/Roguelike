@@ -30,7 +30,7 @@ void UPortalComponent::InitializeComponent()
 	Super::InitializeComponent();
 }
 
-void UPortalComponent::CreatePortal(TArray<int32> Dirs)
+void UPortalComponent::CreatePortal(TArray<uint8> Dirs)
 {
 	if (GetWorld() && PortalActorClass)
 	{
@@ -82,10 +82,10 @@ void UPortalComponent::CreateSidePortal()
 {
 	if (GetWorld())
 	{
-		URLGameInstance* RLGameInstance = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-		if (RLGameInstance)
+		URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
+		if (GI)
 		{
-			CreatePortal(RLGameInstance->GetConnectedDir());
+			CreatePortal(GI->GetConnectedDir());
 		}
 	}
 	
@@ -138,7 +138,7 @@ void UPortalComponent::DestroyPortal()
 	}
 }
 
-FVector UPortalComponent::GetArrowLocation(int32 Dir)
+FVector UPortalComponent::GetArrowLocation(uint8 Dir)
 {
 	FVector SpawnLocation;
 	switch (Dir)
@@ -164,7 +164,7 @@ FVector UPortalComponent::GetArrowLocation(int32 Dir)
 	return SpawnLocation;
 }
 
-FVector UPortalComponent::CalcLocation(int32 Dir)
+FVector UPortalComponent::CalcLocation(uint8 Dir)
 {
 	TArray<UArrowComponent*> ArrowComponents;
 	GetOwner()->GetComponents(ArrowComponents);
@@ -178,7 +178,7 @@ FVector UPortalComponent::CalcLocation(int32 Dir)
 			if (TPTag.IsValidIndex(0))
 			{
 				FString Str = TPTag[0].ToString();
-				int32 StrToInt = FCString::Atoi(*Str);
+				uint8 StrToInt = FCString::Atoi(*Str);
 				if (Dir == StrToInt)
 				{
 					return ArrowComp->GetComponentLocation();

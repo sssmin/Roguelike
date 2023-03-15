@@ -69,15 +69,16 @@ void APortalActor::BeginOverlapped(UPrimitiveComponent* OverlappedComponent, AAc
 {
 	if (Cast<APlayerCharacter>(OtherActor))
 	{
-		if (Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this)))
+		URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
+		if (GI)
 		{
 			switch (PortalType)
 			{
 			case EPortalType::SIDE:
-				Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this))->RequestMove(Dir);
+				GI->RequestMove(Dir);
 				break;
 			case EPortalType::CENTER:
-				Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this))->RequestMoveNextStage();
+				GI->RequestMoveNextStage();
 				break;
 			}
 		}
@@ -138,7 +139,11 @@ void APortalActor::Interact()
 {
 	if (bIsInteractActive)
 	{
-		Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this))->RequestMovePrevBossCell();
+		URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
+		if (GI)
+		{
+			GI->RequestMovePrevBossCell();
+		}
 	}
 }
 

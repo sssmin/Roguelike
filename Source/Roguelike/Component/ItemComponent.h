@@ -19,11 +19,13 @@ class ROGUELIKE_API UItemComponent : public UActorComponent
 public:	
 	UItemComponent();
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	UFUNCTION(BlueprintCallable)
+	void Init();
 	void ApplyInfItem(EINFStackItem Item);
 	bool ApplyFixMaxItem(EFixMaxStackItem Item);
 	bool ApplyOnceEquipItem(const UItemInfo* Item, OUT EOnceEquipItemFlag& Flag);
 	bool CheckOnceItem(uint8 Item);
-	void ItemSwap(const UItemInfo* OldItem, const UItemInfo* NewItem);
+	void ItemSwap(UItemInfo* OldItem, UItemInfo* NewItem);
 
 protected:
 	virtual void BeginPlay() override;
@@ -34,10 +36,12 @@ private:
 	void SelectItem(UItemInfo* Item);
 	UFUNCTION()
 	void InitEquipItems();
+	UFUNCTION()
+	void SetTempManager() const;
 	void ApplyOnceItem(uint8 Item);
 	void RemoveOnceItem(uint8 Item);
 	uint8 GetFixMaxStack(EFixMaxStackItem Item);
-	void IncreaseFixMaxStack(EFixMaxStackItem Item);void SendManager();
+	void IncreaseFixMaxStack(EFixMaxStackItem Item);
 	void ResumeController(ARLPlayerController* RLPC);
 	
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
@@ -51,10 +55,10 @@ private:
 	UPROPERTY()
 	TMap<uint8, uint8> FixMaxNum;
 	UPROPERTY()
-	TMap<uint8, UTexture2D*> ItemIcons;
+	TArray<UItemInfo*> ItemInfos;
 	
 public:
 	FItemManager GetItemManager() const { return ItemManager; }
 	void SetManagerComp(UManagerComponent* Comp) { ManagerComp = Comp; }
-	
+	TArray<UItemInfo*> GetItemInfos() const { return ItemInfos; }
 };

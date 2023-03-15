@@ -3,25 +3,25 @@
 
 enum class ECellState : uint8 //∏ ø° «•Ω√«“ ºø ªÛ≈¬
 {
-	NONE, 
-	DEACTIVATE,
-	NORMAL,
-	BONUS,
-	DONT_FIND_BOSS,
-	DISCOVERED_BOSS,
-	IN_PLAYER,
-	CLEAR,
+	None, 
+	Deactivate,
+	Normal,
+	Bonus,
+	DontFindBoss,
+	DiscoveredBoss,
+	InPlayer,
+	Clear,
 
 	MAX
 };
 
 enum class ECellType : uint8 //ºø ≈∏¿‘
 {
-	NONE,
-	BONUS,
-	MOBS,
-	BOSS,
-	START,
+	None,
+	Bonus,
+	Mobs,
+	Boss,
+	Start,
 
 	MAX
 };

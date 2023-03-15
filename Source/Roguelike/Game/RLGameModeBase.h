@@ -25,20 +25,22 @@ public:
 	virtual void BeginPlay() override;
 	void RequestSpawnMob(int32 StageLevel, int32 MobCount);
 	void RequestSpawnBoss(int32 StageLevel);
-	void RequestSpawnCell(int32 CellIndex, uint8 TempWall, int32 Dir = -1);
+	void RequestSpawnCell(int32 CellIndex, uint8 TempWall, uint8 Dir = -1);
 	void RequestSpawnHealItem();
 	void CreateSidePortal() const;
 	void CreateCenterPortal() const;
 	void CreatePrevBossPortal() const;
 	TArray<UItemInfo*> CreateRandItem();
+	TArray<UItemInfo*> CreateLoadItem();
 	FVector GetBossCellScale() const;
+	void SetItemIcon(TArray<UItemInfo*>& InItemInfos);
 	
 private:
 	void InitItemInfoFromTable();
 	FCombatManager& SetRandomElement(int32 StageLevel, FCombatManager& CombatManager);
 	void SpawnCounterElementItem(EElement Element);
 	void SetMonsterManager(int32 StageLevel, OUT FHealthManager& HealthManager, OUT FCombatManager& CombatManager) const;
-	void SetPlayerLocation(int32 Dir) const;
+	void SetPlayerLocation(uint8 Dir) const;
 	TArray<AMonsterCharacter*> SpawnMob(int32 MobCount, EKindOfMonster KindOfMonster, FCombatManager& CombatManager, FHealthManager& HealthManager);
 	void SpawnBoss(EKindOfBossMonster KindOfMonster, FCombatManager& CombatManager, FHealthManager& HealthManager);
 	TSubclassOf<AMonsterCharacter> GetNormalMonsterClass(EKindOfMonster KindOfMonster) const;

@@ -39,9 +39,12 @@ public:
 	void RemoveSelectWidget() const;
 	void MoveMapFade() const;
 	void InitOnceItemWidget() const;
+
 	/*------------*/
 	UFUNCTION(BlueprintCallable)
 	void Init();
+	UFUNCTION(BlueprintCallable)
+	void LoadGame();
 	void SetMapInfo(FVector2Int MapSize, TArray<FCell> Board, int32 PlayerCurrentCell);
 	void ResumeController();
 	void StopFire() const;
@@ -52,7 +55,7 @@ public:
 	TArray<UItemInfo*> GetRandItem() const;
 	void RecallStart();
 	FRecallCompleteSuccessfully RecallCompleteSuccessfully;
-	
+	void LoadItem(TArray<UItemInfo*> ItemInfos);
 protected:
 	virtual void OnPossess(APawn* aPawn) override;
 	void MoveForward(float Value);

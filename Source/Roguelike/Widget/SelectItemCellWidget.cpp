@@ -36,7 +36,7 @@ void USelectItemCellWidget::Init(UItemInfo* Item)
 
 void USelectItemCellWidget::SelectItem()
 {
-	URLGameInstance* GI = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
+	URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
 	if (GI && GI->GetListenerManager())
 	{
 		GI->GetListenerManager()->SelectItem(ItemInfo);

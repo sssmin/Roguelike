@@ -12,6 +12,8 @@ DECLARE_DELEGATE(FRestorePC);
 DECLARE_DELEGATE_TwoParams(FRequestItemSwap, const UItemInfo*, const UItemInfo*);
 DECLARE_DELEGATE(FDeactivateOnceItemList);
 DECLARE_DELEGATE_RetVal(TArray<UItemInfo*>, FGetRandItem);
+DECLARE_MULTICAST_DELEGATE(FOnNewGame);
+DECLARE_MULTICAST_DELEGATE(FOnLoadGame);
 
 UCLASS()
 class ROGUELIKE_API URLListenerManager : public UObject
@@ -29,5 +31,9 @@ public:
 	void DeactivateOnceItemList();
 	FGetRandItem GetRandItemDelegate;
 	TArray<UItemInfo*> GetRandItem() const;
+	FOnNewGame OnNewGameDelegate;
+	void OnNewGame() const;
+	FOnLoadGame OnLoadGameDelegate;
+	void OnLoadGame() const;
 
 };

@@ -57,7 +57,7 @@ void ACellActor::CreatePrevBossPortal()
 	}
 }
 
-FVector ACellActor::GetPlayerSpawnLocation(int32 Dir)
+FVector ACellActor::GetPlayerSpawnLocation(uint8 Dir)
 {
 	if (PortalComp)
 	{

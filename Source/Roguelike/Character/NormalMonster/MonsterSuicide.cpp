@@ -47,7 +47,7 @@ void AMonsterSuicide::GiveBTToController()
 
 void AMonsterSuicide::Dead()
 {
-	Super::Dead();
+	//Super::Dead();
 
 	//소리 파티클 재생
     	
@@ -67,6 +67,8 @@ void AMonsterSuicide::Dead()
     		true
     	);
     }
+
+	Destroy();
 }
 
 void AMonsterSuicide::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -80,7 +82,7 @@ void AMonsterSuicide::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComponent
 			AActor* Target = Cast<AActor>(RLAIController->GetBlackboardComponent()->GetValueAsObject(FName("Target")));
 			if (Target == OtherActor)
 			{
-				Destroy();
+				Dead();
 				if (Cast<ARLGameStateBase>(UGameplayStatics::GetGameState(this)))
 				{
 					Cast<ARLGameStateBase>(UGameplayStatics::GetGameState(this))->KillScored();

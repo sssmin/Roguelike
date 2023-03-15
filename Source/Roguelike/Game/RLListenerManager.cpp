@@ -26,3 +26,15 @@ TArray<UItemInfo*> URLListenerManager::GetRandItem() const
 {
 	return GetRandItemDelegate.Execute();
 }
+
+void URLListenerManager::OnNewGame() const
+{
+	if (OnNewGameDelegate.IsBound())
+		OnNewGameDelegate.Broadcast();
+}
+
+void URLListenerManager::OnLoadGame() const
+{
+	if (OnLoadGameDelegate.IsBound())
+		OnLoadGameDelegate.Broadcast();
+}

@@ -6,20 +6,43 @@
 #include "Roguelike/PlayerController/RLPlayerController.h"
 #include "RLListenerManager.h"
 #include "RLGameStateBase.h"
+#include "RoguelikeSaveGame.h"
+#include "GameFramework/InputSettings.h"
+#include "Serialization/BufferArchive.h"
 
 
 URLGameInstance::URLGameInstance()
 {
-	
+	LoadState = ELoadState::None;
+	AxisRollbackCount = 0;
 }
 
 void URLGameInstance::Init()
 {
 	Super::Init();
-
+	
 	DFS = MakeShared<DFSAgrt>();
 	ListenerManager = NewObject<URLListenerManager>();
 	Initialize();
+}
+
+void URLGameInstance::LoadComplete(const float LoadTime, const FString& MapName)
+{
+	Super::LoadComplete(LoadTime, MapName);
+	
+	if (MapName == "/Game/Maps/GameMap")
+	{
+		switch (LoadState)
+		{
+		case ELoadState::NewGame:
+			ListenerManager->OnNewGame();
+			break;
+		case ELoadState::LoadGame:
+			check(ListenerManager);
+			ListenerManager->OnLoadGame();
+			break;
+		}
+	}
 }
 
 void URLGameInstance::NewGame()
@@ -27,6 +50,7 @@ void URLGameInstance::NewGame()
 	Initialize();
 	
 	GenerateMap();
+	LoadState = ELoadState::NewGame;
 }
 
 void URLGameInstance::Initialize()
@@ -41,10 +65,10 @@ void URLGameInstance::Initialize()
 
 	TotalCellNum = 0;
 
-	HealthManager = FHealthManager();
-	CombatManager = FCombatManager();
-
-	Buff = 0;
+	TempHealthManager = FHealthManager();
+	TempCombatManager = FCombatManager();
+	TempBuff = 0;
+	
 	RLGameState = Cast<ARLGameStateBase>(UGameplayStatics::GetGameState(this));
 }
 
@@ -66,14 +90,56 @@ void URLGameInstance::GenerateMap()
 	bIsEarlyDiscoveredBoss = false;
 }
 
-void URLGameInstance::SaveGame()
+void URLGameInstance::SaveGame(UPARAM(ref) FTransform& PlayerTransform)
 {
-	
+	URoguelikeSaveGame* SaveGame = Cast<URoguelikeSaveGame>(UGameplayStatics::CreateSaveGameObject(URoguelikeSaveGame::StaticClass()));
+	check(SaveGame);
+	if (SetTempManageDelegate.IsBound()) SetTempManageDelegate.Broadcast(); //Set Temp variables 
+	FInfoRecord InfoRecord{TempFixMaxNum, Board, MapSize, ClearCount, StartPos, StartCell, PlayerCurrentCell, StageLevel, BossCell, BossPrevCell, TotalCellNum, bIsEarlyDiscoveredBoss, TempHealthManager, TempCombatManager, TempItemManager, TempBuff, PlayerTransform, TempDashChargeNum };
+
+	SaveGame->SaveInfoRecord(InfoRecord);
+	SaveGame->SaveItemInfos(TempItemInfos);
 }
 
 void URLGameInstance::LoadGame()
 {
+	LoadState = ELoadState::LoadGame;
+	URoguelikeSaveGame* SaveGame = Cast<URoguelikeSaveGame>(UGameplayStatics::CreateSaveGameObject(URoguelikeSaveGame::StaticClass()));
+	check(SaveGame);
 	
+	FInfoRecord InfoRecord;
+	SaveGame->LoadInfoRecord(InfoRecord);
+	LoadDataSetting(InfoRecord);
+	
+	TempItemInfos = SaveGame->LoadItemInfos();
+	UE_LOG(LogTemp, Warning, TEXT("Item Num : %d"), TempItemInfos.Num());
+	for (int32 i = 0; i< TempItemInfos.Num();i++)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ItemName : %s"), *TempItemInfos[i]->ItemName);
+		UE_LOG(LogTemp, Warning, TEXT("ItemDesc : %s"), *TempItemInfos[i]->ItemDesc);
+	}
+}
+
+void URLGameInstance::LoadDataSetting(const FInfoRecord& Record)
+{
+	Board = Record.Board;
+	MapSize = Record.MapSize;
+	ClearCount = Record.ClearCount;
+	StartPos = Record.StartPos;
+	StartCell = Record.StartCell;
+	PlayerCurrentCell = Record.PlayerCurrentCell;
+	StageLevel = Record.StageLevel;
+	BossCell = Record.BossCell;
+	BossPrevCell = Record.BossPrevCell;
+	TotalCellNum = Record.TotalCellNum;
+	bIsEarlyDiscoveredBoss = Record.bIsEarlyDiscoveredBoss;
+	TempFixMaxNum = Record.FixMaxNum;
+	TempHealthManager = Record.HealthManager;
+	TempCombatManager = Record.CombatManager;
+	TempItemManager = Record.ItemManager;
+	TempBuff = Record.Buff;
+	TempPlayerTransform = Record.PlayerTransform;
+	TempDashChargeNum = Record.TempDashChargeNum;
 }
 
 void URLGameInstance::TestPrintMap()
@@ -99,6 +165,11 @@ void URLGameInstance::TestPrintMap()
 	//ClearStage();
 }
 
+URLGameInstance* URLGameInstance::GetRLGameInst(const UObject* WorldContextObject)
+{
+	return Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(WorldContextObject));
+}
+
 void URLGameInstance::RequestInfo() const
 {
 	if (Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld())))
@@ -107,9 +178,9 @@ void URLGameInstance::RequestInfo() const
 	}
 }
 
-TArray<int32> URLGameInstance::GetConnectedDir()
+TArray<uint8> URLGameInstance::GetConnectedDir()
 {
-	TArray<int32> Ret;
+	TArray<uint8> Ret;
 	if (PlayerCurrentCell - MapSize.Y >= 0) //위에 셀이 있다.
 	{
 		if (Board[PlayerCurrentCell].Status[0] && Board[PlayerCurrentCell - MapSize.Y].Status[1])
@@ -142,9 +213,9 @@ TArray<int32> URLGameInstance::GetConnectedDir()
 	return Ret;
 }
 
-void URLGameInstance::RequestMove(int32 Dir) //0,1,2,3중 하나로 넘어옴
+void URLGameInstance::RequestMove(uint8 Dir) //0,1,2,3중 하나로 넘어옴
 {
-	int32 NextCell = CalcNextCell(Dir);
+	uint8 NextCell = CalcNextCell(Dir);
 	if (NextCell == BossCell)
 	{
 		if (TotalCellNum - 1 != ClearCount) //반대편 셀을 모두 클리어하지 않았으면
@@ -162,7 +233,7 @@ void URLGameInstance::RequestMove(int32 Dir) //0,1,2,3중 하나로 넘어옴
 		{
 			bIsEarlyDiscoveredBoss = true;
 		}
-		Board[BossCell].CellState = ECellState::DISCOVERED_BOSS;
+		Board[BossCell].CellState = ECellState::DiscoveredBoss;
 	}
 
 	MoveProcess(NextCell, Dir);
@@ -177,7 +248,7 @@ void URLGameInstance::RequestMovePrevBossCell()
 	MoveProcess(BossPrevCell, -1);
 }
 
-int32 URLGameInstance::CalcNextCell(int32 Dir) const
+int32 URLGameInstance::CalcNextCell(uint8 Dir) const
 {
 	switch (Dir)
 	{
@@ -240,15 +311,15 @@ void URLGameInstance::Recall()
 	MoveProcess(StartCell, -1);
 }
 
-void URLGameInstance::MoveProcess(int32 TargetCell, int32 Dir)
+void URLGameInstance::MoveProcess(int32 TargetCell, uint8 Dir)
 {
-	Board[PlayerCurrentCell].CellState = ECellState::CLEAR;
-	if ((Board[PlayerCurrentCell].CellType == ECellType::BONUS) && !Board[PlayerCurrentCell].IsCleared)
+	Board[PlayerCurrentCell].CellState = ECellState::Clear;
+	if ((Board[PlayerCurrentCell].CellType == ECellType::Bonus) && !Board[PlayerCurrentCell].IsCleared)
 	{
-		Board[PlayerCurrentCell].CellState = ECellState::BONUS;
+		Board[PlayerCurrentCell].CellState = ECellState::Bonus;
 	}
 	PlayerCurrentCell = TargetCell;
-	Board[PlayerCurrentCell].CellState = ECellState::IN_PLAYER;
+	Board[PlayerCurrentCell].CellState = ECellState::InPlayer;
 
 	if (Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld())))
 	{
@@ -270,6 +341,253 @@ URLListenerManager* URLGameInstance::GetListenerManager() const
 bool URLGameInstance::CanSaveThisCell()
 {
 	if (Board.IsValidIndex(PlayerCurrentCell))
-		return (Board[PlayerCurrentCell].IsCleared) || (Board[PlayerCurrentCell].CellType == ECellType::BONUS);
+		return (Board[PlayerCurrentCell].IsCleared) || (Board[PlayerCurrentCell].CellType == ECellType::Bonus);
 	return false;
+}
+
+void URLGameInstance::GetManager(OUT FHealthManager& OutHealthManager, OUT FCombatManager& OutCombatManager, OUT uint8& OutBuff) const
+{ 
+	OutHealthManager = TempHealthManager;
+	OutCombatManager = TempCombatManager;
+	OutBuff = TempBuff;
+}
+void URLGameInstance::GetManager(OUT FItemManager& OutItemManager, OUT TMap<uint8, uint8>& OutFixMaxNum, OUT TArray<UItemInfo*>& OutItemInfos) const
+{
+	OutItemManager = TempItemManager;
+	OutFixMaxNum = TempFixMaxNum;
+	OutItemInfos = TempItemInfos;
+}
+void URLGameInstance::SetManager(const FHealthManager& InHealthManager, const FCombatManager& InCombatManager, const uint8& InBuff)
+{
+	TempHealthManager = InHealthManager;
+	TempCombatManager = InCombatManager;
+	TempBuff = InBuff;
+}
+void URLGameInstance::SetManager(const FItemManager& InItemManager, const TMap<uint8, uint8>& InFixMaxNum, const TArray<UItemInfo*>& InSaveItemData)
+{
+	TempItemManager = InItemManager;
+	TempFixMaxNum = InFixMaxNum;
+	TempItemInfos = InSaveItemData;
+}
+void URLGameInstance::SetSelectedBonusItem(bool Boolean)
+{
+	if (Board.IsValidIndex(PlayerCurrentCell))
+	{
+		Board[PlayerCurrentCell].SelectedBonusItem = Boolean;
+	}
+}
+FCell URLGameInstance::GetCellInfo() const 
+{ 
+	if (Board.IsValidIndex(PlayerCurrentCell))
+	{
+		return Board[PlayerCurrentCell];
+	}
+	return FCell();
+}
+
+bool URLGameInstance::CanBind(FName MappingName, FKey Key)
+{
+	const UInputSettings* Settings = GetDefault<UInputSettings>();
+	check(Settings);
+	const TArray<FInputAxisKeyMapping>& Axi = Settings->GetAxisMappings();
+	const TArray<FInputActionKeyMapping>& Actions = Settings->GetActionMappings();
+
+	for (auto Axis : Axi)
+	{
+		if (Axis.Key.GetFName() == Key.GetFName())
+		{
+			if (Axis.AxisName == MappingName)
+			{
+				return false;
+			}
+		}
+	}
+	for (auto Action : Actions)
+	{
+		if (Action.Key.GetFName() == Key.GetFName())
+		{
+			if (Action.ActionName == MappingName)
+			{
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+int32 URLGameInstance::GetMappingNum(FName MappingName)
+{
+	UInputSettings* Settings = UInputSettings::GetInputSettings();
+	check(Settings);
+	if (Settings->DoesAxisExist(MappingName))
+	{
+		TArray<FInputAxisKeyMapping> Mappings;
+		Settings->GetAxisMappingByName(MappingName, Mappings);
+		return Mappings.Num();
+	}
+	return 0;
+}
+
+void URLGameInstance::RemoveBindKey(FKey Key) // W 가 들어왔으면 W랑 매핑된 걸 찾는다.
+{
+	UInputSettings* Settings = UInputSettings::GetInputSettings();
+	check(Settings);
+	
+	TArray<FInputActionKeyMapping> Actions = Settings->GetActionMappings();
+	TArray<FInputAxisKeyMapping> Axes = Settings->GetAxisMappings();
+
+	//W는 축매핑. 축 매핑이면 그게 또 -1인지 1인지 알아서 -1인거면 -1인걸 None으로 해줘야한다.
+	
+	for (int32 i = 0; i < Actions.Num(); ++i)
+	{
+		if (Actions[i].Key.GetFName() == Key.GetFName())
+		{
+			Settings->RemoveActionMapping(Actions[i]);
+			FInputActionKeyMapping NewMapping(Actions[i].ActionName, FKey());
+			Settings->AddActionMapping(NewMapping);
+			break;
+		}
+	}
+
+	for (int32 i = 0; i < Axes.Num(); ++i)
+	{
+		if (Axes[i].Key.GetFName() == Key.GetFName()) //S랑 같은걸 찾음.
+		{
+			float AxisValue = Axes[i].Scale; //-1 기억
+			
+			Settings->RemoveAxisMapping(Axes[i]); //S 매핑 삭제
+			FInputAxisKeyMapping NewMapping(Axes[i].AxisName, FKey()); //S 매핑되어있던 이름에 키를 None으로 생성
+			NewMapping.Scale = AxisValue; //기억해두었던 Scale 삽입
+			Settings->AddAxisMapping(NewMapping); //새로운 매핑 추가. 즉, 같은 매핑인데 키만 None.
+
+			break;
+		}
+	}
+}
+
+void URLGameInstance::ChangeBindKey(FName MappingName, FKey Key, float ValueIfAxis)
+{
+	UInputSettings* Settings = UInputSettings::GetInputSettings();
+	check(Settings);
+
+	if (Settings->DoesActionExist(MappingName))
+	{
+		TArray<FInputActionKeyMapping> Mappings;
+		Settings->GetActionMappingByName(MappingName, Mappings);
+		for (auto& Mapping : Mappings)
+		{
+			Settings->RemoveActionMapping(Mapping);
+			FInputActionKeyMapping NewMapping(MappingName, Key);
+			Settings->AddActionMapping(NewMapping);
+		}
+	}
+	else if (Settings->DoesAxisExist(MappingName)) 
+	{											
+		TArray<FInputAxisKeyMapping> Mappings;
+		Settings->GetAxisMappingByName(MappingName, Mappings);
+		for (auto& Mapping : Mappings) 
+		{
+			if (Mapping.Scale == ValueIfAxis)
+			{
+				FInputAxisKeyMapping OriginalMapping = Mapping;
+				OriginalMapping.Key = Key;
+				
+				Settings->RemoveAxisMapping(Mapping);
+				Settings->AddAxisMapping(OriginalMapping);
+				
+				break;
+			}
+		}
+	}
+}
+
+void URLGameInstance::RollbackBindKey(FName MappingName, FKey Key, float ValueIfAxis)
+{                                 
+	if(!CanBind(MappingName, Key)) return;
+
+	UInputSettings* Settings = UInputSettings::GetInputSettings();
+    check(Settings);
+
+	if (Settings->DoesActionExist(MappingName))
+	{
+		TArray<FInputActionKeyMapping> Mappings;
+		Settings->GetActionMappingByName(MappingName, Mappings);
+		for (auto& Mapping : Mappings)
+		{
+			Settings->RemoveActionMapping(Mapping);
+			FInputActionKeyMapping NewMapping(MappingName, Key);
+			Settings->AddActionMapping(NewMapping);
+		}
+	}
+    else if (Settings->DoesAxisExist(MappingName))
+    {
+    	AxisRollbackCount++;
+    	TArray<FInputAxisKeyMapping> Mappings;
+    	Settings->GetAxisMappingByName(MappingName, Mappings);
+
+    	FInputAxisKeyMapping OriginalMapping;
+
+    	bool IsDoubleNone = true;
+    	for (auto& Mapping : Mappings)
+    	{
+			if (Mapping.Key != FKey())
+			{
+				IsDoubleNone = false;
+			}
+    	}
+		if(!IsDoubleNone)
+		{
+			for (auto& Mapping : Mappings) 
+			{
+				if (Mapping.Scale == ValueIfAxis)
+				{
+					OriginalMapping = Mapping;
+					OriginalMapping.Key = Key;
+					OriginalMapping.Scale = ValueIfAxis;
+    			
+					Settings->AddAxisMapping(OriginalMapping);
+					Settings->RemoveAxisMapping(Mapping);
+				}
+			}
+		}
+		else
+		{
+			for (auto& Mapping : Mappings) 
+			{
+				if (Mapping.Scale == ValueIfAxis)
+				{
+					OriginalMapping = Mapping;
+					OriginalMapping.Key = Key;
+					OriginalMapping.Scale = ValueIfAxis;
+    			
+					Settings->AddAxisMapping(OriginalMapping);
+				}
+			}
+			if (AxisRollbackCount == 2)
+			{
+				RemoveNoneAxis(MappingName);
+				AxisRollbackCount = 0;
+			}
+		}
+    }
+}
+
+void URLGameInstance::RemoveNoneAxis(FName MappingName)
+{
+	UInputSettings* Settings = UInputSettings::GetInputSettings();
+	check(Settings);
+
+	if (Settings->DoesAxisExist(MappingName))
+	{
+		TArray<FInputAxisKeyMapping> Mappings;
+		Settings->GetAxisMappingByName(MappingName, Mappings);
+    	
+		for (auto& Mapping : Mappings) 
+		{
+			if (Mapping.Key == FKey())
+			{
+				Settings->RemoveAxisMapping(Mapping);
+			}
+		}
+	}
 }

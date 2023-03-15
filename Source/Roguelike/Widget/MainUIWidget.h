@@ -22,6 +22,8 @@ public:
 	void DeactivateOnceItemListWidget() const;
 	void SetOwner(APawn* OwnerPawn) const;
 	void InitOnceItemList() const;
+	void LoadItem(TArray<UItemInfo*> ItemInfos);
+	void Synchronization();
 	
 private:
 	UPROPERTY(Meta = (BindWidget))
