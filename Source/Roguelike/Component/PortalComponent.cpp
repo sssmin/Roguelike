@@ -5,6 +5,7 @@
 #include "Components/ArrowComponent.h"
 
 #include "Roguelike/Actor/PortalActor.h"
+#include "Roguelike/Actor/TutorialPortalActor.h"
 #include "Roguelike/Game/RLGameInstance.h"
 
 
@@ -94,6 +95,22 @@ void UPortalComponent::CreateSidePortal()
 		if (PortalInfo.Portal)
 		{
 			PortalInfo.Portal->SetSidePortal();
+		}
+	}
+}
+
+void UPortalComponent::CreateTutorialPortal(uint8 Dir)
+{
+	if (GetWorld() && TutorialPortalActorClass)
+	{
+		ATutorialPortalActor* Portal = Cast<ATutorialPortalActor>(GetWorld()->SpawnActor(TutorialPortalActorClass));
+		if (Portal)
+		{
+			Portal->SetDir(Dir);
+			Portals.Add(FPortalInfo(Dir, Portal));
+		
+			SetLocationPotal();
+			Portal->SetSidePortal();
 		}
 	}
 }

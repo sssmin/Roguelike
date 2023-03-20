@@ -5,7 +5,7 @@
 
 #include "ItemComponent.h"
 #include "Roguelike/Game/RLGameInstance.h"
-#include "Roguelike/Game/RLGameStateBase.h"
+#include "Roguelike/Game/RLMainGameState.h"
 #include "Roguelike/PlayerController/RLPlayerController.h"
 #include "Roguelike/PlayerController/RLMonsterAIController.h"
 #include "Roguelike/Character/Player/PlayerCharacter.h"
@@ -16,17 +16,7 @@ UManagerComponent::UManagerComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
-	HealthManager = FHealthManager();
-	CombatManager = FCombatManager();
-	CurrentState = 0;
-	CurrentBuff = 0;
-	CCStack = 0;
-	CCStackDuration = 0.f;
-	CCSeconds = 0.f;
-	CCDuration = 2.5f;
-	bShouldApplyCC = false;
-	bIsBurn = false;
-	BurnTime = 0.f;
+	Init();
 }
 
 UManagerComponent* UManagerComponent::GetManagerComp(AActor* Character)
@@ -48,7 +38,8 @@ void UManagerComponent::BeginPlay()
 	if (GI && GI->GetListenerManager())
 	{
 		GI->SetTempManageDelegate.AddUObject(this, &ThisClass::SetTempManager);
-		GI->GetListenerManager()->OnLoadGameDelegate.AddUObject(this, &ThisClass::Init);
+		GI->GetListenerManager()->OnLoadGameDelegate.AddUObject(this, &ThisClass::Load);
+		GI->GetListenerManager()->OnNewGameDelegate.AddUObject(this, &ThisClass::Init);
 	}
 }
 
@@ -88,6 +79,21 @@ void UManagerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 }
 
 void UManagerComponent::Init()
+{
+	HealthManager = FHealthManager();
+	CombatManager = FCombatManager();
+	CurrentState = 0;
+	CurrentBuff = 0;
+	CCStack = 0;
+	CCStackDuration = 0.f;
+	CCSeconds = 0.f;
+	CCDuration = 2.5f;
+	bShouldApplyCC = false;
+	bIsBurn = false;
+	BurnTime = 0.f;
+}
+
+void UManagerComponent::Load()
 {
 	URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
 	if (GI)
@@ -129,6 +135,7 @@ void UManagerComponent::ReceiveDamage(const FCombatManager& EnemyCombatManager, 
 	const float Coefficient = CalcCounter(EnemyCombatManager.Element); //계수
 	float EnemyATK = EnemyCombatManager.ATK;
 	const float CriticalPer = CalcCritical(EnemyCombatManager);
+	bool IsCritial = CriticalPer == 2.f ? true : false;
 	
 	if (Cast<USkillDamageType>(DamageType.GetDefaultObject()))
 	{
@@ -152,7 +159,11 @@ void UManagerComponent::ReceiveDamage(const FCombatManager& EnemyCombatManager, 
 	{
 		Result += (HealthManager.MaxHP - HealthManager.CurrentHP * 0.1f);
 	}
-	
+	ABaseCharacter* OwnerCharacter = Cast<ABaseCharacter>(GetOwner());
+	if (OwnerCharacter)
+	{
+		OwnerCharacter->ShowDamageWidget(Result, IsCritial);
+	}
 	UpdateCurrentHP(-Result);
 }
 
@@ -287,7 +298,7 @@ void UManagerComponent::Dead()
 	}
 	else //죽은게 몬스터
 	{
-		ARLGameStateBase* RLGameState = Cast<ARLGameStateBase>(UGameplayStatics::GetGameState(this));
+		ARLMainGameState* RLGameState = Cast<ARLMainGameState>(UGameplayStatics::GetGameState(this));
 		if (RLGameState)
 		{
 			if (Cast<ABossMonsterCharacter>(GetOwner())) //죽은게 보스

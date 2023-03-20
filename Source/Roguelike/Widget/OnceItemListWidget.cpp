@@ -15,8 +15,7 @@ void UOnceItemListWidget::NativeConstruct()
 		FirstItemButton->OnClicked.AddUniqueDynamic(this, &ThisClass::FirstItemButtonClick);
 		SecondItemButton->OnClicked.AddUniqueDynamic(this, &ThisClass::SecondItemButtonClick);
 	}
-	bIsEnabled = false;
-
+	
 	bIsActive = false;
 }
 

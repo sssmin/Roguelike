@@ -12,6 +12,7 @@ public:
 	~DFSAgrt();
 	void StartAlgorithm(FVector2Int Size);
 	void GetMaxWidgetHeight(OUT int32 MaxWidth, OUT int32 MaxHeight);
+	void GenerateTutorialMap();
 	
 private:
 	void MazeGenerator();

@@ -33,7 +33,7 @@ public:
 	void OnSkillHit(AActor* Attacker, AActor* DamageCauser, const FCombatManager& EnemyManager, TSubclassOf<UDamageType> DamageType);
 	virtual void Dead() override;
 	void StopFire();
-	
+	virtual void ShowDamageWidget(float Damage, bool IsCritical) override;
 protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void Attack() override;

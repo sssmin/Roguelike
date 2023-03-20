@@ -21,6 +21,7 @@ public:
 	void CreateSidePortal();
 	void CreateCenterPortal();
 	void CreatePrevBossPortal();
+	void CreateTutorialPortal(uint8 Dir);
 	FVector GetPlayerSpawnLocation(uint8 Dir);
 	void CreateWall();
 	UFUNCTION(BlueprintImplementableEvent)

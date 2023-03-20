@@ -34,7 +34,8 @@ public:
 	void RemoveMinimapWidget() const;
 	void ShowNoticeWidget(const FString& Notice) const;
 	void ShowGameOverWidget();
-	void ShowSelectItemWidget();
+	void ShowSelectItemWidget(bool IsTutorial);
+	void DeactivateSelectItemWidget();
 	void ActiveOnceItemListWidget(UItemInfo* SelectItem) const;
 	void RemoveSelectWidget() const;
 	void MoveMapFade() const;

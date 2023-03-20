@@ -8,16 +8,16 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "NavigationSystem/Public/NavigationSystem.h"
+#include "Roguelike/Actor/DamageWidgetActor.h"
 
 #include "Roguelike/Widget/HPBarWidget.h"
 #include "Roguelike/Widget/BossHPBarWidget.h"
 #include "Roguelike/PlayerController/RLMonsterAIController.h"
 #include "Roguelike/Component/ManagerComponent.h"
-#include "Roguelike/Projectile/MonsterProjectile.h"
 #include "Roguelike/Actor/MeteorActor.h"
 #include "Roguelike/Character/MonsterAnimInstance.h"
-#include "Roguelike/Game/RLGameModeBase.h"
 #include "Roguelike/Type/DamageType/AllDamageTypes.h"
+#include "Roguelike/Widget/DamageWidget.h"
 
 AMonsterCharacter::AMonsterCharacter()
 {
@@ -161,6 +161,36 @@ void AMonsterCharacter::SetIsDeadBB()
 	}
 }
 
+void AMonsterCharacter::ShowDamageWidget(float Damage, bool IsCritical)
+{
+	FActorSpawnParameters Params;
+	FTransform SpawnTransform = GetActorTransform();
+	FVector SpawnLocation = GetActorLocation();
+	SpawnLocation.Y += FMath::RandRange(-100.f, 100.f);
+	SpawnTransform.SetLocation(SpawnLocation);
+	
+	if (GetDamageWidgetActorClass())
+	{
+		ADamageWidgetActor* DamageWidgetActor = GetWorld()->SpawnActor<ADamageWidgetActor>(GetDamageWidgetActorClass(), SpawnTransform, Params);
+		if (DamageWidgetActor)
+		{
+			UWidgetComponent* WidgetComp = DamageWidgetActor->GetDamageWidgetComp();
+			if (WidgetComp)
+			{
+				UUserWidget* Widget = WidgetComp->GetWidget();
+				if (Widget)
+				{
+					UDamageWidget* DamageWidget = Cast<UDamageWidget>(Widget);
+					if (DamageWidget)
+					{
+						DamageWidget->Play(false, IsCritical, Damage);
+					}
+				}
+			}
+		}
+	} 
+}
+
 void AMonsterCharacter::FireOneToTwo(TSubclassOf<UDamageType> DamageType)
 {
 	if (MonsterCombatComp)
@@ -243,7 +273,7 @@ void AMonsterCharacter::RemoveHPWidget()
 	{
 		if (BossHPBarWidget)
 		{
-			BossHPBarWidget->RemoveFromViewport();
+			BossHPBarWidget->RemoveFromParent();
 		}
 	}
 }
@@ -305,11 +335,11 @@ void AMonsterCharacter::Fire3Projectile(TSubclassOf<UDamageType> DamageType)
 
 void AMonsterCharacter::Teleport()
 {
-	FVector RandVector = UNavigationSystemV1::GetRandomPointInNavigableRadius(this, FVector::ZeroVector, 1);
-	TEnumAsByte<EMoveComponentAction::Type> Val = EMoveComponentAction::Move;
-	FLatentActionInfo ActionInfo;
-	ActionInfo.CallbackTarget = this;
-	UKismetSystemLibrary::MoveComponentTo(RootComponent, RandVector, GetActorRotation(), false, true, 0.5f, true, Val, ActionInfo);
+	// FVector RandVector = UNavigationSystemV1::GetRandomPointInNavigableRadius(this, FVector::ZeroVector, 1);
+	// TEnumAsByte<EMoveComponentAction::Type> Val = EMoveComponentAction::Move;
+	// FLatentActionInfo ActionInfo;
+	// ActionInfo.CallbackTarget = this;
+	// UKismetSystemLibrary::MoveComponentTo(RootComponent, RandVector, GetActorRotation(), false, true, 0.5f, true, Val, ActionInfo);
 }
 
 void AMonsterCharacter::Meteor(const TSubclassOf<AMeteorActor>& MeteorClass, AActor* Target)

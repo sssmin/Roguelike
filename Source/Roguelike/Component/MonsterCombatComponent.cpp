@@ -5,7 +5,7 @@
 #include "Roguelike/Character/NormalMonster/MonsterCharacter.h"
 #include "Roguelike/Projectile/BombProjectile.h"
 #include "Roguelike/Projectile/OnetoAnotherProjectile.h"
-#include "Roguelike/Game/RLGameModeBase.h"
+#include "Roguelike/Game/RLMainGameMode.h"
 
 UMonsterCombatComponent::UMonsterCombatComponent()
 {

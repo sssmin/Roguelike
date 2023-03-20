@@ -20,9 +20,10 @@ class ROGUELIKE_API USelectItemWidget : public UUserWidget
 	GENERATED_BODY()
 	
 public:
-	void Init(const TArray<UItemInfo*> SelectedItems);
+	void Init(const TArray<UItemInfo*> SelectedItems, bool IsTutorial);
 	virtual void NativeConstruct() override;
 	void CreateCellWidget();
+	void Deactivate();
 	
 private:
 	UFUNCTION()
@@ -48,6 +49,7 @@ private:
 	UPROPERTY()
 	TArray<UItemInfo*> ItemInfo;
 	
-	bool HaveEverPressed;
+	bool bHaveEverPressed;
+	bool bIsTutorial;
 	
 };

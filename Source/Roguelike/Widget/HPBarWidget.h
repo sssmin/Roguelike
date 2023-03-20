@@ -6,6 +6,7 @@
 #include "Roguelike/Type/DTForGM.h"
 #include "HPBarWidget.generated.h"
 
+class UImage;
 class UProgressBar;
 
 UCLASS()
@@ -23,7 +24,9 @@ private:
 	
 	UPROPERTY(Meta = (BindWidget))
 	UProgressBar* HPBar;
-
+	UPROPERTY(Meta = (BindWidget))
+	UImage* Status;
+	
 public:
 	void SetMonsterType(EMonsterType Type);
 	

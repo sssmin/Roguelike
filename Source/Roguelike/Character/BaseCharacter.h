@@ -27,6 +27,7 @@ public:
 	virtual void Dead();
 	bool IsDead();
 	FCombatManager GetCombatManager() const;
+	virtual void ShowDamageWidget(float Damage, bool IsCritical);
 	
 protected:
 	virtual void Destroyed() override;
@@ -37,8 +38,12 @@ protected:
 private:
 	UFUNCTION()
 	void OnExplodeHit(AActor* DamagedActor, float Damage, const UDamageType* DamageType, FVector Origin, FHitResult HitInfo, AController* InstigatedBy, AActor* DamageCauser);
-
+	UPROPERTY()
+	TSubclassOf<UObject> DamageWidgetActorClass;
+	
+	
 public:
 	UFUNCTION(BlueprintCallable)
 	UManagerComponent* GetManagerComp() const { return ManagerComponent;  }
+	TSubclassOf<UObject> GetDamageWidgetActorClass() const { return DamageWidgetActorClass; }
 };

@@ -1,9 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "BaseCharacter.h"
+
+#include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
+#include "Roguelike/Actor/DamageWidgetActor.h"
 #include "Roguelike/Component/ManagerComponent.h"
-#include "Roguelike/Game/RLGameModeBase.h"
+#include "Roguelike/Widget/DamageWidget.h"
 
 ABaseCharacter::ABaseCharacter()
 {
@@ -22,6 +25,18 @@ void ABaseCharacter::BeginPlay()
 	
 
 	OnTakeRadialDamage.AddDynamic(this, &ThisClass::OnExplodeHit);
+
+	FActorSpawnParameters Params;
+	FTransform SpawnTransform = GetActorTransform();
+	FVector SpawnLocation = GetActorLocation();
+	SpawnLocation.Y += FMath::RandRange(-100.f, 100.f);
+	SpawnTransform.SetLocation(SpawnLocation);
+	const FString DamageBPPath = TEXT("/Game/Blueprints/Actor/Damage/BP_DamageWidgetActor");
+	UBlueprint* DamageBP = Cast<UBlueprint>(StaticLoadObject(UBlueprint::StaticClass(), nullptr, *DamageBPPath));
+	if (DamageBP && DamageBP->GeneratedClass)
+	{
+		DamageWidgetActorClass = *DamageBP->GeneratedClass;
+	}
 }
 
 void ABaseCharacter::Tick(float DeltaTime)
@@ -56,6 +71,10 @@ FCombatManager ABaseCharacter::GetCombatManager() const
 		return ManagerComponent->GetCombatManager();
 	}
 	return FCombatManager();
+}
+
+void ABaseCharacter::ShowDamageWidget(float Damage, bool IsCritical)
+{
 }
 
 void ABaseCharacter::Destroyed()

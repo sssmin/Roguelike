@@ -15,13 +15,14 @@ enum class ELoadState : uint8
 	None,
 	NewGame,
 	LoadGame,
-	LevelTravel
+	LevelTravel,
+	Tutorial
 };
 
 class URoguelikeSaveGame;
 class DFSAgrt;
-class ARLGameStateBase;
-class ARLGameModeBase;
+class ARLMainGameState;
+class ARLMainGameMode;
 struct FInfoRecord;
 
 DECLARE_DELEGATE(FOnInitOnceItem)
@@ -38,6 +39,8 @@ public:
 	virtual void LoadComplete(const float LoadTime, const FString& MapName) override;
 	UFUNCTION(BlueprintCallable)
 	void NewGame();
+	UFUNCTION(BlueprintCallable)
+	void StartTutorial();
 	UFUNCTION(BlueprintPure)
 	bool CanSaveThisCell();
 	UFUNCTION(BlueprintCallable)
@@ -54,8 +57,7 @@ public:
 	void ChangeBindKey(FName MappingName, FKey Key, float ValueIfAxis);
 	UFUNCTION(BlueprintCallable)
 	void RollbackBindKey(FName MappingName, FKey Key, float ValueIfAxis);
-	void Initialize();
-	void GenerateMap();
+	
 	void RequestInfo() const;
 	void RequestMove(uint8 Dir);
 	void RequestMoveNextStage();
@@ -71,6 +73,8 @@ public:
 	void SetSelectedBonusItem(bool Boolean);
 	FCell GetCellInfo() const ;
 	URLListenerManager* GetListenerManager() const;
+	
+	
 
 	FOnInitOnceItem InitOnceItemDelegate;
 	FSetTempManage SetTempManageDelegate;
@@ -84,11 +88,15 @@ private:
 	void MoveProcess(int32 TargetCell, uint8 Dir);
 	void LoadDataSetting(const FInfoRecord& Record);
 	void RemoveNoneAxis(FName MappingName);
+	void Initialize();
+	void GenerateMap();
+	void GenerateTutorialMap();
+	
 	TSharedPtr<DFSAgrt> DFS;
 	UPROPERTY()
-	ARLGameStateBase* RLGameState;
+	ARLMainGameState* RLGameState;
 	UPROPERTY()
-	ARLGameModeBase* RLGameMode;
+	ARLMainGameMode* RLGameMode;
 	UPROPERTY()
 	URLListenerManager* ListenerManager;
 
@@ -133,5 +141,6 @@ public:
 	FTransform GetTempPlayerTransform() const { return TempPlayerTransform; }
 	void SetTempDashChargeNum(int32 InNum) { TempDashChargeNum = InNum; }
 	int32 GetTempDashChargeNum() const { return TempDashChargeNum; }
+	void SetLoadState(ELoadState InLoadState) { LoadState = InLoadState; }
 	
 };

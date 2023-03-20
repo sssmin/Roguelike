@@ -17,7 +17,7 @@ class ROGUELIKE_API USelectItemCellWidget : public UUserWidget
 	GENERATED_BODY()
 	
 public:
-	void Init(UItemInfo* Item);
+	void Init(UItemInfo* Item, bool IsTutorial);
 	
 private:
 	UFUNCTION()
@@ -31,6 +31,8 @@ private:
 	UTextBlock* ItemName;
 	UPROPERTY()
 	UItemInfo* ItemInfo;
+
+	bool bIsTutorial;
 
 public:
 	UItemInfo* GetItemInfo() const { return ItemInfo; }

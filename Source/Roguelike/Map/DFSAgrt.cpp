@@ -185,7 +185,6 @@ void DFSAgrt::MakeBonusCell()
 	}
 }
 
-
 TArray<int32> DFSAgrt::CheckSideCell(int32 Cell)
 {
 	TArray<int32> SideCells;
@@ -225,8 +224,7 @@ void DFSAgrt::GetMaxWidgetHeight(OUT int32 MaxWidth, OUT int32 MaxHeight)
 		}
 		MaxWidth = FMath::Max(Compare, MaxWidth);
 	}
-
-
+	
 	for (int32 i = 0; i < Size.X; ++i)
 	{
 		int32 Compare = 0;
@@ -240,5 +238,33 @@ void DFSAgrt::GetMaxWidgetHeight(OUT int32 MaxWidth, OUT int32 MaxHeight)
 		}
 		MaxHeight = FMath::Max(Compare, MaxHeight);
 	}
-	
 }
+
+void DFSAgrt::GenerateTutorialMap()
+{
+	TArray<bool> Status = { false, false, true, false }; 
+	FCell Cell = FCell(Status, ECellState::InPlayer, ECellType::Start, true, 0);
+	Board.Add(Cell);
+	
+	Status.Empty();
+	Status = { false, true, false, true }; 
+	Cell = FCell(Status, ECellState::Bonus, ECellType::Bonus, false, 0);
+	Board.Add(Cell);
+
+	Status.Empty();
+	Status = { false, false, true, false }; 
+	Cell = FCell(Status, ECellState::DontFindBoss, ECellType::Boss, false, 1);
+	Board.Add(Cell);
+
+	Status.Empty();
+	Status = { true, false, false, true }; 
+	Cell = FCell(Status, ECellState::Normal, ECellType::Mobs, false, 2);
+	Board.Add(Cell);
+
+	StartCell = 0;
+	BossCell = 2;
+	BossPrevCell = 3;
+	TotalCellNum = 2;
+
+}
+

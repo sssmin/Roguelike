@@ -38,3 +38,19 @@ void URLListenerManager::OnLoadGame() const
 	if (OnLoadGameDelegate.IsBound())
 		OnLoadGameDelegate.Broadcast();
 }
+
+void URLListenerManager::OnStartTutorial() const
+{
+	if (OnStartTutorialDelegate.IsBound())
+		OnStartTutorialDelegate.Broadcast();
+}
+
+void URLListenerManager::OnStepCompleted() const
+{
+	OnStepCompletedDelegate.ExecuteIfBound();
+}
+
+void URLListenerManager::OnTutorialCompleted() const
+{
+	OnTutorialCompletedDelegate.ExecuteIfBound();
+}

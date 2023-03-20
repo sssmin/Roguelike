@@ -9,7 +9,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 
 #include "Roguelike/Game/RLGameInstance.h"
-#include "Roguelike/Game/RLGameStateBase.h"
+#include "Roguelike/Game/RLMainGameState.h"
 #include "Roguelike/Type/ItemManage.h"
 #include "Roguelike/Component/ManagerComponent.h"
 #include "Roguelike/Component/ItemComponent.h"
@@ -18,6 +18,13 @@
 #include "Roguelike/Character/CharacterAnimInstance.h"
 
 #include "DrawDebugHelpers.h"
+#include "Components/WidgetComponent.h"
+#include "Roguelike/Actor/DamageWidgetActor.h"
+#include "Roguelike/Game/RLTutorialGameMode.h"
+#include "Roguelike/Game/TutorialManager.h"
+#include "Roguelike/PlayerController/RLPlayerController.h"
+#include "Roguelike/Widget/DamageWidget.h"
+
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -132,18 +139,23 @@ void APlayerCharacter::Test1()
 
 void APlayerCharacter::Test2()
 {
-	if (GetWorld() && Cast<URLGameInstance>(GetWorld()->GetGameInstance()))
+	// if (GetWorld() && Cast<URLGameInstance>(GetWorld()->GetGameInstance()))
+	// {
+	// 	Cast<URLGameInstance>(GetWorld()->GetGameInstance())->TestPrintMap();
+	// }
+	if (Cast<ARLPlayerController>(GetController()))
 	{
-		Cast<URLGameInstance>(GetWorld()->GetGameInstance())->TestPrintMap();
+		Cast<ARLPlayerController>(GetController())->ShowSelectItemWidget(false);
 	}
-	/*if (Cast<ARLPlayerController>(GetController()))
-	{
-		Cast<ARLPlayerController>(GetController())->ShowSelectItemWidget();
-	}*/
 }
 
 void APlayerCharacter::Test3()
 {
+	ARLTutorialGameMode* GM = Cast<ARLTutorialGameMode>(UGameplayStatics::GetGameMode(this));
+	if (GM && GM->GetTutorialManager())
+	{
+		GM->GetTutorialManager()->SetNextTutorial();
+	}
 	
 	
 	/*if (GetWorld() && Cast<URLGameInstance>(GetWorld()->GetGameInstance()))
@@ -201,6 +213,36 @@ void APlayerCharacter::StopFire()
 	AttackReleased();
 }
 
+void APlayerCharacter::ShowDamageWidget(float Damage, bool IsCritical)
+{
+	FActorSpawnParameters Params;
+	FTransform SpawnTransform = GetActorTransform();
+	FVector SpawnLocation = GetActorLocation();
+	SpawnLocation.Y += FMath::RandRange(-100.f, 100.f);
+	SpawnTransform.SetLocation(SpawnLocation);
+	
+	if (GetDamageWidgetActorClass())
+	{
+		ADamageWidgetActor* DamageWidgetActor = GetWorld()->SpawnActor<ADamageWidgetActor>(GetDamageWidgetActorClass(), SpawnTransform, Params);
+		if (DamageWidgetActor)
+		{
+			UWidgetComponent* WidgetComp = DamageWidgetActor->GetDamageWidgetComp();
+			if (WidgetComp)
+			{
+				UUserWidget* Widget = WidgetComp->GetWidget();
+				if (Widget)
+				{
+					UDamageWidget* DamageWidget = Cast<UDamageWidget>(Widget);
+					if (DamageWidget)
+					{
+						DamageWidget->Play(true, IsCritical, Damage);
+					}
+				}
+			}
+		}
+	} 
+}
+
 void APlayerCharacter::GetElementFromItem(EElement Element) const
 {
 	if (ManagerComponent)
@@ -239,7 +281,7 @@ void APlayerCharacter::HealByItem() const
 	{
 		ManagerComponent->Heal(30.f);
 	}
-	ARLGameStateBase* GSB = Cast<ARLGameStateBase>(UGameplayStatics::GetGameState(this));
+	ARLMainGameState* GSB = Cast<ARLMainGameState>(UGameplayStatics::GetGameState(this));
 	if (GSB)
 	{
 		GSB->AteHealThisCell();

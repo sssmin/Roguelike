@@ -6,7 +6,7 @@
 #include "Roguelike/Actor/WhirlwindActor.h"
 #include "Roguelike/Projectile/ThrowBallProjectile.h"
 #include "Roguelike/Component/ManagerComponent.h"
-#include "Roguelike/Game/RLGameModeBase.h"
+#include "Roguelike/Game/RLMainGameMode.h"
 #include "Roguelike/Type/DamageType/AllDamageTypes.h"
 
 UBossCombatComponent::UBossCombatComponent()
@@ -216,7 +216,7 @@ void UBossCombatComponent::FireThrowBall(const FVector& SpawnLoc, const FVector&
 
 void UBossCombatComponent::Square()
 {
-	ARLGameModeBase* RLGM = Cast<ARLGameModeBase>(UGameplayStatics::GetGameMode(this));
+	ARLMainGameMode* RLGM = Cast<ARLMainGameMode>(UGameplayStatics::GetGameMode(this));
 	if (RLGM)
 	{
 		FVector CellScale = RLGM->GetBossCellScale();

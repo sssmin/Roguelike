@@ -9,7 +9,7 @@
 #include "Roguelike/Component/ManagerComponent.h"
 #include "Roguelike/Roguelike.h"
 #include "Roguelike/Type/DamageType/AllDamageTypes.h"
-#include "Roguelike/Game/RLGameStateBase.h"
+#include "Roguelike/Game/RLMainGameState.h"
 
 AMonsterSuicide::AMonsterSuicide()
 {
@@ -83,9 +83,9 @@ void AMonsterSuicide::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComponent
 			if (Target == OtherActor)
 			{
 				Dead();
-				if (Cast<ARLGameStateBase>(UGameplayStatics::GetGameState(this)))
+				if (Cast<ARLMainGameState>(UGameplayStatics::GetGameState(this)))
 				{
-					Cast<ARLGameStateBase>(UGameplayStatics::GetGameState(this))->KillScored();
+					Cast<ARLMainGameState>(UGameplayStatics::GetGameState(this))->KillScored();
 				}
 			}
 		}

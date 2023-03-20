@@ -8,7 +8,7 @@
 
 
 class APortalActor;
-
+class ATutorialPortalActor;
 
 USTRUCT()
 struct FPortalInfo
@@ -38,6 +38,7 @@ public:
 	void CreatePrevBossPortal();
 	void DestroyPortal();
 	FVector GetArrowLocation(uint8 Dir);
+	void CreateTutorialPortal(uint8 Dir);
 
 private:
 	void SetLocationPotal();
@@ -46,6 +47,8 @@ private:
 
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<APortalActor> PortalActorClass;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<ATutorialPortalActor> TutorialPortalActorClass;
 	UPROPERTY()
 	APortalActor* PrevBossPortal;
 	UPROPERTY()

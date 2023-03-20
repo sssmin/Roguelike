@@ -6,7 +6,7 @@
 
 #include "Roguelike/Character/NormalMonster/MonsterCharacter.h"
 #include "Roguelike/Character/Player/PlayerCharacter.h"
-#include "Roguelike/Game/RLGameModeBase.h"
+#include "Roguelike/Game/RLMainGameMode.h"
 #include "Roguelike/Interface/MonsterInterface.h"
 
 ABaseProjectile::ABaseProjectile()

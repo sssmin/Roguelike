@@ -22,6 +22,9 @@ struct FCell
 		CellClass = 2;
 		SelectedBonusItem = false;
 	}
+	FCell(TArray<bool> InStatus, ECellState InCellState, ECellType InCellType, bool InIsCleared, int32 InCellClass)
+	: Visited(false), Status(InStatus), CellState(InCellState), CellType(InCellType), IsCleared(InIsCleared), TempWall(0), CellClass(InCellClass), SelectedBonusItem(true)
+	{ }
 	bool Visited;
 	TArray<bool> Status;
 	ECellState CellState;

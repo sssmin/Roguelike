@@ -8,7 +8,6 @@
 #include "Roguelike/Type/DamageType/AllDamageTypes.h"
 #include "Roguelike/Character/Player/PlayerCharacter.h"
 #include "Roguelike/Character/BossMonster/BossMonsterCharacter.h"
-#include "Roguelike/Game/RLGameModeBase.h"
 
 AWhirlwindActor::AWhirlwindActor()
 {

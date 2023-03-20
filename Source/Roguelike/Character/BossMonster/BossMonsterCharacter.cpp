@@ -145,7 +145,7 @@ void ABossMonsterCharacter::Destroyed()
 
 	if (GetBossHPBarWidget())
 	{
-		GetBossHPBarWidget()->RemoveFromViewport();
+		GetBossHPBarWidget()->RemoveFromParent();
 	}
 }
 

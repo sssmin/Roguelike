@@ -1,14 +1,16 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 #include "RLGameInstance.h"
 #include "Kismet/GameplayStatics.h"
+#include "GameFramework/InputSettings.h"
+#include "Serialization/BufferArchive.h"
 
 #include "Roguelike/Map/DFSAgrt.h"
 #include "Roguelike/PlayerController/RLPlayerController.h"
 #include "RLListenerManager.h"
-#include "RLGameStateBase.h"
+#include "RLMainGameState.h"
+#include "RLTutorialGameMode.h"
 #include "RoguelikeSaveGame.h"
-#include "GameFramework/InputSettings.h"
-#include "Serialization/BufferArchive.h"
+#include "TutorialManager.h"
 
 
 URLGameInstance::URLGameInstance()
@@ -30,6 +32,8 @@ void URLGameInstance::LoadComplete(const float LoadTime, const FString& MapName)
 {
 	Super::LoadComplete(LoadTime, MapName);
 	
+	check(ListenerManager);
+	
 	if (MapName == "/Game/Maps/GameMap")
 	{
 		switch (LoadState)
@@ -38,11 +42,25 @@ void URLGameInstance::LoadComplete(const float LoadTime, const FString& MapName)
 			ListenerManager->OnNewGame();
 			break;
 		case ELoadState::LoadGame:
-			check(ListenerManager);
 			ListenerManager->OnLoadGame();
 			break;
 		}
 	}
+	else if (MapName == "/Game/Maps/TutorialMap")
+	{
+		//튜토리얼 게임모드랑 내통. 튜토리얼  첫시작임.
+		ARLTutorialGameMode* RLTutoGM = Cast<ARLTutorialGameMode>(UGameplayStatics::GetGameMode(this));
+		if (RLTutoGM)
+		{
+			ListenerManager->OnStartTutorial();
+		}
+	}
+}
+
+void URLGameInstance::StartTutorial()
+{
+	Initialize();
+	GenerateTutorialMap();
 }
 
 void URLGameInstance::NewGame()
@@ -69,7 +87,7 @@ void URLGameInstance::Initialize()
 	TempCombatManager = FCombatManager();
 	TempBuff = 0;
 	
-	RLGameState = Cast<ARLGameStateBase>(UGameplayStatics::GetGameState(this));
+	RLGameState = Cast<ARLMainGameState>(UGameplayStatics::GetGameState(this));
 }
 
 void URLGameInstance::GenerateMap()
@@ -88,6 +106,22 @@ void URLGameInstance::GenerateMap()
 	}
 	ClearCount = 0;
 	bIsEarlyDiscoveredBoss = false;
+}
+
+void URLGameInstance::GenerateTutorialMap()
+{
+	if (DFS.IsValid())
+	{
+		MapSize = FVector2Int(2, 2);
+		DFS->GenerateTutorialMap();
+
+		Board = DFS->GetBoard();
+		StartCell = DFS->GetStartCell();
+		PlayerCurrentCell = StartCell;
+		BossCell = DFS->GetBossCell();
+		BossPrevCell = DFS->GetBossPrevCell();
+		TotalCellNum = DFS->GetTotalCellNum();
+	}
 }
 
 void URLGameInstance::SaveGame(UPARAM(ref) FTransform& PlayerTransform)
@@ -266,16 +300,19 @@ int32 URLGameInstance::CalcNextCell(uint8 Dir) const
 
 void URLGameInstance::ClearThisCell()
 {
-	Board[PlayerCurrentCell].IsCleared = true;
-	ClearCount++;
-	CheckEarlyDiscoveredBossCell();
+	if (!Board[PlayerCurrentCell].IsCleared)
+	{
+		Board[PlayerCurrentCell].IsCleared = true;
+		ClearCount++;
+		CheckEarlyDiscoveredBossCell();
+	}
 }
 
 void URLGameInstance::CheckEarlyDiscoveredBossCell()
 {
 	if ((TotalCellNum - 1 == ClearCount) && bIsEarlyDiscoveredBoss)
 	{
-		RLGameState = RLGameState ? RLGameState : Cast<ARLGameStateBase>(UGameplayStatics::GetGameState(this));
+		RLGameState = RLGameState ? RLGameState : Cast<ARLMainGameState>(UGameplayStatics::GetGameState(this));
 		if (RLGameState)
 		{
 			RLGameState->SpawnPrevBossPortal();
@@ -326,10 +363,22 @@ void URLGameInstance::MoveProcess(int32 TargetCell, uint8 Dir)
 		Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld()))->RemoveMinimapWidget();
 		Cast<ARLPlayerController>(GetFirstLocalPlayerController(GetWorld()))->SetMapInfo(MapSize, Board, PlayerCurrentCell);
 	}
-	RLGameState = RLGameState ? RLGameState : Cast<ARLGameStateBase>(UGameplayStatics::GetGameState(this));
-	if (RLGameState)
+	
+	if (LoadState == ELoadState::Tutorial)
 	{
-		RLGameState->ReconstructCuzMove(Dir, StageLevel, Board[PlayerCurrentCell]);
+		ARLTutorialGameMode* RLTutoGM = Cast<ARLTutorialGameMode>(UGameplayStatics::GetGameMode(this));
+		if (RLTutoGM && RLTutoGM->GetTutorialManager())
+		{
+			RLTutoGM->GetTutorialManager()->ReconstructCell(Dir, Board[PlayerCurrentCell]);
+		}
+	}
+	else
+	{
+		RLGameState = RLGameState ? RLGameState : Cast<ARLMainGameState>(UGameplayStatics::GetGameState(this));
+		if (RLGameState)
+		{
+			RLGameState->ReconstructCell(Dir, StageLevel, Board[PlayerCurrentCell]);
+		}
 	}
 }
 

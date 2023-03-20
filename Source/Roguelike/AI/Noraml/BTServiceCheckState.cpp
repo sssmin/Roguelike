@@ -32,6 +32,7 @@ void UBTServiceCheckState::CheckState(UBehaviorTreeComponent& OwnerComp)
 			if (ManagerComp)
 			{
 				CurrentState = ManagerComp->GetCurrentState();
+			
 
 				if (CurrentState & static_cast<uint8>(EState::Frozen))
 				{

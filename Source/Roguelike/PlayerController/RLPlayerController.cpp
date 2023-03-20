@@ -7,7 +7,7 @@
 #include "Particles/ParticleSystemComponent.h"
 
 #include "Roguelike/Game/RLGameInstance.h"
-#include "Roguelike/Game/RLGameModeBase.h"
+#include "Roguelike/Game/RLMainGameMode.h"
 #include "Roguelike/Widget/MinimapWidget.h"
 #include "Roguelike/Widget/MainUIWidget.h"
 #include "Roguelike/Widget/SelectItemWidget.h"
@@ -42,6 +42,7 @@ void ARLPlayerController::BeginPlay()
 		GI->GetListenerManager()->DeactivateOnceItemListDel.BindUObject(this, &ThisClass::DeactivateOnceItemListWidget);
 		GI->GetListenerManager()->GetRandItemDelegate.BindUObject(this, &ThisClass::GetRandItem);
 		GI->GetListenerManager()->OnNewGameDelegate.AddUObject(this, &ThisClass::Init);
+		GI->GetListenerManager()->OnStartTutorialDelegate.AddUObject(this, &ThisClass::Init);
 		GI->GetListenerManager()->OnLoadGameDelegate.AddUObject(this, &ThisClass::LoadGame);
 	}
 }
@@ -195,7 +196,7 @@ void ARLPlayerController::RemoveMinimapWidget() const
 {
 	if (MinimapWidget)
 	{
-		MinimapWidget->RemoveFromViewport();
+		MinimapWidget->RemoveFromParent();
 	}
 }
 
@@ -231,7 +232,7 @@ void ARLPlayerController::ShowGameOverWidget()
 	}
 }
 
-void ARLPlayerController::ShowSelectItemWidget()
+void ARLPlayerController::ShowSelectItemWidget(bool IsTutorial)
 {
 	SetActorTickEnabled(false);
 	StopFire();
@@ -246,17 +247,25 @@ void ARLPlayerController::ShowSelectItemWidget()
 			SetInputMode(InputModeData);
 
 			CreatedSelectItemWidget->AddToViewport();
-			CreatedSelectItemWidget->Init(SelectedItems);
+			CreatedSelectItemWidget->Init(SelectedItems, IsTutorial);
 			CreatedSelectItemWidget->CreateCellWidget();
 		}
 	}
 	PlayerInput->FlushPressedKeys();
 }
 
+void ARLPlayerController::DeactivateSelectItemWidget()
+{
+	if (CreatedSelectItemWidget)
+	{
+		CreatedSelectItemWidget->Deactivate();
+	}
+}
+
 TArray<UItemInfo*> ARLPlayerController::GetRandItem() const
 {
 	TArray<UItemInfo*> RandItem;
-	ARLGameModeBase* GM = Cast<ARLGameModeBase>(UGameplayStatics::GetGameMode(this));
+	ARLBaseGameMode* GM = Cast<ARLBaseGameMode>(UGameplayStatics::GetGameMode(this));
 	if (GM)
 	{
 		RandItem = GM->CreateRandItem();
@@ -295,7 +304,7 @@ void ARLPlayerController::RemoveSelectWidget() const
 {
 	if (CreatedSelectItemWidget)
 	{
-		CreatedSelectItemWidget->RemoveFromViewport();
+		CreatedSelectItemWidget->RemoveFromParent();
 	}
 }
 
@@ -415,7 +424,7 @@ void ARLPlayerController::RestorePC()
 
 void ARLPlayerController::LoadItem(TArray<UItemInfo*> ItemInfos)
 {
-	ARLGameModeBase* GM = Cast<ARLGameModeBase>(UGameplayStatics::GetGameMode(this));
+	ARLMainGameMode* GM = Cast<ARLMainGameMode>(UGameplayStatics::GetGameMode(this));
 	if (GM)
 	{
 		GM->SetItemIcon(ItemInfos);

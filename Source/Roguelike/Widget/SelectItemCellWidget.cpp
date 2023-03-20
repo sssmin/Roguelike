@@ -11,9 +11,10 @@
 #include "Kismet/GameplayStatics.h"
 
 
-void USelectItemCellWidget::Init(UItemInfo* Item)
+void USelectItemCellWidget::Init(UItemInfo* Item, bool IsTutorial)
 {
 	ItemInfo = Item;
+	bIsTutorial = IsTutorial;
 
 	if (ItemButton && ItemDesc && ItemName && ItemInfo)
 	{
@@ -40,5 +41,9 @@ void USelectItemCellWidget::SelectItem()
 	if (GI && GI->GetListenerManager())
 	{
 		GI->GetListenerManager()->SelectItem(ItemInfo);
+		if (bIsTutorial)
+		{
+			GI->GetListenerManager()->OnStepCompleted();
+		}
 	}
 }

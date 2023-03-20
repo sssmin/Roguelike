@@ -37,7 +37,7 @@ public:
 	virtual void Dead() override;
 	virtual void SetIsDeadAnimInst();
 	virtual void SetIsDeadBB();
-	
+	virtual void ShowDamageWidget(float Damage, bool IsCritical) override;
 protected:
 	void FireOneToTwo(TSubclassOf<UDamageType> DamageType);
 	void ThrowBomb(AActor* Target, TSubclassOf<UDamageType> DamageType);

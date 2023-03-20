@@ -14,6 +14,9 @@ DECLARE_DELEGATE(FDeactivateOnceItemList);
 DECLARE_DELEGATE_RetVal(TArray<UItemInfo*>, FGetRandItem);
 DECLARE_MULTICAST_DELEGATE(FOnNewGame);
 DECLARE_MULTICAST_DELEGATE(FOnLoadGame);
+DECLARE_MULTICAST_DELEGATE(FOnStartTutorial);
+DECLARE_DELEGATE(FOnStepCompleted)
+DECLARE_DELEGATE(FOnTutorialCompleted);
 
 UCLASS()
 class ROGUELIKE_API URLListenerManager : public UObject
@@ -35,5 +38,11 @@ public:
 	void OnNewGame() const;
 	FOnLoadGame OnLoadGameDelegate;
 	void OnLoadGame() const;
-
+	FOnStartTutorial OnStartTutorialDelegate;
+	void OnStartTutorial() const;
+	FOnStepCompleted OnStepCompletedDelegate;
+	void OnStepCompleted() const;
+	FOnTutorialCompleted OnTutorialCompletedDelegate;
+	void OnTutorialCompleted() const;
+	
 };

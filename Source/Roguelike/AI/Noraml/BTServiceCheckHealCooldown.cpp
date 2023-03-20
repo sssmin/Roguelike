@@ -36,6 +36,10 @@ void UBTServiceCheckHealCooldown::SetCooltime(UBlackboardComponent* BBComp)
 
 void UBTServiceCheckHealCooldown::CooldownFinished(UBlackboardComponent* BBComp)
 {
-	BBComp->SetValueAsBool(CanHealKey.SelectedKeyName, true);
-	bHealCooldown = false;
+	if (BBComp)
+	{
+		BBComp->SetValueAsBool(CanHealKey.SelectedKeyName, true);
+		bHealCooldown = false;
+	}
+	
 }

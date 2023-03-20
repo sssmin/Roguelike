@@ -51,6 +51,7 @@ enum class EKindOfMonster : uint8
 	Skeleton,
 	Suicide,
 	Wizard,
+	Tutorial,
 
 	MAX
 };
