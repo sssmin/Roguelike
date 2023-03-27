@@ -3,6 +3,7 @@
 #include "Roguelike/Character/Player/PlayerCharacter.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
 
 AHealItem::AHealItem()
 {
@@ -37,6 +38,10 @@ void AHealItem::ItemInteract(UPrimitiveComponent* OverlappedComponent, AActor* O
 		if (HealedParticle && GetWorld())
 		{
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HealedParticle, GetActorTransform());
+			if (DestroySoundCue)
+			{
+				UGameplayStatics::PlaySound2D(this, DestroySoundCue);
+			}
 			if (HealItemParticleComp)
 			{
 				HealItemParticleComp->DestroyComponent();

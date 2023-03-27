@@ -29,14 +29,12 @@ struct FItemInfoRecord
 	GENERATED_BODY()
 
 	EItemType ItemsType;
-
 	FItemType DetailType;
-
 	FString ItemName;
-
 	FString ItemDesc;
+	bool HaveTooltip;
+	FString TooltipText;
 	
-	TArray<uint8> ByteData;
 
 	friend FArchive& operator<<(FArchive& Ar, FItemInfoRecord& InfoRecord)
 	{
@@ -44,7 +42,8 @@ struct FItemInfoRecord
 		Ar << InfoRecord.DetailType;
 		Ar << InfoRecord.ItemName;
 		Ar << InfoRecord.ItemDesc;
-		Ar << InfoRecord.ByteData;
+		Ar << InfoRecord.HaveTooltip;
+		Ar << InfoRecord.TooltipText;
 		
 		return Ar;
 	}
@@ -59,31 +58,15 @@ class ROGUELIKE_API URoguelikeSaveGame : public USaveGame
 	
 public:
 	URoguelikeSaveGame();
-	UPROPERTY(BlueprintReadWrite)
-	FString SaveSlotName;
-	UPROPERTY(BlueprintReadWrite)
-	int32 SaveIndex;
-	UPROPERTY(SaveGame)
-	FInfoRecord InfoData;
-	UPROPERTY(BlueprintReadWrite)
-	FTransform PlayerTransform;
-	UPROPERTY(SaveGame)
-	TArray<UItemInfo*> ItemInfos;
-	UFUNCTION(BlueprintCallable)
-	bool SaveInfoRecord(FInfoRecord& Data);
-	UFUNCTION(BlueprintCallable)
-	bool SaveItemInfos(TArray<UItemInfo*>& Data);
-	void CreateItemInfoRecord(UItemInfo* Info, FItemInfoRecord& Record);
-	UFUNCTION(BlueprintCallable)
-	void LoadInfoRecord(FInfoRecord& Data);
-	TArray<UItemInfo*> LoadItemInfos();
-	UItemInfo* LoadItemInfoRecord(FItemInfoRecord& Record);
-	UPROPERTY(SaveGame)
-	TArray<FItemInfoRecord> InfoRecords;
-
 	
-	void SaveLoadInfoRecord(FArchive& Ar, FInfoRecord& Data);
-	void SaveLoadItemInfos(FArchive& Ar, TArray<UItemInfo*>& Data);
+	bool SaveInfoRecord(FInfoRecord& Data);
+	bool SaveItemInfos(TArray<UItemInfo*>& Data);
+	void LoadInfoRecord(OUT FInfoRecord& Data);
+	TArray<UItemInfo*> LoadItemInfos();
+
+private:
+	void CreateItemInfoRecord(UItemInfo* Info, FItemInfoRecord& Record);
+	
 	
 	
 };

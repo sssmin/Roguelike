@@ -1,12 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "Roguelike/Interface/DFSInterface.h"
 #include "Roguelike/Type/ItemManage.h"
+#include "Roguelike/Type/StatManage.h"
 #include "RLPlayerController.generated.h"
+
 
 
 DECLARE_DELEGATE(FRecallCompleteSuccessfully)
@@ -19,6 +20,7 @@ class UNoticeWidget;
 class URecallBarWidget;
 class APlayerCharacter;
 class UItemComponent;
+class UStatNoticeWidget;
 
 UCLASS()
 class ROGUELIKE_API ARLPlayerController : public APlayerController
@@ -40,6 +42,13 @@ public:
 	void RemoveSelectWidget() const;
 	void MoveMapFade() const;
 	void InitOnceItemWidget() const;
+	void SetStateIcon(EState State, UTexture2D* Icon) const;
+	void RemoveStateIcon(EState State) const;
+	void FlickerStateIcon(EState State) const;
+	void SetBuffIcon(EBuff Buff, UTexture2D* Icon) const;
+	void RemoveBuffIcon(EBuff Buff) const;
+	void FlickerBuffIcon(EBuff Buff) const;
+	void ShowStatNoticeWidget(EINFStackItem StatItem, const FString& StatName, const float CurrentValue, const float IncreaseValue);
 
 	/*------------*/
 	UFUNCTION(BlueprintCallable)
@@ -57,6 +66,7 @@ public:
 	void RecallStart();
 	FRecallCompleteSuccessfully RecallCompleteSuccessfully;
 	void LoadItem(TArray<UItemInfo*> ItemInfos);
+	
 protected:
 	virtual void OnPossess(APawn* aPawn) override;
 	void MoveForward(float Value);
@@ -114,6 +124,8 @@ private:
 	UParticleSystem* RecallEndParticle;
 	UPROPERTY()
 	TArray<FCell> Board;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UStatNoticeWidget> StatNoticeClass;
 	
 	FVector2Int MapSize;
 	int32 PlayerCell;

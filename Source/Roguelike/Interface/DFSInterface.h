@@ -30,7 +30,7 @@ struct FCell
 	ECellState CellState;
 	ECellType CellType;
 	bool IsCleared;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (Bitmask, BitmaskEnum = ETempWall))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (Bitmask, BitmaskEnum = "/Script/Roguelike.ETempWall"))
 	uint8 TempWall;
 	int32 CellClass;
 	bool SelectedBonusItem;

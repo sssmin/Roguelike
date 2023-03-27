@@ -2,6 +2,7 @@
 #include "BreathActor.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Roguelike/Roguelike.h"
 
 #include "Roguelike/Character/Player/PlayerCharacter.h"
 #include "Roguelike/Type/DamageType/AllDamageTypes.h"

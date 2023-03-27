@@ -84,7 +84,7 @@ void ABaseProjectile::OnHit(UPrimitiveComponent* OverlappedComponent, AActor* Ot
 		if (Cast<ABaseCharacter>(OtherActor)) //맞은게 상대
 		{
 			Cast<ABaseCharacter>(OtherActor)->OnHit(CombatManager, ItemManager, GetOwner(), this, GetDamageType());
-			CheckAttackerBeHealed(OtherActor, Cast<APlayerCharacter>(GetOwner()));
+			CheckAttackerBeHealed(Cast<ABaseCharacter>(GetOwner()));
 			PlayHitEffect();
 		}
 		else if (OtherActor != GetOwner()) //나 아닌 다른 무언가
@@ -112,13 +112,25 @@ void ABaseProjectile::Destroyed()
 	}
 }
 
-void ABaseProjectile::CheckAttackerBeHealed(AActor* Other, APlayerCharacter* Player)
+void ABaseProjectile::CheckAttackerBeHealed(ABaseCharacter* Attacker)
 {
-	if ((CombatManager.Element == EElement::Light) && Cast<AMonsterCharacter>(Other) && Player)
+	if ((CombatManager.Element == EElement::Light))
 	{
-		if (FMath::RandRange(1, 100) < 8)
+		if (Cast<AMonsterCharacter>(Attacker))
 		{
-			Player->HealByHit();
+			const float MonsterLightBuffHealPer = 15.f;
+			if (FMath::RandRange(1.f, 100.f) <= MonsterLightBuffHealPer)
+			{
+				Attacker->HealByHit(5.f);
+			}
+		}
+		else if (Cast<APlayerCharacter>(Attacker))
+		{
+			const float PlayerLightBuffHealPer = 8.75f;
+			if (FMath::RandRange(1.f, 100.f) <= PlayerLightBuffHealPer)
+			{
+				Attacker->HealByHit(7.5f);
+			}
 		}
 	}
 }

@@ -25,7 +25,7 @@ void URLGameInstance::Init()
 	
 	DFS = MakeShared<DFSAgrt>();
 	ListenerManager = NewObject<URLListenerManager>();
-	Initialize();
+	Initialize(0);
 }
 
 void URLGameInstance::LoadComplete(const float LoadTime, const FString& MapName)
@@ -59,25 +59,25 @@ void URLGameInstance::LoadComplete(const float LoadTime, const FString& MapName)
 
 void URLGameInstance::StartTutorial()
 {
-	Initialize();
+	Initialize(0);
+	StageLevel = 0;
 	GenerateTutorialMap();
 }
 
 void URLGameInstance::NewGame()
 {
-	Initialize();
-	
+	Initialize(1);
 	GenerateMap();
 	LoadState = ELoadState::NewGame;
 }
 
-void URLGameInstance::Initialize()
+void URLGameInstance::Initialize(int32 Level)
 {
 	Board.Empty();
 	StartPos = FVector::ZeroVector;
 	StartCell = 0;
 	PlayerCurrentCell = 0;
-	StageLevel = 1;
+	StageLevel = Level;
 	BossCell = 0;
 	BossPrevCell = 0;
 
@@ -146,12 +146,6 @@ void URLGameInstance::LoadGame()
 	LoadDataSetting(InfoRecord);
 	
 	TempItemInfos = SaveGame->LoadItemInfos();
-	UE_LOG(LogTemp, Warning, TEXT("Item Num : %d"), TempItemInfos.Num());
-	for (int32 i = 0; i< TempItemInfos.Num();i++)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ItemName : %s"), *TempItemInfos[i]->ItemName);
-		UE_LOG(LogTemp, Warning, TEXT("ItemDesc : %s"), *TempItemInfos[i]->ItemDesc);
-	}
 }
 
 void URLGameInstance::LoadDataSetting(const FInfoRecord& Record)
@@ -389,8 +383,17 @@ URLListenerManager* URLGameInstance::GetListenerManager() const
 
 bool URLGameInstance::CanSaveThisCell()
 {
+	bool HaveAnyState = false;
+	if (ListenerManager)
+	{
+		HaveAnyState = ListenerManager->HaveCCState();
+		if (HaveAnyState) return false;
+	}
+	if (StageLevel == 0) return false;
 	if (Board.IsValidIndex(PlayerCurrentCell))
+	{
 		return (Board[PlayerCurrentCell].IsCleared) || (Board[PlayerCurrentCell].CellType == ECellType::Bonus);
+	}
 	return false;
 }
 

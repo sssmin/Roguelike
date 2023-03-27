@@ -77,7 +77,7 @@ void UOnceItemListWidget::FirstItemButtonClick()
 		URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
 		if (GI && GI->GetListenerManager())
 		{
-			GI->GetListenerManager()->RequestItemSwap(SecondItem, TempSelectItem);
+			GI->GetListenerManager()->RequestItemSwap(FirstItem, TempSelectItem);
 			FirstItem = TempSelectItem;
 			SetButtonStyle(FirstItem->ItemIcon, FirstItemButton);
 			DeactivateItemList();

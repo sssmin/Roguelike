@@ -7,6 +7,7 @@
 #include "HealItem.generated.h"
 
 class UParticleSystemComponent;
+class USoundCue;
 
 UCLASS()
 class ROGUELIKE_API AHealItem : public ABaseItem
@@ -25,5 +26,7 @@ private:
 	UParticleSystem* HealedParticle;
 	UPROPERTY()
 	UParticleSystemComponent* HealItemParticleComp;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	USoundCue* DestroySoundCue;
 	
 };

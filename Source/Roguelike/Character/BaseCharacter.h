@@ -1,8 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
-#include "Roguelike/Roguelike.h"
 #include "GameFramework/Character.h"
 #include "Roguelike/Type/StatManage.h"
 #include "Roguelike/Type/ItemManage.h"
@@ -27,7 +25,14 @@ public:
 	virtual void Dead();
 	bool IsDead();
 	FCombatManager GetCombatManager() const;
-	virtual void ShowDamageWidget(float Damage, bool IsCritical);
+	virtual void ShowNumWidget(float Damage, bool IsCritical, bool IsHeal, bool IsDodge);
+	virtual void SetStateIcon(EState State);
+	virtual void RemoveStateIcon(EState State);
+	virtual void FlickerStateIcon(EState State);
+	virtual void SetBuffIcon(EBuff Buff);
+	virtual void RemoveBuffIcon(EBuff Buff);
+	virtual void FlickerBuffIcon(EBuff Buff);
+	virtual void HealByHit(float Rate) const;
 	
 protected:
 	virtual void Destroyed() override;
@@ -46,4 +51,5 @@ public:
 	UFUNCTION(BlueprintCallable)
 	UManagerComponent* GetManagerComp() const { return ManagerComponent;  }
 	TSubclassOf<UObject> GetDamageWidgetActorClass() const { return DamageWidgetActorClass; }
+	
 };

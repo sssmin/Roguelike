@@ -38,7 +38,7 @@ void AOnetoAnotherProjectile::OnHit(UPrimitiveComponent* OverlappedComponent, AA
 		if (Cast<ABaseCharacter>(OtherActor)) //������ ���
 		{
 			Cast<ABaseCharacter>(OtherActor)->OnHit(CombatManager, ItemManager, GetOwner(), this, USkillDamageType::StaticClass());
-			CheckAttackerBeHealed(OtherActor, Cast<APlayerCharacter>(GetOwner()));
+			CheckAttackerBeHealed(Cast<ABaseCharacter>(GetOwner()));
 			PlayHitEffect();
 		}
 		else if (OtherActor != GetOwner()) //�� �ƴ� �ٸ� ����

@@ -4,17 +4,9 @@
 #include "Serialization/BufferArchive.h"
 #include "Serialization/ObjectWriter.h"
 
-void CreateInfoDataRecord(FInfoRecord& Data)
-{
-	//FMemoryWriter MemoryWriter = FMemoryWriter(Data.Data, true);
-	//RLArchive Arc = RLArchive(MemoryWriter);
-
-}
 
 URoguelikeSaveGame::URoguelikeSaveGame()
 {
-	SaveSlotName = "InfoDataSaveSlot";
-	SaveIndex = 0;
 }
 
 bool URoguelikeSaveGame::SaveInfoRecord(FInfoRecord& Data)
@@ -22,25 +14,39 @@ bool URoguelikeSaveGame::SaveInfoRecord(FInfoRecord& Data)
 	bool Result = false;
 	const FString FilePath = FPaths::ProjectSavedDir() + INFO_RECORD_SAVE_FILE_NAME;
 
-	FBufferArchive BinaryData;
-	FMemoryWriter Writer = FMemoryWriter(BinaryData, true);
-	RLArchive Arc = RLArchive(Writer);
+	FBufferArchive ToBinary;
+	RLArchive Arc = RLArchive(ToBinary);
 
-	Writer << Data;
+	ToBinary << Data;
 	
-	Result = FFileHelper::SaveArrayToFile(BinaryData, *FilePath);
+	if (ToBinary.Num() <= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No exist"));
+		return false;
+	}
+	
+	Result = FFileHelper::SaveArrayToFile(ToBinary, *FilePath);
+	if (Result)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Other Info Save Success"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Other Info Save Fail"));
+	}
 
-	BinaryData.FlushCache();
-	BinaryData.Empty();
+	ToBinary.FlushCache();
+	ToBinary.Empty();
+	ToBinary.Close();
 
 	return Result;
 }
 
 bool URoguelikeSaveGame::SaveItemInfos(TArray<UItemInfo*>& Data)
 {
+	bool Result = false;
 	const FString FilePath = FPaths::ProjectSavedDir() + ITEM_INFO_SAVE_FILE_NAME;
-	
-	InfoRecords.Empty();
+	TArray<FItemInfoRecord> InfoRecords;
 
 	for (auto ItemInfo : Data)
 	{
@@ -49,16 +55,17 @@ bool URoguelikeSaveGame::SaveItemInfos(TArray<UItemInfo*>& Data)
 		InfoRecords.Add(Rec);
 	}
 	
-	FBufferArchive BinaryData;
-	BinaryData << InfoRecords;
+	FBufferArchive ToBinary;
+	ToBinary << InfoRecords; //직렬화
 
-	if (BinaryData.Num() <= 0)
+	if (ToBinary.Num() <= 0)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No Data!"));
+		UE_LOG(LogTemp, Warning, TEXT("No exist"));
 		return false;
 	}
-
-	if (FFileHelper::SaveArrayToFile(BinaryData, *FilePath))
+	
+	Result = FFileHelper::SaveArrayToFile(ToBinary, *FilePath);
+	if (Result)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Item Info Save Success"));
 	}
@@ -67,44 +74,48 @@ bool URoguelikeSaveGame::SaveItemInfos(TArray<UItemInfo*>& Data)
 		UE_LOG(LogTemp, Warning, TEXT("Item Info Save Fail"));
 	}
 
-	BinaryData.FlushCache();
-	BinaryData.Empty();
+	ToBinary.FlushCache();
+	ToBinary.Empty();
+	ToBinary.Close();
 
-	return true;
+	return Result;
 }
 
 void URoguelikeSaveGame::CreateItemInfoRecord(UItemInfo* Info, FItemInfoRecord& Record)
 {
-	FObjectWriter MemoryWriter = FObjectWriter(Record.ByteData);
-	RLArchive Arc = RLArchive(MemoryWriter);
-
 	Record.ItemsType = Info->ItemsType;
 	Record.DetailType = Info->DetailType;
 	Record.ItemName = Info->ItemName;
 	Record.ItemDesc = Info->ItemDesc;
-	
-	Info->Serialize(Arc);
+	Record.HaveTooltip = Info->HaveTooltip;
+	Record.TooltipText = Info->TooltipText;
 }
 
-void URoguelikeSaveGame::LoadInfoRecord(FInfoRecord& Data)
+void URoguelikeSaveGame::LoadInfoRecord(OUT FInfoRecord& Data)
 {
 	const FString FilePath = FPaths::ProjectSavedDir() + INFO_RECORD_SAVE_FILE_NAME;
 
 	FBufferArchive BinaryData;
 
-	FFileHelper::LoadFileToArray(BinaryData, *FilePath);
+	if (!FFileHelper::LoadFileToArray(BinaryData, *FilePath))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Wrong file"));
+		return;
+	}
+
+	if (BinaryData.Num() <= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No exist"));
+		return; 
+	}
 
 	FMemoryReader FromBinary = FMemoryReader(BinaryData, true);
 	RLArchive Arc = RLArchive(FromBinary);
 	FromBinary.Seek(0);
 	
+	FromBinary << Data;
 	
-	SaveLoadInfoRecord(FromBinary, Data);
-	
-	FromBinary.FlushCache();
 	BinaryData.Empty();
-	FromBinary.Close();
-
 }
 
 TArray<UItemInfo*> URoguelikeSaveGame::LoadItemInfos()
@@ -121,19 +132,19 @@ TArray<UItemInfo*> URoguelikeSaveGame::LoadItemInfos()
 	
 	if (BinaryData.Num() <= 0)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("갯수 없음!"));
+		UE_LOG(LogTemp, Warning, TEXT("No exist"));
 		return TArray<UItemInfo*>();; 
 	}
 	FMemoryReader FromBinary = FMemoryReader(BinaryData, true); 
 	FromBinary.Seek(0);
-	
+	TArray<FItemInfoRecord> InfoRecords;
 	FromBinary << InfoRecords;
 	
 	TArray<UItemInfo*> Data;
 	
 	for (auto InfoRecord : InfoRecords)
 	{
-		Data.Add(UItemInfo::ConstructItemInfo(InfoRecord.ItemsType, InfoRecord.DetailType, InfoRecord.ItemName, InfoRecord.ItemDesc, nullptr));
+		Data.Add(UItemInfo::ConstructItemInfo(InfoRecord.ItemsType, InfoRecord.DetailType, InfoRecord.ItemName, InfoRecord.ItemDesc, nullptr, InfoRecord.HaveTooltip, InfoRecord.TooltipText));
 	}
 
 	BinaryData.Empty();
@@ -141,9 +152,3 @@ TArray<UItemInfo*> URoguelikeSaveGame::LoadItemInfos()
 
 	return Data;
 }
-
-void URoguelikeSaveGame::SaveLoadInfoRecord(FArchive& Ar, FInfoRecord& Data)
-{
-	Ar << Data;
-}
-

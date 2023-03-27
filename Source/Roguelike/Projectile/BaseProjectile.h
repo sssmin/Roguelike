@@ -11,7 +11,7 @@
 class UProjectileMovementComponent;
 class USphereComponent;
 class UParticleSystem;
-class APlayerCharacter;
+class ABaseCharacter;
 
 UCLASS()
 class ROGUELIKE_API ABaseProjectile : public AActor
@@ -33,13 +33,12 @@ protected:
 	virtual void OnHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	void PlayHitEffect();
 	void PlayDestroyEffect();
-	void CheckAttackerBeHealed(AActor* Other, APlayerCharacter* Player);
+	void CheckAttackerBeHealed(ABaseCharacter* Attacker);
 	
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UProjectileMovementComponent* PMC;
 	FCombatManager CombatManager;
 	FItemManager ItemManager;
-	
 
 private:	
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))

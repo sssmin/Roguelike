@@ -45,7 +45,6 @@ void ACellActor::CreateTutorialPortal(uint8 Dir)
 {
 	if (PortalComp)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("포탈 생성"));
 		PortalComp->CreateTutorialPortal(Dir);
 	}
 }

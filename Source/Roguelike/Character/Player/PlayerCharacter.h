@@ -25,7 +25,6 @@ public:
 	void GetElementFromItem(EElement Element) const;
 	void IncreaseMovementSpeed() const;
 	void DecreaseMovementSpeed() const;
-	void HealByHit() const;
 	void HealByItem() const;
 	void RequestItemSwap(const UItemInfo* OldItem, const UItemInfo* NewItem) const;
 	UFUNCTION(BlueprintImplementableEvent)
@@ -33,7 +32,15 @@ public:
 	void OnSkillHit(AActor* Attacker, AActor* DamageCauser, const FCombatManager& EnemyManager, TSubclassOf<UDamageType> DamageType);
 	virtual void Dead() override;
 	void StopFire();
-	virtual void ShowDamageWidget(float Damage, bool IsCritical) override;
+	virtual void ShowNumWidget(float Damage, bool IsCritical, bool IsHeal, bool IsDodge) override;
+	void ApplyMovementBuff() const;
+	virtual void SetStateIcon(EState State) override;
+	virtual void RemoveStateIcon(EState State) override;
+	virtual void FlickerStateIcon(EState State) override;
+	virtual void SetBuffIcon(EBuff Buff) override;
+	virtual void RemoveBuffIcon(EBuff Buff) override;
+	virtual void FlickerBuffIcon(EBuff Buff) override;
+	
 protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void Attack() override;
@@ -64,6 +71,7 @@ private:
 	void Test1();
 	void Test2();
 	void Test3();
+
 	
 public:
 	FRotator GetLookRot() const { return LookRot; }

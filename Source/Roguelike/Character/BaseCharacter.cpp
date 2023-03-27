@@ -60,7 +60,6 @@ void ABaseCharacter::OnExplodeHit(AActor* DamagedActor, float Damage, const UDam
 	check(ManagerComponent);
 	const FCombatManager EnemyCombatManager = GetCombatManager();
 	
-	UE_LOG(LogTemp, Warning, TEXT("ExlpodeHit"));
 	ManagerComponent->ReceiveDamage(EnemyCombatManager, FItemManager(), DamagedActor, DamageCauser, DamageType->GetClass());
 }
 
@@ -73,9 +72,42 @@ FCombatManager ABaseCharacter::GetCombatManager() const
 	return FCombatManager();
 }
 
-void ABaseCharacter::ShowDamageWidget(float Damage, bool IsCritical)
+void ABaseCharacter::ShowNumWidget(float Damage, bool IsCritical, bool IsHeal, bool IsDodge)
 {
 }
+
+void ABaseCharacter::SetStateIcon(EState State)
+{
+}
+
+void ABaseCharacter::RemoveStateIcon(EState State)
+{
+}
+
+void ABaseCharacter::FlickerStateIcon(EState State)
+{
+}
+
+void ABaseCharacter::SetBuffIcon(EBuff Buff)
+{
+}
+
+void ABaseCharacter::RemoveBuffIcon(EBuff Buff)
+{
+}
+
+void ABaseCharacter::FlickerBuffIcon(EBuff Buff)
+{
+}
+
+void ABaseCharacter::HealByHit(float Rate) const
+{
+	if (ManagerComponent)
+	{
+		ManagerComponent->HealByRate(Rate);
+	}
+}
+
 
 void ABaseCharacter::Destroyed()
 {

@@ -20,6 +20,7 @@
 #include "DrawDebugHelpers.h"
 #include "Components/WidgetComponent.h"
 #include "Roguelike/Actor/DamageWidgetActor.h"
+#include "Roguelike/Game/RLMainGameMode.h"
 #include "Roguelike/Game/RLTutorialGameMode.h"
 #include "Roguelike/Game/TutorialManager.h"
 #include "Roguelike/PlayerController/RLPlayerController.h"
@@ -134,6 +135,7 @@ void APlayerCharacter::Test1()
 	// 	Params,
 	// 	Result
 	// );
+	ManagerComponent->HealByRate(100.f);
 	
 }
 
@@ -147,7 +149,12 @@ void APlayerCharacter::Test2()
 	{
 		Cast<ARLPlayerController>(GetController())->ShowSelectItemWidget(false);
 	}
+	// GetWorld()->GetTimerManager().SetTimer(TestTimerHandle, [this]()
+	// 		{
+	// 			UE_LOG(LogTemp, Warning, TEXT("Timer Call"));
+	// 		}, 10.f, false);
 }
+
 
 void APlayerCharacter::Test3()
 {
@@ -213,7 +220,7 @@ void APlayerCharacter::StopFire()
 	AttackReleased();
 }
 
-void APlayerCharacter::ShowDamageWidget(float Damage, bool IsCritical)
+void APlayerCharacter::ShowNumWidget(float Damage, bool IsCritical, bool IsHeal, bool IsDodge)
 {
 	FActorSpawnParameters Params;
 	FTransform SpawnTransform = GetActorTransform();
@@ -226,21 +233,73 @@ void APlayerCharacter::ShowDamageWidget(float Damage, bool IsCritical)
 		ADamageWidgetActor* DamageWidgetActor = GetWorld()->SpawnActor<ADamageWidgetActor>(GetDamageWidgetActorClass(), SpawnTransform, Params);
 		if (DamageWidgetActor)
 		{
-			UWidgetComponent* WidgetComp = DamageWidgetActor->GetDamageWidgetComp();
-			if (WidgetComp)
-			{
-				UUserWidget* Widget = WidgetComp->GetWidget();
-				if (Widget)
-				{
-					UDamageWidget* DamageWidget = Cast<UDamageWidget>(Widget);
-					if (DamageWidget)
-					{
-						DamageWidget->Play(true, IsCritical, Damage);
-					}
-				}
-			}
+			DamageWidgetActor->PlayNumWidget(true, IsCritical, Damage, IsHeal, IsDodge);
 		}
 	} 
+}
+
+void APlayerCharacter::ApplyMovementBuff() const
+{
+	if (ManagerComponent)
+	{
+		ManagerComponent->ApplyMovementBuff();
+	}
+}
+
+void APlayerCharacter::SetStateIcon(EState State)
+{
+	ARLMainGameMode* MainGM = Cast<ARLMainGameMode>(UGameplayStatics::GetGameMode(this));
+	if (MainGM && Cast<ARLPlayerController>(PC))
+	{
+		UTexture2D* Image = MainGM->GetStateImage(State);
+		if (Image)
+		{
+			Cast<ARLPlayerController>(PC)->SetStateIcon(State, Image);	
+		}
+		
+	}
+}
+
+void APlayerCharacter::RemoveStateIcon(EState State)
+{
+	if (Cast<ARLPlayerController>(PC))
+	{
+		Cast<ARLPlayerController>(PC)->RemoveStateIcon(State);
+	}
+}
+
+void APlayerCharacter::FlickerStateIcon(EState State)
+{
+	if (Cast<ARLPlayerController>(PC))
+	{
+		Cast<ARLPlayerController>(PC)->FlickerStateIcon(State);
+	}
+}
+
+void APlayerCharacter::SetBuffIcon(EBuff Buff)
+{
+	ARLMainGameMode* MainGM = Cast<ARLMainGameMode>(UGameplayStatics::GetGameMode(this));
+	if (MainGM && Cast<ARLPlayerController>(PC))
+	{
+		UTexture2D* Image = MainGM->GetBuffImage(Buff);
+		Cast<ARLPlayerController>(PC)->SetBuffIcon(Buff, Image);
+	}
+}
+
+void APlayerCharacter::RemoveBuffIcon(EBuff Buff)
+{
+	if (Cast<ARLPlayerController>(PC))
+	{
+		Cast<ARLPlayerController>(PC)->RemoveBuffIcon(Buff);
+	}
+}
+
+void APlayerCharacter::FlickerBuffIcon(EBuff Buff)
+{
+	if (Cast<ARLPlayerController>(PC))
+	{
+		Cast<ARLPlayerController>(PC)->FlickerBuffIcon(Buff);
+	}
 }
 
 void APlayerCharacter::GetElementFromItem(EElement Element) const
@@ -267,19 +326,11 @@ void APlayerCharacter::DecreaseMovementSpeed() const
 	}
 }
 
-void APlayerCharacter::HealByHit() const
-{
-	if (ManagerComponent)
-	{
-		ManagerComponent->Heal(7.5f);
-	}
-}
-
 void APlayerCharacter::HealByItem() const
 {
 	if (ManagerComponent)
 	{
-		ManagerComponent->Heal(30.f);
+		ManagerComponent->HealByRate(30.f);
 	}
 	ARLMainGameState* GSB = Cast<ARLMainGameState>(UGameplayStatics::GetGameState(this));
 	if (GSB)

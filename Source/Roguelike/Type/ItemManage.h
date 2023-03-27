@@ -82,9 +82,9 @@ struct FItemManager
 	GENERATED_BODY()
 	FItemManager() : OnceEquippedItem(0), EquippedItemCount(0) {}
 
-	UPROPERTY(Meta = (Bitmask, BitmaskEnum = EOnceEquippedItem))
+	UPROPERTY(EditAnywhere, Meta = (Bitmask, BitmaskEnum = EOnceEquippedItem))
 	uint8 OnceEquippedItem;
-
+	UPROPERTY(VisibleAnywhere)
 	int8 EquippedItemCount;
 
 	friend FArchive& operator<<(FArchive& Ar, FItemManager& ItemManager)
@@ -109,21 +109,17 @@ public:
 		ItemIcon(nullptr) {}
 	
 	EItemType ItemsType;
-
 	FItemType DetailType;
-
 	FString ItemName;
-
 	FString ItemDesc;
-
 	UTexture2D* ItemIcon;
+	bool HaveTooltip;
+	FString TooltipText;
 
-	TArray<uint8> ByteData;
-
-	static UItemInfo* ConstructItemInfo(EItemType InItemType, FItemType InDetailType, FString InItemName, FString InItemDesc, UTexture2D* InItemIcon)
+	static UItemInfo* ConstructItemInfo(EItemType InItemType, FItemType InDetailType, FString InItemName, FString InItemDesc, UTexture2D* InItemIcon, bool InHaveTooltip, FString InTooltipText)
 	{
 		UItemInfo* Info = NewObject<UItemInfo>();
-		Info->Init(InItemType, InDetailType, InItemName, InItemDesc, InItemIcon);
+		Info->Init(InItemType, InDetailType, InItemName, InItemDesc, InItemIcon, InHaveTooltip, InTooltipText);
 		return Info;
 	}
 
@@ -135,18 +131,22 @@ public:
 		Ar << Info.ItemName;
 		Ar << Info.ItemDesc;
 		Ar << Info.ItemIcon;
+		Ar << Info.HaveTooltip;
+		Ar << Info.TooltipText;
 		
 		return Ar;
 	}
 
 private:
-	void Init(EItemType InItemType, FItemType InDetailType, FString InItemName, FString InItemDesc, UTexture2D* InItemIcon)
+	void Init(EItemType InItemType, FItemType InDetailType, FString InItemName, FString InItemDesc, UTexture2D* InItemIcon, bool InHaveTooltip, FString InTooltipText)
 	{
 		ItemsType = InItemType;
 		DetailType = InDetailType;
 		ItemName = InItemName;
 		ItemDesc = InItemDesc;
 		ItemIcon = InItemIcon;
+		HaveTooltip = InHaveTooltip;
+		TooltipText = InTooltipText;
 	}
 };
 
@@ -177,6 +177,12 @@ struct FItemInfoTable : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UTexture2D* ItemIcon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool HaveTooltip;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString TooltipText;
 
 };
 

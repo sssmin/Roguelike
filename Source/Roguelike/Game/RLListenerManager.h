@@ -17,6 +17,7 @@ DECLARE_MULTICAST_DELEGATE(FOnLoadGame);
 DECLARE_MULTICAST_DELEGATE(FOnStartTutorial);
 DECLARE_DELEGATE(FOnStepCompleted)
 DECLARE_DELEGATE(FOnTutorialCompleted);
+DECLARE_DELEGATE_RetVal(bool, FHaveCCState)
 
 UCLASS()
 class ROGUELIKE_API URLListenerManager : public UObject
@@ -43,6 +44,9 @@ public:
 	FOnStepCompleted OnStepCompletedDelegate;
 	void OnStepCompleted() const;
 	FOnTutorialCompleted OnTutorialCompletedDelegate;
+	UFUNCTION(BlueprintCallable)
 	void OnTutorialCompleted() const;
+	FHaveCCState HaveCCStateDelegate;
+	bool HaveCCState() const;
 	
 };

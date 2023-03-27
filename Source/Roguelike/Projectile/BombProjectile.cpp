@@ -61,7 +61,7 @@ void ABombProjectile::OnHit(UPrimitiveComponent* OverlappedComponent, AActor* Ot
 		{
 			Cast<ABaseCharacter>(OtherActor)->OnHit(CombatManager, ItemManager, GetOwner(), this, UCurrentHPRatioDamageType::StaticClass());
 			
-			CheckAttackerBeHealed(OtherActor, Cast<APlayerCharacter>(GetOwner()));
+			CheckAttackerBeHealed(Cast<ABaseCharacter>(GetOwner()));
 			PlayHitEffect();
 		}
 	}

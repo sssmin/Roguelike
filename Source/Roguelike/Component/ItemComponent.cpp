@@ -14,8 +14,6 @@ UItemComponent::UItemComponent()
 	bWantsInitializeComponent = true;
 
 	ItemManager = FItemManager();
-	IncreaseAtkValue = 3.f;
-	IncreaseMaxHpValue = 15.f;
 }
 
 void UItemComponent::InitializeComponent()
@@ -68,6 +66,24 @@ void UItemComponent::RemoveOnceItem(uint8 Item)
 	ItemManager.OnceEquippedItem ^= Item;
 }
 
+float UItemComponent::CalcStatValuePer(TArray<float> Per, TArray<int32> Value)
+{
+	for (int32 i = 0; i < Per.Num() + 1; ++i)
+	{
+		const float RandValue = FMath::Rand() % 100 + 1;
+		float AddValue = 0.f;
+		for (int32 j = 0; j < Per.Num(); ++j)
+		{
+			AddValue += Per[j];
+			if (RandValue <= AddValue)
+			{
+				return Value[j];
+			}
+		}
+	}
+	return 0.f;
+}
+
 void UItemComponent::ApplyInfItem(EINFStackItem Item)
 {
 	if (ManagerComp)
@@ -75,10 +91,22 @@ void UItemComponent::ApplyInfItem(EINFStackItem Item)
 		switch (Item)
 		{
 		case EINFStackItem::IncreaseAtk:
-			ManagerComp->UpdateCurrentAtk(IncreaseAtkValue);
+			{
+				const TArray<float> Per = { 3.f, 6.f, 9.f, 10.f, 12.f, 30.f, 40.f };
+				const TArray<int32> Value = { 9, 8, 7, 6, 5, 3, 2 };
+				const float AddToValue = CalcStatValuePer(Per, Value);
+				ManagerComp->UpdateCurrentAtk(AddToValue);
+			}
 			break;
 		case EINFStackItem::IncreaseMaxHp:
-			ManagerComp->UpdateMaxHP(IncreaseMaxHpValue);
+			{
+				const TArray<float> Per = { 3.f, 6.f, 9.f, 10.f, 12.f, 30.f, 40.f };
+				const TArray<int32> Value = { 28, 24, 21, 18, 15, 12, 10 };
+				const float AddToValue = CalcStatValuePer(Per, Value);
+				ManagerComp->UpdateMaxHP(AddToValue);
+				//체력회복
+				ManagerComp->HealByValue(AddToValue);
+			}
 			break;
 		}
 	}
@@ -249,6 +277,7 @@ void UItemComponent::InitEquipItems()
 {
 	ItemManager.OnceEquippedItem = 0;
 	ItemManager.EquippedItemCount = 0;
+	ItemInfos.Empty();
 	ARLPlayerController* RLPC = Cast<ARLPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
 	if (RLPC)
 	{

@@ -18,6 +18,10 @@ void USelectItemCellWidget::Init(UItemInfo* Item, bool IsTutorial)
 
 	if (ItemButton && ItemDesc && ItemName && ItemInfo)
 	{
+		if (ItemInfo->HaveTooltip)
+		{
+			ItemButton->SetToolTipText(FText::FromString(ItemInfo->TooltipText));
+		}
 		ItemDesc->SetText(FText::FromString(ItemInfo->ItemDesc));
 		ItemName->SetText(FText::FromString(ItemInfo->ItemName));
 		ItemButton->OnClicked.AddUniqueDynamic(this, &ThisClass::SelectItem);

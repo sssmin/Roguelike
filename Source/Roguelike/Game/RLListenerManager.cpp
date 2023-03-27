@@ -54,3 +54,8 @@ void URLListenerManager::OnTutorialCompleted() const
 {
 	OnTutorialCompletedDelegate.ExecuteIfBound();
 }
+
+bool URLListenerManager::HaveCCState() const
+{
+	return HaveCCStateDelegate.IsBound() ? HaveCCStateDelegate.Execute() : false;
+}

@@ -5,7 +5,7 @@
 #include "MonsterCharacter.h"
 #include "MonsterTurret.generated.h"
 
-class ATurretProjectile;
+class USoundCue;
 
 UCLASS()
 class ROGUELIKE_API AMonsterTurret : public AMonsterCharacter
@@ -16,9 +16,15 @@ public:
 	AMonsterTurret();
 	virtual void GiveBTToController() override;
 	virtual void SpecialAttack(AActor* Target) override;
+	virtual void Destroyed() override;
+
 
 private:
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UBehaviorTree* TurretBT;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	USoundCue* DestroySoundCue;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* DestroyParticle;
 	
 };

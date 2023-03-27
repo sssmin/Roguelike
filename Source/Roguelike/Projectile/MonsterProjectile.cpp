@@ -2,7 +2,7 @@
 #include "MonsterProjectile.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Kismet/KismetMathLibrary.h"
+#include "Sound/SoundCue.h"
 
 AMonsterProjectile::AMonsterProjectile()
 {
@@ -13,6 +13,12 @@ AMonsterProjectile::AMonsterProjectile()
 		PMC->InitialSpeed = 1200.f;
 		PMC->MaxSpeed = 1200.f;
 	}
+	static ConstructorHelpers::FObjectFinder<USoundCue> Sound(TEXT("/Game/Resource/Sound/Cue/MonsterNormalAttack_Cue"));
+	if (Sound.Succeeded())
+	{
+		SpawnSoundCue = Sound.Object;
+	}
+		
 }
 
 void AMonsterProjectile::BeginPlay()
@@ -20,6 +26,10 @@ void AMonsterProjectile::BeginPlay()
 	Super::BeginPlay();
 	
 	SpawnParticle();
+	if (SpawnSoundCue)
+	{
+		UGameplayStatics::PlaySound2D(this, SpawnSoundCue);
+	}
 }
 
 void AMonsterProjectile::Destroyed()

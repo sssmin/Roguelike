@@ -50,7 +50,7 @@ struct FInfoRecord
 		Ar << InfoRecord.ItemManager;
 		Ar << InfoRecord.Buff;
 		Ar << InfoRecord.PlayerTransform;
-		Ar << InfoRecord.TempDashChargeNum;;
+		Ar << InfoRecord.TempDashChargeNum;
 
 		return Ar;
 	}

@@ -22,8 +22,6 @@ void UBTServiceCheckAttackCooldown::TickNode(UBehaviorTreeComponent& OwnerComp, 
 		bool CanSpecialAttack = BBComp->GetValueAsBool(CanSpecialAttackKey.SelectedKeyName);
 		if (!CanSpecialAttack)
 		{
-			
-			
 			bSpecialAttackCooldown = true;
 			if (Cast<AMonsterCharacter>(OwnerComp.GetOwner()->GetInstigator()))
 			{
@@ -36,7 +34,6 @@ void UBTServiceCheckAttackCooldown::TickNode(UBehaviorTreeComponent& OwnerComp, 
 					SetRandCooltime(BBComp);
 				}
 			}
-			
 		}
 	}
 }
@@ -45,18 +42,20 @@ void UBTServiceCheckAttackCooldown::SetFixCooltime(UBlackboardComponent* BBComp)
 {
 	Cooltime = FMath::RandRange(1.f, 1.5f);
 	FTimerHandle TimerHandle;
-	FTimerDelegate TimerDelegate;
-	TimerDelegate.BindUFunction(this, FName("CooldownFinished"), BBComp);
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, Cooltime, false);
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, BBComp]()
+		{
+				CooldownFinished(BBComp);
+		}, Cooltime, false);
 }
 
 void UBTServiceCheckAttackCooldown::SetRandCooltime(UBlackboardComponent* BBComp)
 {
 	Cooltime = FMath::RandRange(2.f, 4.f);
 	FTimerHandle TimerHandle;
-	FTimerDelegate TimerDelegate;
-	TimerDelegate.BindUFunction(this, FName("CooldownFinished"), BBComp);
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, Cooltime, false);
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, BBComp]()
+		{
+				CooldownFinished(BBComp);
+		}, Cooltime, false);
 }
 
 void UBTServiceCheckAttackCooldown::CooldownFinished(UBlackboardComponent* BBComp)

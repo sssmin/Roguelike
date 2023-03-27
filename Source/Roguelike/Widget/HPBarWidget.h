@@ -17,6 +17,9 @@ class ROGUELIKE_API UHPBarWidget : public UUserWidget
 public:
 	void SetOwnerPlayer(APawn* OwnerPawn);
 	virtual void NativeConstruct() override;
+	void SetImage(UTexture2D* Icon);
+	void RemoveImage();
+	void StartFlicker();
 	
 private:
 	UFUNCTION()
@@ -24,8 +27,10 @@ private:
 	
 	UPROPERTY(Meta = (BindWidget))
 	UProgressBar* HPBar;
-	UPROPERTY(Meta = (BindWidget))
-	UImage* Status;
+	UPROPERTY(BlueprintReadOnly, Meta = (BindWidget, AllowPrivateAccess = "true"))
+	UImage* StateIcon;
+	UPROPERTY(Transient, Meta = (BindWidgetAnim))
+	UWidgetAnimation* Flicker;
 	
 public:
 	void SetMonsterType(EMonsterType Type);

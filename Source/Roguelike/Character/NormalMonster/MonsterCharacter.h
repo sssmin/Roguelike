@@ -8,6 +8,7 @@
 #include "Roguelike/Type/DTForGM.h"
 #include "MonsterCharacter.generated.h"
 
+class USoundCue;
 class UWidgetComponent;
 class UHPBarWidget;
 class UBossHPBarWidget;
@@ -37,7 +38,14 @@ public:
 	virtual void Dead() override;
 	virtual void SetIsDeadAnimInst();
 	virtual void SetIsDeadBB();
-	virtual void ShowDamageWidget(float Damage, bool IsCritical) override;
+	virtual void ShowNumWidget(float Damage, bool IsCritical, bool IsHeal, bool IsDodge) override;
+	virtual void SetStateIcon(EState State) override;
+	virtual void RemoveStateIcon(EState State) override;
+	virtual void FlickerStateIcon(EState State) override;
+	virtual void SetBuffIcon(EBuff Buff) override;
+	virtual void RemoveBuffIcon(EBuff Buff) override;
+	virtual void FlickerBuffIcon(EBuff Buff) override;
+	
 protected:
 	void FireOneToTwo(TSubclassOf<UDamageType> DamageType);
 	void ThrowBomb(AActor* Target, TSubclassOf<UDamageType> DamageType);
@@ -46,13 +54,13 @@ protected:
 	void FireSpread8PartsFromCenter(TSubclassOf<UDamageType> DamageType);
 	void Fire3Projectile(TSubclassOf<UDamageType> DamageType);
 	void Meteor(const TSubclassOf<AMeteorActor>& Actor, AActor* Target);
-	void Teleport();
 	void RemoveHPWidget();
 	UPROPERTY()
 	ARLMonsterAIController* RLAIController;
 	
 private:
 	void ExecuteDestroy();
+	void CalcGiveBuffPer();
 	
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UMonsterCombatComponent* MonsterCombatComp;
@@ -66,9 +74,16 @@ private:
 	UBehaviorTree* BT;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AMeteorActor> MeteorActorClass;
+	UPROPERTY()
+	UHPBarWidget* HPBarWidget;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	USoundCue* HealSoundCue;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* HealParticle;
 	
 	float DefaultSpeed;
 	float PatrolSpeed;
+	UPROPERTY(VisibleAnywhere)
 	EMonsterType MonsterType;
 	
 public:

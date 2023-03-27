@@ -27,7 +27,7 @@ void ATurretProjectile::OnHit(UPrimitiveComponent* OverlappedComponent, AActor* 
 		if (Cast<ABaseCharacter>(OtherActor)) //맞은게 상대
 		{
 			Cast<ABaseCharacter>(OtherActor)->OnHit(CombatManager, ItemManager, GetOwner(), this, UCurrentHPRatioDamageType::StaticClass());
-			CheckAttackerBeHealed(OtherActor, Cast<APlayerCharacter>(GetOwner()));
+			CheckAttackerBeHealed(Cast<ABaseCharacter>(GetOwner()));
 			PlayHitEffect();
 		}
 		else if (OtherActor != GetOwner()) //나 아닌 다른 무언가

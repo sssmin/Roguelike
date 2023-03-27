@@ -27,10 +27,11 @@ void UBTServiceCheckBossSkillCooldown::TickNode(UBehaviorTreeComponent& OwnerCom
 void UBTServiceCheckBossSkillCooldown::SetCooltime(UBlackboardComponent* BBComp)
 {
 	FTimerHandle TimerHandle;
-	FTimerDelegate TimerDelegate;
-	TimerDelegate.BindUFunction(this, FName("CooldownFinished"), BBComp);
 	Cooltime = FMath::RandRange(2.f, 3.f);
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, Cooltime, false);
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, BBComp]()
+		{
+			CooldownFinished(BBComp);
+		}, Cooltime, false);
 }
 
 void UBTServiceCheckBossSkillCooldown::CooldownFinished(UBlackboardComponent* BBComp)

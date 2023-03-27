@@ -5,6 +5,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Roguelike/Roguelike.h"
 
 #include "Roguelike/Game/RLGameInstance.h"
 #include "Roguelike/Game/RLMainGameMode.h"
@@ -13,6 +14,7 @@
 #include "Roguelike/Widget/SelectItemWidget.h"
 #include "Roguelike/Widget/NoticeWidget.h"
 #include "Roguelike/Widget/RecallBarWidget.h"
+#include "Roguelike/Widget/StatNoticeWidget.h"
 #include "Roguelike/Actor/PlayersCamera.h"
 #include "Roguelike/Character/Player/PlayerCharacter.h"
 #include "Roguelike/Game/RLListenerManager.h"
@@ -412,6 +414,72 @@ void ARLPlayerController::InitOnceItemWidget() const
 	if (MainUIWidget)
 	{
 		MainUIWidget->InitOnceItemList();
+	}
+}
+
+void ARLPlayerController::SetStateIcon(EState State, UTexture2D* Icon) const
+{
+	if (MainUIWidget)
+	{
+		MainUIWidget->SetStateIcon(State, Icon);
+	}
+}
+
+void ARLPlayerController::RemoveStateIcon(EState State) const
+{
+	if (MainUIWidget)
+	{
+		MainUIWidget->RemoveStateIcon(State);
+	}
+}
+
+void ARLPlayerController::FlickerStateIcon(EState State) const
+{
+	if (MainUIWidget)
+	{
+		MainUIWidget->FlickerStateIcon(State);
+	}
+}
+
+void ARLPlayerController::SetBuffIcon(EBuff Buff, UTexture2D* Icon) const
+{
+	if (MainUIWidget)
+	{
+		MainUIWidget->SetBuffIcon(Buff, Icon);
+	}
+}
+
+void ARLPlayerController::RemoveBuffIcon(EBuff Buff) const
+{
+	if (MainUIWidget)
+	{
+		MainUIWidget->RemoveBuffIcon(Buff);
+	}
+}
+
+void ARLPlayerController::FlickerBuffIcon(EBuff Buff) const
+{
+	if (MainUIWidget)
+	{
+		MainUIWidget->FlickerBuffIcon(Buff);
+	}
+}
+
+void ARLPlayerController::ShowStatNoticeWidget(EINFStackItem StatItem, const FString& StatName, const float CurrentValue, const float IncreaseValue)
+{
+	ARLMainGameMode* GM = Cast<ARLMainGameMode>(UGameplayStatics::GetGameMode(this));
+	if (GM && StatNoticeClass)
+	{
+		UTexture2D* Icon = GM->GetStatImage(StatItem);
+		if (Icon)
+		{
+			UStatNoticeWidget* StatNotice = CreateWidget<UStatNoticeWidget>(GetWorld(), StatNoticeClass);
+			if (StatNotice)
+			{
+				StatNotice->AddToViewport();
+				StatNotice->SetStatNotice(StatName, CurrentValue, IncreaseValue, Icon);
+			}
+		}
 	}
 }
 

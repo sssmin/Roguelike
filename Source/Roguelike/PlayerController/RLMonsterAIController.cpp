@@ -108,6 +108,15 @@ void ARLMonsterAIController::RunBT()
 	RunBehaviorTree(BehaviorTree);
 }
 
+AActor* ARLMonsterAIController::GetTarget() const
+{
+	if (BBComp)
+	{
+		return Cast<AActor>(BBComp->GetValueAsObject("Target"));
+	}
+	return nullptr;
+}
+
 void ARLMonsterAIController::SetTarget(AActor* Target)
 {
 	if (Target && BBComp)

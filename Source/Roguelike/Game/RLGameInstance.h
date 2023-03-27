@@ -72,6 +72,7 @@ public:
 	void SetManager(const FItemManager& InItemManager, const TMap<uint8, uint8>& InFixMaxNum, const TArray<UItemInfo*>& InItemInfos);
 	void SetSelectedBonusItem(bool Boolean);
 	FCell GetCellInfo() const ;
+	UFUNCTION(BlueprintCallable)
 	URLListenerManager* GetListenerManager() const;
 	
 	
@@ -81,6 +82,7 @@ public:
 
 	void TestPrintMap();
 	static URLGameInstance* GetRLGameInst(const UObject* WorldContextObject);
+	
 private:
 	int32 CalcNextCell(uint8 Dir) const;
 	void CheckEarlyDiscoveredBossCell();
@@ -88,7 +90,7 @@ private:
 	void MoveProcess(int32 TargetCell, uint8 Dir);
 	void LoadDataSetting(const FInfoRecord& Record);
 	void RemoveNoneAxis(FName MappingName);
-	void Initialize();
+	void Initialize(int32 Level);
 	void GenerateMap();
 	void GenerateTutorialMap();
 	
@@ -112,13 +114,14 @@ private:
 	TArray<UItemInfo*> TempItemInfos;
 	UPROPERTY()
 	TMap<uint8, uint8> TempFixMaxNum;
+	UPROPERTY(BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	int32 StageLevel; 
 	
 	FVector2Int MapSize;
 	int32 ClearCount; //방 클리어 갯수
 	FVector StartPos;
 	int32 StartCell;
 	int32 PlayerCurrentCell;
-	int32 StageLevel; 
 	int32 BossCell;
 	int32 BossPrevCell;
 	int32 TotalCellNum; // 방 총개수. 시작지점 미포함. Total - 1 == ClearCount면 보스 입장 가능
@@ -135,6 +138,8 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = "true"))
 	ELoadState LoadState;
 	int32 AxisRollbackCount;
+	
+	
 public:
 	int32 GetStageLevel() const { return StageLevel; }
 	TArray<UItemInfo*> GetItemInfos() const { return TempItemInfos; }

@@ -43,15 +43,15 @@ private:
 	uint8 GetFixMaxStack(EFixMaxStackItem Item);
 	void IncreaseFixMaxStack(EFixMaxStackItem Item);
 	void ResumeController(ARLPlayerController* RLPC);
+	float CalcStatValuePer(TArray<float> Per, TArray<int32> Value);
 	
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
 	FItemManager ItemManager;
 	UPROPERTY()
 	UManagerComponent* ManagerComp;
 	
-	const char FIX_MAX_STACK = 10;
-	float IncreaseAtkValue;
-	float IncreaseMaxHpValue;
+	const uint8 FIX_MAX_STACK = 10;
+	
 	UPROPERTY()
 	TMap<uint8, uint8> FixMaxNum;
 	UPROPERTY()

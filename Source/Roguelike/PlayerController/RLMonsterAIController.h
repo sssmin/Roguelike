@@ -54,6 +54,9 @@ private:
 	float AISightAge;
 	float AILoseSightRadius;
 	float AIFieldOfView;
+
+public:
+	AActor* GetTarget() const;
 	
 	
 };

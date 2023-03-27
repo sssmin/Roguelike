@@ -16,8 +16,10 @@
 #include "Roguelike/Component/ManagerComponent.h"
 #include "Roguelike/Actor/MeteorActor.h"
 #include "Roguelike/Character/MonsterAnimInstance.h"
+#include "Roguelike/Character/Player/PlayerCharacter.h"
+#include "Roguelike/Game/RLMainGameMode.h"
 #include "Roguelike/Type/DamageType/AllDamageTypes.h"
-#include "Roguelike/Widget/DamageWidget.h"
+#include "Sound/SoundCue.h"
 
 AMonsterCharacter::AMonsterCharacter()
 {
@@ -118,8 +120,16 @@ void AMonsterCharacter::RequestHeal(AActor* Requester) //Turret 시점
 					UManagerComponent* ManagerComp = UManagerComponent::GetManagerComp(Requester);
 					if (ManagerComp)
 					{
-						ManagerComp->Heal(50.f);
+						ManagerComp->HealByRate(50.f);
 						BBComp->SetValueAsBool(FName("CanHeal"), false);
+						if (HealSoundCue)
+						{
+							UGameplayStatics::PlaySound2D(this, HealSoundCue);
+						}
+						if (HealParticle)
+						{
+							UGameplayStatics::SpawnEmitterAttached(HealParticle, Requester->GetRootComponent());
+						}
 					}
 				}
 			}
@@ -130,7 +140,8 @@ void AMonsterCharacter::RequestHeal(AActor* Requester) //Turret 시점
 void AMonsterCharacter::Dead()
 {
 	Super::Dead();
-
+	
+	CalcGiveBuffPer();
 	SetIsDeadAnimInst();
 	SetIsDeadBB();
 	RemoveHPWidget();
@@ -161,7 +172,7 @@ void AMonsterCharacter::SetIsDeadBB()
 	}
 }
 
-void AMonsterCharacter::ShowDamageWidget(float Damage, bool IsCritical)
+void AMonsterCharacter::ShowNumWidget(float Damage, bool IsCritical, bool IsHeal, bool IsDodge)
 {
 	FActorSpawnParameters Params;
 	FTransform SpawnTransform = GetActorTransform();
@@ -174,21 +185,47 @@ void AMonsterCharacter::ShowDamageWidget(float Damage, bool IsCritical)
 		ADamageWidgetActor* DamageWidgetActor = GetWorld()->SpawnActor<ADamageWidgetActor>(GetDamageWidgetActorClass(), SpawnTransform, Params);
 		if (DamageWidgetActor)
 		{
-			UWidgetComponent* WidgetComp = DamageWidgetActor->GetDamageWidgetComp();
-			if (WidgetComp)
-			{
-				UUserWidget* Widget = WidgetComp->GetWidget();
-				if (Widget)
-				{
-					UDamageWidget* DamageWidget = Cast<UDamageWidget>(Widget);
-					if (DamageWidget)
-					{
-						DamageWidget->Play(false, IsCritical, Damage);
-					}
-				}
-			}
+			DamageWidgetActor->PlayNumWidget(false, IsCritical, Damage, IsHeal, IsDodge);
 		}
 	} 
+}
+
+void AMonsterCharacter::SetStateIcon(EState State)
+{
+	ARLMainGameMode* MainGM = Cast<ARLMainGameMode>(UGameplayStatics::GetGameMode(this));
+	if (MainGM && HPBarWidget)
+	{
+		UTexture2D* Image = MainGM->GetStateImage(State);
+		HPBarWidget->SetImage(Image);
+	}
+}
+
+void AMonsterCharacter::RemoveStateIcon(EState State)
+{
+	if (HPBarWidget)
+	{
+		HPBarWidget->RemoveImage();
+	}
+}
+
+void AMonsterCharacter::FlickerStateIcon(EState State)
+{
+	if (HPBarWidget)
+	{
+		HPBarWidget->StartFlicker();
+	}
+}
+
+void AMonsterCharacter::SetBuffIcon(EBuff Buff)
+{
+}
+
+void AMonsterCharacter::RemoveBuffIcon(EBuff Buff)
+{
+}
+
+void AMonsterCharacter::FlickerBuffIcon(EBuff Buff)
+{
 }
 
 void AMonsterCharacter::FireOneToTwo(TSubclassOf<UDamageType> DamageType)
@@ -232,16 +269,17 @@ void AMonsterCharacter::SetHPBarWidget(const TSubclassOf<UHPBarWidget>& Widget)
 {
 	if (HPBarWidgetComp && Widget)
 	{
-		UHPBarWidget* HPBarWidget = CreateWidget<UHPBarWidget>(GetWorld(), Widget);
+		HPBarWidget = CreateWidget<UHPBarWidget>(GetWorld(), Widget);
 
 		if (HPBarWidget)
 		{
 			HPBarWidgetComp->SetWidget(HPBarWidget);
 			HPBarWidget->SetOwnerPlayer(this);
+			HPBarWidget->SetMonsterType(MonsterType);
 		}
 
 		HPBarWidgetComp->SetWidgetSpace(EWidgetSpace::Screen);
-		HPBarWidgetComp->SetDrawSize(FVector2D(200.f, 20.f));
+		HPBarWidgetComp->SetDrawSize(FVector2D(200.f, 40.f));
 		HPBarWidgetComp->SetPivot(FVector2D(0.5f, 4.5f));
 	}
 }
@@ -333,15 +371,6 @@ void AMonsterCharacter::Fire3Projectile(TSubclassOf<UDamageType> DamageType)
 	}
 }
 
-void AMonsterCharacter::Teleport()
-{
-	// FVector RandVector = UNavigationSystemV1::GetRandomPointInNavigableRadius(this, FVector::ZeroVector, 1);
-	// TEnumAsByte<EMoveComponentAction::Type> Val = EMoveComponentAction::Move;
-	// FLatentActionInfo ActionInfo;
-	// ActionInfo.CallbackTarget = this;
-	// UKismetSystemLibrary::MoveComponentTo(RootComponent, RandVector, GetActorRotation(), false, true, 0.5f, true, Val, ActionInfo);
-}
-
 void AMonsterCharacter::Meteor(const TSubclassOf<AMeteorActor>& MeteorClass, AActor* Target)
 {
 	if (MeteorClass && Target)
@@ -355,6 +384,25 @@ void AMonsterCharacter::Meteor(const TSubclassOf<AMeteorActor>& MeteorClass, AAc
 		if (Meteor && GetManagerComp())
 		{
 			Meteor->SetCombatManager(GetManagerComp()->GetCombatManager());
+		}
+	}
+}
+
+void AMonsterCharacter::CalcGiveBuffPer()
+{
+	if ((MonsterType == EMonsterType::Elite) || (KindOfMonster == EKindOfMonster::Turret))
+	{
+		if (FMath::RandRange(1.f, 100.f) <= 30.f)
+		{
+			ARLMonsterAIController* AIController = Cast<ARLMonsterAIController>(GetController());
+			if (AIController)
+			{
+				APlayerCharacter* Target = Cast<APlayerCharacter>(AIController->GetTarget());
+				if (Target)
+				{
+					Target->ApplyMovementBuff();
+				}
+			}	
 		}
 	}
 }

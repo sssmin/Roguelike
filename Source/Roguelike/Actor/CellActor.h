@@ -33,7 +33,7 @@ protected:
 private:
 	bool IsExistWall(uint8 Wall);
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (Bitmask, BitmaskEnum = ETempWall, AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (Bitmask, BitmaskEnum = "/Script/Roguelike.ETempWall", AllowPrivateAccess = "true"))
 	uint8 TempWall;
 	UPROPERTY()
 	int32 CellClass;
