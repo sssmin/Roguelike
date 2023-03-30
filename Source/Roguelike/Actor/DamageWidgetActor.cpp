@@ -36,11 +36,9 @@ void ADamageWidgetActor::PlayNumWidget(bool IsPlayer, bool IsCritical, float Dam
 {
 	if (NumWidgetComp)
 	{
-		UUserWidget* Widget = NumWidgetComp->GetWidget();
-		if (Widget)
+		if (UUserWidget* Widget = NumWidgetComp->GetWidget())
 		{
-			UDamageWidget* DamageWidget = Cast<UDamageWidget>(Widget);
-			if (DamageWidget)
+			if (UDamageWidget* DamageWidget = Cast<UDamageWidget>(Widget))
 			{
 				DamageWidget->Play(IsPlayer, IsCritical, Damage, IsHeal, IsDodge);
 			}

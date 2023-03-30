@@ -94,10 +94,10 @@ void ARLMonsterAIController::OnPercptionUpdated(AActor* Actor, FAIStimulus Stimu
 void ARLMonsterAIController::SetBehaviorTree(UBehaviorTree* BT)
 {
 	BehaviorTree = BT;
-
+	
 	if (BehaviorTree && BBComp && BTComp)
 	{
-		BBComp->InitializeBlackboard(*BehaviorTree->BlackboardAsset);
+		bool Result = BBComp->InitializeBlackboard(*BehaviorTree->BlackboardAsset);
 		FTimerHandle TimerHandle;
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ThisClass::RunBT, FMath::RandRange(0.5f, 1.f), false);
 	}

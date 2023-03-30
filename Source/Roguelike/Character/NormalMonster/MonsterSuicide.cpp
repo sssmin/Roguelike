@@ -3,6 +3,8 @@
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/BoxComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "GameFramework/PawnMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 #include "Roguelike/PlayerController/RLMonsterAIController.h"
@@ -38,8 +40,8 @@ void AMonsterSuicide::BeginPlay()
 
 void AMonsterSuicide::GiveBTToController()
 {
-	RLAIController = RLAIController == nullptr ? Cast<ARLMonsterAIController>(GetController()) : RLAIController;
-	if (RLAIController)
+	RLAIController = Cast<ARLMonsterAIController>(GetController());
+	if (RLAIController && SuicideBT)
 	{
 		RLAIController->SetBehaviorTree(SuicideBT);
 	}
@@ -47,34 +49,44 @@ void AMonsterSuicide::GiveBTToController()
 
 void AMonsterSuicide::Dead()
 {
-	//Super::Dead();
+	Super::Dead();
+	// if (GetMovementComponent() && GetMesh() && GetCapsuleComponent())
+	// {
+	// 	GetMovementComponent()->SetActive(false);
+	// 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	// 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	// }
+	// CalcGiveBuffPer();
+	// SetIsDeadBB(true);
+	// SetIsDeadAnimInst(true);
+	// RemoveHPWidget();
+	// DeadInit();
+	//
+	// FTimerHandle DestroyTimerHandle;
+	// GetWorld()->GetTimerManager().SetTimer(DestroyTimerHandle, this, &ThisClass::Deactivate, 3.f);
 
-	//소리 파티클 재생
-    	
-    if (ManagerComponent)
-    {
-    	TArray<AActor*> IgnoreActor;
-    	const float ATK = ManagerComponent->GetCombatManager().ATK * 5.f;
-    	UGameplayStatics::ApplyRadialDamage(
-    		this,
-    		ATK,
-    		GetActorLocation(),
-    		150.f,
-    		USkillDamageType::StaticClass(),
-    		IgnoreActor,
-    		this,
-    		GetController(),
-    		true
-    	);
-    }
-
-	Destroy();
+	if (ManagerComponent)
+	{
+		TArray<AActor*> IgnoreActor;
+		const float ATK = ManagerComponent->GetCombatManager().ATK * 5.f;
+		UGameplayStatics::ApplyRadialDamage(
+			this,
+			ATK,
+			GetActorLocation(),
+			150.f,
+			USkillDamageType::StaticClass(),
+			IgnoreActor,
+			this,
+			GetController(),
+			true
+		);
+	}
 }
 
 void AMonsterSuicide::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (IsDead()) return;
-	RLAIController = RLAIController == nullptr ? Cast<ARLMonsterAIController>(GetController()) : RLAIController;
+	RLAIController = Cast<ARLMonsterAIController>(GetController());
 	if (OtherActor)
 	{
 		if (RLAIController && RLAIController->GetBlackboardComponent())

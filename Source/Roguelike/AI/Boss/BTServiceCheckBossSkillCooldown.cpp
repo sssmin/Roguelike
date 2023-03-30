@@ -12,8 +12,7 @@ void UBTServiceCheckBossSkillCooldown::TickNode(UBehaviorTreeComponent& OwnerCom
 {
 	if (bSkillCooldown) return;
 
-	UBlackboardComponent* BBComp = OwnerComp.GetBlackboardComponent();
-	if (BBComp)
+	if (UBlackboardComponent* BBComp = OwnerComp.GetBlackboardComponent())
 	{
 		bool CanUseSkill = BBComp->GetValueAsBool(CanUseSkillKey.SelectedKeyName);
 		if (!CanUseSkill)

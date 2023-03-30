@@ -95,10 +95,6 @@ void UMainUIWidget::InitOnceItemList() const
 	{
 		OnceItemListWidget->InitItemList();
 	}
-	if (StateButton)
-	{
-		//StateButton->IsFocusable = true;
-	}
 }
 
 void UMainUIWidget::LoadItem(TArray<UItemInfo*> ItemInfos)

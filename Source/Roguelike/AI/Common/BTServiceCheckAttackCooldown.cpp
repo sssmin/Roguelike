@@ -16,8 +16,7 @@ void UBTServiceCheckAttackCooldown::TickNode(UBehaviorTreeComponent& OwnerComp, 
 	
 	if (bSpecialAttackCooldown) return;
 	
-	UBlackboardComponent* BBComp = OwnerComp.GetBlackboardComponent();
-	if (BBComp)
+	if (UBlackboardComponent* BBComp = OwnerComp.GetBlackboardComponent())
 	{
 		bool CanSpecialAttack = BBComp->GetValueAsBool(CanSpecialAttackKey.SelectedKeyName);
 		if (!CanSpecialAttack)

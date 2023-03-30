@@ -19,6 +19,6 @@ EBTNodeResult::Type UBTTaskSpeicalAttack::ExecuteTask(UBehaviorTreeComponent& Ow
 		BBComp->SetValueAsBool("CanSpecialAttack", false);
 		return EBTNodeResult::Succeeded;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Attack Failed"));
+	
 	return EBTNodeResult::Failed;
 }

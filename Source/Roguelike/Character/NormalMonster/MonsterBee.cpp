@@ -16,3 +16,10 @@ void AMonsterBee::SpecialAttack(AActor* Target)
 {
 	FireOneToTwo(USpecialATKDamageType::StaticClass());
 }
+
+void AMonsterBee::Spawn()
+{
+	Super::Spawn();
+
+	GetCapsuleComponent()->SetCollisionObjectType(ECC_CharacterBlockProjectile);
+}

@@ -56,7 +56,7 @@ bool URoguelikeSaveGame::SaveItemInfos(TArray<UItemInfo*>& Data)
 	}
 	
 	FBufferArchive ToBinary;
-	ToBinary << InfoRecords; //직렬화
+	ToBinary << InfoRecords; 
 
 	if (ToBinary.Num() <= 0)
 	{

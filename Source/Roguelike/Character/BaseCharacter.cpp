@@ -1,8 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "BaseCharacter.h"
 
+#include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Roguelike/Roguelike.h"
 
 #include "Roguelike/Actor/DamageWidgetActor.h"
 #include "Roguelike/Component/ManagerComponent.h"
@@ -127,9 +129,23 @@ bool ABaseCharacter::IsDead()
 
 void ABaseCharacter::Dead()
 {
-	if (GetMovementComponent() && GetMesh())
+	if (GetMovementComponent() && GetMesh() && GetCapsuleComponent())
 	{
 		GetMovementComponent()->SetActive(false);
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+}
+
+void ABaseCharacter::Spawn()
+{
+	if (GetMovementComponent() && GetMesh() && GetCapsuleComponent())
+	{
+		GetMovementComponent()->SetActive(true);
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		GetCapsuleComponent()->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
+		GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		//GetMesh()->SetCollisionProfileName(TEXT("CharacterBlockProjectile"));
+		GetMesh()->SetCollisionObjectType(ECC_CharacterBlockProjectile);
 	}
 }

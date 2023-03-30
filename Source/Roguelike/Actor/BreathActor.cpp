@@ -21,7 +21,6 @@ ABreathActor::ABreathActor()
 void ABreathActor::BeginPlay()
 {
 	Super::BeginPlay();
-	BoxComponent->SetVisibility(true);
 	BoxComponent->SetBoxExtent(FVector(350.f, 30.f, 60.f));
 
 	OnBeginOverlapped();
@@ -61,7 +60,7 @@ void ABreathActor::OnBeginOverlapped()
 		CollisionObjectType,
 		false,
 		ActorsToIgnore,
-		EDrawDebugTrace::ForDuration,
+		EDrawDebugTrace::None,
 		HitResult,
 		true,
 		FLinearColor::Red,
@@ -69,8 +68,8 @@ void ABreathActor::OnBeginOverlapped()
 		5.f
 	);
 	
-	if(Cast<APlayerCharacter>(HitResult.GetActor()))
+	if(APlayerCharacter* Player = Cast<APlayerCharacter>(HitResult.GetActor()))
 	{
-		Cast<APlayerCharacter>(HitResult.GetActor())->OnSkillHit(GetOwner(), this, GetCombatManager(), USkillDamageType::StaticClass());
+		Player->OnSkillHit(GetOwner(), this, GetCombatManager(), USkillDamageType::StaticClass());
 	}
 }

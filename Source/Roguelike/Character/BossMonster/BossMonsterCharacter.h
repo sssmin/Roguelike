@@ -29,8 +29,8 @@ public:
 	void OnExecuteThrowBall();
 	void OnExecuteWhirlwind();
 	void OnExecuteSquare();
-	virtual void SetIsDeadAnimInst() override;
-	virtual void SetIsDeadBB() override;
+	virtual void SetIsDeadAnimInst(bool InIsDead) override;
+	virtual void SetIsDeadBB(bool InIsDead) override;
 	virtual void Dead() override;
 	void RemoveSpawnedWhirlwindActor(AWhirlwindActor* Actor);
 	

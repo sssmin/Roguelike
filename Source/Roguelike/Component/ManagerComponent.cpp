@@ -33,7 +33,6 @@ void UManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//String LevelName = UGameplayStatics::GetCurrentLevelName(this, true);
 	if (Cast<APlayerCharacter>(GetOwner()))
 	{
 		URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
@@ -57,7 +56,6 @@ void UManagerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void UManagerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
 	
 }
 
@@ -80,10 +78,9 @@ void UManagerComponent::RemoveAllTimer()
 	RemoveTimer(FearApplyDamageTimerHandle);
 	RemoveTimer(MoveBuffStartTimerHandle);
 	RemoveTimer(MoveBuffRestTimerHandle);
-	
 }
 
-void UManagerComponent::RemoveTimer(FTimerHandle Handle)
+void UManagerComponent::RemoveTimer(FTimerHandle& Handle)
 {
 	if (GetWorld())
 	{
@@ -111,13 +108,11 @@ void UManagerComponent::Init()
 	BuffDuration = 5.f;
 	StateNum = 0;
 	DoTDamageRate = 0.f;
-	
 }
 
 void UManagerComponent::Load()
 {
-	URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
-	if (GI)
+	if (URLGameInstance* GI = URLGameInstance::GetRLGameInst(this))
 	{
 		GI->GetManager(HealthManager, CombatManager, CurrentBuff);
 		ApplyPlayerElement(CombatManager.Element);
@@ -128,8 +123,7 @@ void UManagerComponent::Load()
 
 void UManagerComponent::SetTempManager() const
 {
-	URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
-	if (GI)
+	if (URLGameInstance* GI = URLGameInstance::GetRLGameInst(this))
 	{
 		GI->SetManager(HealthManager, CombatManager, CurrentBuff);
 	}
@@ -139,12 +133,10 @@ void UManagerComponent::ReceiveDamage(const FCombatManager& EnemyCombatManager, 
 {
 	if (IsDead()) return;
 	
-	float RiskReturn = 1.f;
-
-	ABaseCharacter* OwnerCharacter = Cast<ABaseCharacter>(GetOwner());
-
-	if (OwnerCharacter)
+	if (ABaseCharacter* OwnerCharacter = Cast<ABaseCharacter>(GetOwner()))
 	{
+		float RiskReturn = 1.f;
+		
 		if (ItemComponent)
 		{
 			if (ItemComponent->CheckOnceItem(static_cast<uint8>(EOnceEquippedItem::RiskReturn)))
@@ -158,7 +150,6 @@ void UManagerComponent::ReceiveDamage(const FCombatManager& EnemyCombatManager, 
 					OwnerCharacter->ShowNumWidget(0.f, false, false, true);
 					return;
 				}
-				
 			}
 		}
 
@@ -191,10 +182,8 @@ void UManagerComponent::ReceiveDamage(const FCombatManager& EnemyCombatManager, 
 		{
 			Result += (HealthManager.MaxHP - HealthManager.CurrentHP * 0.1f);
 		}
-	
-	
+		
 		OwnerCharacter->ShowNumWidget(Result, IsCritial, false, false);
-	
 		UpdateCurrentHP(-Result);
 	}
 }
@@ -241,76 +230,62 @@ void UManagerComponent::ApplyState(uint8 State)
 	CurrentState |= State;
 	if (IsDead()) return;
 	
-	ABaseCharacter* OwnerCharacter = Cast<ABaseCharacter>(GetOwner());
-	if (OwnerCharacter)
+	if (ABaseCharacter* OwnerCharacter = Cast<ABaseCharacter>(GetOwner()))
 	{
-		if (State  == static_cast<uint8>(EState::Burn))
-		{
-			StateStartDuration = 2.f; 
-			StateRestDuration = 3.f;
-			StateSeconds = 1.f;
-			DoTDamageRate = 0.05f;
-			
-			SetStateTimer(StateStartDuration, StateRestDuration, StateSeconds, DoTDamageRate, BurnStartTimerHandle, BurnRestTimerHandle, BurnApplyDamageTimerHandle, State, OwnerCharacter);
-		}
-		else if (State  == static_cast<uint8>(EState::Frozen))
-		{
-			StateStartDuration = 2.f; 
-			StateRestDuration = 3.f;
-			StateSeconds = 1.f;
-			DoTDamageRate = 0.05f;
-			
-			SetStateTimer(StateStartDuration, StateRestDuration, StateSeconds, DoTDamageRate, FrozenStartTimerHandle, FrozenRestTimerHandle, FrozenApplyDamageTimerHandle, State, OwnerCharacter);
-		}
-		else if (State  == static_cast<uint8>(EState::Poison))
-		{
-			StateStartDuration = 2.f; 
-			StateRestDuration = 3.f;
-			StateSeconds = 1.f;
-			DoTDamageRate = 0.05f;
-		
-			SetStateTimer(StateStartDuration, StateRestDuration, StateSeconds, DoTDamageRate, PoisonStartTimerHandle, PoisonRestTimerHandle, PoisonApplyDamageTimerHandle, State, OwnerCharacter);
-		}
-		else if (State  == static_cast<uint8>(EState::Fear))
-		{
-			StateRestDuration = 3.f;
-			DoTDamageRate = 0.12f;
-			StateSeconds = 1.f;
+		StateStartDuration = 2.f; 
+		StateRestDuration = 3.f;
+		StateSeconds = 1.f;
+		DoTDamageRate = 0.05f;
 
-			if (Cast<APlayerCharacter>(OwnerCharacter))
-			{
-				GetWorld()->GetTimerManager().SetTimer(FearApplyDamageTimerHandle, [this]()
+		switch (static_cast<EState>(State))
+		{
+			case EState::Burn:
+				SetStateTimer(StateStartDuration, StateRestDuration, StateSeconds, DoTDamageRate, BurnStartTimerHandle, BurnRestTimerHandle, BurnApplyDamageTimerHandle, State, OwnerCharacter);
+				break;
+			case EState::Frozen:
+				SetStateTimer(StateStartDuration, StateRestDuration, StateSeconds, DoTDamageRate, FrozenStartTimerHandle, FrozenRestTimerHandle, FrozenApplyDamageTimerHandle, State, OwnerCharacter);
+				break;
+			case EState::Poison:
+				SetStateTimer(StateStartDuration, StateRestDuration, StateSeconds, DoTDamageRate, PoisonStartTimerHandle, PoisonRestTimerHandle, PoisonApplyDamageTimerHandle, State, OwnerCharacter);
+				break;
+			case EState::Fear:
 				{
-					ApplyDoTDamage(DoTDamageRate);
-				}, StateSeconds, true);
-			}
-			
-			GetWorld()->GetTimerManager().SetTimer(FearDurationTimerHandle, [this, State]()
-			{
-				StateCompleted(State);
-			}, StateRestDuration, false);
-		}
-	}
+					DoTDamageRate = 0.12f;
 
-	if (OnSetStateNum.IsBound())
-	{
-		OnSetStateNum.Broadcast(++StateNum);	
+					if (Cast<APlayerCharacter>(OwnerCharacter))
+					{
+						GetWorld()->GetTimerManager().SetTimer(FearApplyDamageTimerHandle, [this]()
+						{
+							ApplyDoTDamage(DoTDamageRate);
+						}, StateSeconds, true);
+					}
+				
+					GetWorld()->GetTimerManager().SetTimer(FearDurationTimerHandle, [this, State]()
+					{
+						StateCompleted(State);
+					}, StateRestDuration, false);
+				}
+				break;
+		}
+
+		if (OnSetStateNum.IsBound())
+		{
+			OnSetStateNum.Broadcast(++StateNum);	
+		}
+		OwnerCharacter->SetStateIcon(static_cast<EState>(State));
 	}
-	OwnerCharacter->SetStateIcon(static_cast<EState>(State));
 }
 
 void UManagerComponent::RemoveState(uint8 State)
 {
 	CurrentState ^= State;
-
-	ABaseCharacter* OwnerCharacter = Cast<ABaseCharacter>(GetOwner());
-	if (OwnerCharacter)
+	
+	if (ABaseCharacter* OwnerCharacter = Cast<ABaseCharacter>(GetOwner()))
 	{
 		OwnerCharacter->RemoveStateIcon(static_cast<EState>(State));
 	}
 	if (OnSetStateNum.IsBound())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("?"));
 		OnSetStateNum.Broadcast(FMath::Clamp(--StateNum, 0, 99));	
 	}
 }
@@ -322,20 +297,19 @@ bool UManagerComponent::CheckBuff(uint8 Buff) const
 
 void UManagerComponent::ApplyBuff(uint8 Buff)
 {
-	if (Cast<APlayerCharacter>(GetOwner()))
+	if (APlayerCharacter* Player = Cast<APlayerCharacter>(GetOwner()))
 	{
 		CurrentBuff |= Buff;
 
 		if (Buff == static_cast<uint8>(EBuff::MovementBuff))
 		{
-			Cast<APlayerCharacter>(GetOwner())->IncreaseMovementSpeed();
-			const float BuffStartDuration = 2.f; 
-			const float BuffRestDuration = 3.f;
+			Player->IncreaseMovementSpeed();
+			constexpr float BuffStartDuration = 2.f; 
+			constexpr float BuffRestDuration = 3.f;
 
 			SetBuffTimer(BuffStartDuration, BuffRestDuration, MoveBuffStartTimerHandle, MoveBuffRestTimerHandle,  Buff, Cast<ABaseCharacter>(GetOwner()));
-			
 		}
-		Cast<APlayerCharacter>(GetOwner())->SetBuffIcon(static_cast<EBuff>(Buff));
+		Player->SetBuffIcon(static_cast<EBuff>(Buff));
 		if (OnSetStateNum.IsBound())
 		{
 			OnSetStateNum.Broadcast(++StateNum);	
@@ -356,13 +330,12 @@ void UManagerComponent::RemoveBuff(uint8 Buff)
 		Cast<APlayerCharacter>(GetOwner())->RemoveBuffIcon(static_cast<EBuff>(Buff));
 		if (OnSetStateNum.IsBound())
 		{
-			UE_LOG(LogTemp, Warning, TEXT("?"));
 			OnSetStateNum.Broadcast(FMath::Clamp(--StateNum, 0, 99));
 		}
 	}
 }
-
-float UManagerComponent::CalcCounter(EElement EnemyElement)//상성. 받을 대미지 계수
+//상성. 받을 대미지 계수
+float UManagerComponent::CalcCounter(EElement EnemyElement) const
 {
 	float Ret = 1.f;
 
@@ -475,39 +448,26 @@ bool UManagerComponent::IsHPLow()
 
 void UManagerComponent::ApplyPlayerElement(EElement Element)
 {
-	InitElemBuff();
-	
 	CombatManager.Element = Element;
 	
-	if (Cast<APlayerCharacter>(GetOwner()))
+	if (APlayerCharacter* Player = Cast<APlayerCharacter>(GetOwner()))
 	{
-		Cast<APlayerCharacter>(GetOwner())->ApplyElementParticle();
-	}
-}
-
-void UManagerComponent::InitElemBuff()
-{
-	if (CombatManager.Element == EElement::Earth)
-	{
-		//RemoveBuff(static_cast<uint8>(EBuff::MovementBuff));
-	}
-	else if (CombatManager.Element == EElement::Light)
-	{
-		//RemoveBuff(static_cast<uint8>(EBuff::HealBuff));
+		Player->ApplyElementParticle();
 	}
 }
 
 void UManagerComponent::HealByRate(float Rate)
 {
 	const float CurrentHP = HealthManager.CurrentHP;
-	float ToAddHP = HealthManager.MaxHP * Rate * 0.01f;
 	const float MaxHP = HealthManager.MaxHP;
+	float ToAddHP = HealthManager.MaxHP * Rate * 0.01f;
+	
 	if (MaxHP - CurrentHP < ToAddHP)
 	{
 		ToAddHP = MaxHP - CurrentHP;
 	}
-	ABaseCharacter* OwnerCharacter = Cast<ABaseCharacter>(GetOwner());
-	if (OwnerCharacter)
+	
+	if (ABaseCharacter* OwnerCharacter = Cast<ABaseCharacter>(GetOwner()))
 	{
 		OwnerCharacter->ShowNumWidget(ToAddHP, false, true, false);
 	}
@@ -522,8 +482,8 @@ void UManagerComponent::HealByValue(float Value)
 	{
 		Value = MaxHP - CurrentHP;
 	}
-	ABaseCharacter* OwnerCharacter = Cast<ABaseCharacter>(GetOwner());
-	if (OwnerCharacter)
+	
+	if (ABaseCharacter* OwnerCharacter = Cast<ABaseCharacter>(GetOwner()))
 	{
 		OwnerCharacter->ShowNumWidget(Value, false, true, false);
 	}
@@ -558,65 +518,34 @@ void UManagerComponent::CalcStateStack(const FCombatManager& EnemyCombatManager)
 	switch (EnemyCombatManager.Element)
 	{
 		case EElement::Fire:
-			if (CheckState(static_cast<uint8>(EState::Burn)))
-			{
-				return;
-			}
-			GetWorld()->GetTimerManager().SetTimer(BurnStackDurationTimerHandle, [this]()
-				{
-					InitStateStack(static_cast<uint8>(EState::Burn));
-				}, StateStackDuration, false);
-			if (++BurnStack == 4)
-			{
-				InitStateStack(static_cast<uint8>(EState::Burn)); //위 타이머 제거.
-				ApplyState(static_cast<uint8>(EState::Burn));
-			}
+			CalcCurrentStack(static_cast<uint8>(EState::Burn), BurnStackDurationTimerHandle, BurnStack);
 			break;
 		case EElement::Water:
-			if (CheckState(static_cast<uint8>(EState::Frozen)))
-			{
-				return;
-			}
-			GetWorld()->GetTimerManager().SetTimer(FrozenStackDurationTimerHandle, [this]()
-				{
-					InitStateStack(static_cast<uint8>(EState::Frozen));
-				}, StateStackDuration, false);
-			if (++FrozenStack == 4)
-			{
-				InitStateStack(static_cast<uint8>(EState::Frozen)); //위 타이머 제거.
-				ApplyState(static_cast<uint8>(EState::Frozen));
-			}
+			CalcCurrentStack(static_cast<uint8>(EState::Frozen), FrozenStackDurationTimerHandle, FrozenStack);
 			break;
 		case EElement::Earth:
-			if (CheckState(static_cast<uint8>(EState::Poison)))
-			{
-				return;
-			}
-			GetWorld()->GetTimerManager().SetTimer(PoisonStackDurationTimerHandle, [this]()
-				{
-					InitStateStack(static_cast<uint8>(EState::Poison));
-				}, StateStackDuration, false);
-			if (++PoisonStack == 4)
-			{
-				InitStateStack(static_cast<uint8>(EState::Poison)); //위 타이머 제거.
-				ApplyState(static_cast<uint8>(EState::Poison));
-			}
-		break;
+			CalcCurrentStack(static_cast<uint8>(EState::Poison), PoisonStackDurationTimerHandle, PoisonStack);
+			break;
 		case EElement::Darkness:
-			if (CheckState(static_cast<uint8>(EState::Fear)))
-			{
-				return;
-			}
-			GetWorld()->GetTimerManager().SetTimer(FearStackDurationTimerHandle, [this]()
-				{
-					InitStateStack(static_cast<uint8>(EState::Fear));
-				}, StateStackDuration, false);
-			if (++FearStack == 4)
-			{
-				InitStateStack(static_cast<uint8>(EState::Fear)); //위 타이머 제거.
-				ApplyState(static_cast<uint8>(EState::Fear));
-			}
-		break;
+			CalcCurrentStack(static_cast<uint8>(EState::Fear), FearStackDurationTimerHandle, FearStack);
+			break;
+	}
+}
+
+void UManagerComponent::CalcCurrentStack(uint8 State, FTimerHandle& StackDurationTimerHandle, int32& CurrentStack)
+{
+	if (CheckState(State))
+	{
+		return;
+	}
+	GetWorld()->GetTimerManager().SetTimer(StackDurationTimerHandle, [this, State]()
+		{
+			InitStateStack(State);
+		}, StateStackDuration, false);
+	if (++CurrentStack == 4)
+	{
+		InitStateStack(State);
+		ApplyState(State);
 	}
 }
 
@@ -647,13 +576,6 @@ void UManagerComponent::StateCompleted(uint8 CompleteState)
 
 void UManagerComponent::BuffCompleted(uint8 CompleteBuff)
 {
-	switch (static_cast<EBuff>(CompleteBuff))
-	{
-	case EBuff::MovementBuff:
-		//RemoveTimer(MoveBuffDurationTimerHandle);
-		break;
-	}
-	UE_LOG(LogTemp, Warning, TEXT("BuffC"));
 	RemoveBuff(CompleteBuff);
 }
 
@@ -667,8 +589,8 @@ void UManagerComponent::ApplyDoTDamage(float Rate) //고정 대미지.
 	if (IsDead()) return;
 	const float MinusHP = HealthManager.MaxHP * Rate; 
 	UpdateCurrentHP(-MinusHP);
-	ABaseCharacter* OwnerCharacter = Cast<ABaseCharacter>(GetOwner());
-	if (OwnerCharacter)
+	
+	if (ABaseCharacter* OwnerCharacter = Cast<ABaseCharacter>(GetOwner()))
 	{
 		OwnerCharacter->ShowNumWidget(MinusHP, false, false, false); 
 	}
@@ -697,8 +619,7 @@ void UManagerComponent::UpdateMaxHP(float Value)
 	}
 	if (Value > 0.f)
 	{
-		ARLPlayerController* PC = Cast<ARLPlayerController>(Cast<APlayerCharacter>(GetOwner())->GetController());
-		if (PC)
+		if (ARLPlayerController* PC = Cast<ARLPlayerController>(Cast<APlayerCharacter>(GetOwner())->GetController()))
 		{
 			PC->ShowStatNoticeWidget(EINFStackItem::IncreaseMaxHp, TEXT("최대 체력"), HealthManager.MaxHP, Value); 
 		}
@@ -722,14 +643,6 @@ void UManagerComponent::UpdateCurrentHP(float Value)
 	}
 }
 
-void UManagerComponent::HPSync()
-{
-	if (OnUpdateCurrentHP.IsBound())
-	{
-		OnUpdateCurrentHP.Broadcast(HealthManager.CurrentHP, HealthManager.MaxHP);
-	}
-}
-
 void UManagerComponent::UpdateCurrentAtk(float Value)
 {
 	if (Value != 0.f)
@@ -738,8 +651,7 @@ void UManagerComponent::UpdateCurrentAtk(float Value)
 	}
 	if (Value > 0.f)
 	{
-		ARLPlayerController* PC = Cast<ARLPlayerController>(Cast<APlayerCharacter>(GetOwner())->GetController());
-		if (PC)
+		if (ARLPlayerController* PC = Cast<ARLPlayerController>(Cast<APlayerCharacter>(GetOwner())->GetController()))
 		{
 			PC->ShowStatNoticeWidget(EINFStackItem::IncreaseAtk, TEXT("공격력"), CombatManager.ATK, Value); 
 		}
@@ -759,6 +671,14 @@ void UManagerComponent::UpdateCurrentRange(float Value)
 	if (Value != 0.f)
 	{
 		CombatManager.Range = FMath::Clamp(CombatManager.Range + Value, 900.f, 1400.f);
+	}
+}
+
+void UManagerComponent::HPSync()
+{
+	if (OnUpdateCurrentHP.IsBound())
+	{
+		OnUpdateCurrentHP.Broadcast(HealthManager.CurrentHP, HealthManager.MaxHP);
 	}
 }
 

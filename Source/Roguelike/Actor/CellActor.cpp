@@ -83,8 +83,7 @@ void ACellActor::CreateWall()
 
 	for (auto Arrow : ArrowComponents)
 	{
-		UArrowComponent* ArrowComp = Cast<UArrowComponent>(Arrow);
-		if (ArrowComp)
+		if (UArrowComponent* ArrowComp = Cast<UArrowComponent>(Arrow))
 		{
 			TArray<FName> TPTag = ArrowComp->ComponentTags;
 			if (TPTag.IsValidIndex(1))

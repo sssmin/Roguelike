@@ -30,10 +30,10 @@ void APlayersCamera::BeginPlay()
 	Super::BeginPlay();
 	
 	PlayerCharacter = Cast<APlayerCharacter>(GetOwner());
-	SetActorLocation(PlayerCharacter->GetActorLocation());
-	EnableInput(Cast<APlayerController>(PlayerCharacter->GetController()));
 	if (PlayerCharacter)
 	{
+		SetActorLocation(PlayerCharacter->GetActorLocation());
+		EnableInput(Cast<APlayerController>(PlayerCharacter->GetController()));
 		PlayerCharacter->OnPressedFreeCam.BindUObject(this, &ThisClass::SetIsFreeCam);
 	}
 }

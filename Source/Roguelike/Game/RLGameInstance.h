@@ -9,6 +9,7 @@
 #include "Roguelike/Game/RLListenerManager.h"
 #include "RLGameInstance.generated.h"
 
+
 UENUM(BlueprintType)
 enum class ELoadState : uint8
 {
@@ -49,8 +50,6 @@ public:
 	void LoadGame();
 	UFUNCTION(BlueprintCallable)
 	bool CanBind(FName MappingName, FKey Key);
-	UFUNCTION(BlueprintCallable)
-	int32 GetMappingNum(FName MappingName);
 	UFUNCTION(BlueprintCallable)
 	void RemoveBindKey(FKey Key);
 	UFUNCTION(BlueprintCallable)
@@ -101,6 +100,8 @@ private:
 	ARLMainGameMode* RLGameMode;
 	UPROPERTY()
 	URLListenerManager* ListenerManager;
+	UPROPERTY(BlueprintReadWrite,  Meta = (AllowPrivateAccess = "true"))
+	UUserWidget* LoadingWidget;
 
 	/*
 	 *  GameInstance에서 관리 또는 저장 시 필요한 변수들
@@ -147,5 +148,6 @@ public:
 	void SetTempDashChargeNum(int32 InNum) { TempDashChargeNum = InNum; }
 	int32 GetTempDashChargeNum() const { return TempDashChargeNum; }
 	void SetLoadState(ELoadState InLoadState) { LoadState = InLoadState; }
+	UUserWidget* GetLoadingWidget() const { return LoadingWidget; }
 	
 };

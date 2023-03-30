@@ -10,17 +10,15 @@ void UBTServiceCheckHP::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 {
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 	
-	UManagerComponent* ManagerComp = UManagerComponent::GetManagerComp(OwnerComp.GetAIOwner()->GetPawn());
 	UBlackboardComponent* BBComp = OwnerComp.GetBlackboardComponent();
 	
 	if (BBComp && BBComp->GetValueAsBool("DestroyTurret")) return;
 	
-	if (ManagerComp)
+	if (UManagerComponent* ManagerComp = UManagerComponent::GetManagerComp(OwnerComp.GetAIOwner()->GetPawn()))
 	{
 		if (ManagerComp->IsHPLow())
 		{
-			UMonsterCombatComponent* MonsterCombatComp = UMonsterCombatComponent::GetMonsterCombatComp(OwnerComp.GetAIOwner()->GetPawn());
-			if (MonsterCombatComp)
+			if (UMonsterCombatComponent* MonsterCombatComp = UMonsterCombatComponent::GetMonsterCombatComp(OwnerComp.GetAIOwner()->GetPawn()))
 			{
 				MonsterCombatComp->RequestHeal();
 			}

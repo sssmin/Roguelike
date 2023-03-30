@@ -47,13 +47,16 @@ public:
 	FOnUpdateCurrentHP OnUpdateCurrentHP;
 	FOnSetStateNum OnSetStateNum;
 	void ApplyMovementBuff();
+	void InitState();
 
 	static UManagerComponent* GetManagerComp(AActor* Character);
 
 private:
+	UFUNCTION(BlueprintCallable)
+	void RemoveAllTimer();
 	UFUNCTION()
 	void SetTempManager() const;
-	float CalcCounter(EElement EnemyElement);
+	float CalcCounter(EElement EnemyElement) const;
 	bool CheckState(uint8 State) const;
 	void ApplyState(uint8 State);
 	void RemoveState(uint8 State);
@@ -62,9 +65,8 @@ private:
 	UFUNCTION()
 	void RemoveBuff(uint8 Buff);
 	void ApplyDoTDamage(float Rate);
-	void InitElemBuff();
 	void CalcStateStack(const FCombatManager& EnemyCombatManage);
-	void InitState();
+	void CalcCurrentStack(uint8 State, FTimerHandle& StackDurationTimerHandle, int32& CurrentStack);
 	bool IsDodge();
 	float CalcCritical(const FCombatManager& EnemyCombatManage);
 	void InitStateStack(uint8 State);
@@ -74,9 +76,7 @@ private:
 	void StateCompleted(uint8 CompleteState);
 	void SetBuffTimer(float StartDuration, float RestDuration,  FTimerHandle& StartHandle, FTimerHandle& RestHandle,  uint8 Buff, ABaseCharacter* OwnerCharacter);
 	void BuffCompleted(uint8 CompleteBuff);
-	UFUNCTION(BlueprintCallable)
-	void RemoveAllTimer();
-	void RemoveTimer(FTimerHandle Handle);
+	void RemoveTimer(FTimerHandle& Handle);
 	
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
@@ -124,9 +124,7 @@ private:
 	
 	FTimerHandle MoveBuffStartTimerHandle; //이속 버프 지속시간
 	FTimerHandle MoveBuffRestTimerHandle; //이속 버프 지속시간
-
-	TArray<FTimerHandle> TimerHandles;
-
+	
 public:
 	void SetManager(const FHealthManager& InHealthManager, const FCombatManager& InCombatManager )
 	{

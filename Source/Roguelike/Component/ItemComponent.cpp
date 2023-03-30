@@ -44,8 +44,7 @@ void UItemComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 void UItemComponent::Init()
 {
-	URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
-	if (GI)
+	if (URLGameInstance* GI = URLGameInstance::GetRLGameInst(this))
 	{
 		GI->GetManager(ItemManager, FixMaxNum, ItemInfos);
 	}
@@ -64,24 +63,6 @@ void UItemComponent::ApplyOnceItem(uint8 Item)
 void UItemComponent::RemoveOnceItem(uint8 Item)
 {
 	ItemManager.OnceEquippedItem ^= Item;
-}
-
-float UItemComponent::CalcStatValuePer(TArray<float> Per, TArray<int32> Value)
-{
-	for (int32 i = 0; i < Per.Num() + 1; ++i)
-	{
-		const float RandValue = FMath::Rand() % 100 + 1;
-		float AddValue = 0.f;
-		for (int32 j = 0; j < Per.Num(); ++j)
-		{
-			AddValue += Per[j];
-			if (RandValue <= AddValue)
-			{
-				return Value[j];
-			}
-		}
-	}
-	return 0.f;
 }
 
 void UItemComponent::ApplyInfItem(EINFStackItem Item)
@@ -104,12 +85,29 @@ void UItemComponent::ApplyInfItem(EINFStackItem Item)
 				const TArray<int32> Value = { 28, 24, 21, 18, 15, 12, 10 };
 				const float AddToValue = CalcStatValuePer(Per, Value);
 				ManagerComp->UpdateMaxHP(AddToValue);
-				//체력회복
 				ManagerComp->HealByValue(AddToValue);
 			}
 			break;
 		}
 	}
+}
+
+float UItemComponent::CalcStatValuePer(const TArray<float>& Per, const TArray<int32>& Value)
+{
+	for (int32 i = 0; i < Per.Num() + 1; ++i)
+	{
+		const float RandValue = FMath::Rand() % 100 + 1;
+		float AddValue = 0.f;
+		for (int32 j = 0; j < Per.Num(); ++j)
+		{
+			AddValue += Per[j];
+			if (RandValue <= AddValue)
+			{
+				return Value[j];
+			}
+		}
+	}
+	return 0.f;
 }
 
 bool UItemComponent::ApplyFixMaxItem(EFixMaxStackItem Item)
@@ -120,7 +118,7 @@ bool UItemComponent::ApplyFixMaxItem(EFixMaxStackItem Item)
 		{
 			case EFixMaxStackItem::IncreaseRange:
 			{
-				uint8 Value = GetFixMaxStack(EFixMaxStackItem::IncreaseRange);
+				const uint8 Value = GetFixMaxStack(EFixMaxStackItem::IncreaseRange);
 				if (Value < FIX_MAX_STACK)
 				{
 					IncreaseFixMaxStack(EFixMaxStackItem::IncreaseRange);
@@ -131,7 +129,7 @@ bool UItemComponent::ApplyFixMaxItem(EFixMaxStackItem Item)
 			}
 			case EFixMaxStackItem::IncreaseCriticalPer:
 			{
-				uint8 Value = GetFixMaxStack(EFixMaxStackItem::IncreaseCriticalPer);
+				const uint8 Value = GetFixMaxStack(EFixMaxStackItem::IncreaseCriticalPer);
 				if (Value < FIX_MAX_STACK)
 				{
 					IncreaseFixMaxStack(EFixMaxStackItem::IncreaseCriticalPer);
@@ -166,12 +164,10 @@ bool UItemComponent::ApplyOnceEquipItem(const UItemInfo* Item, OUT EOnceEquipIte
 			else
 			{
 				Flag = EOnceEquipItemFlag::EquippedTwoOtherItems;
-
 				return false;
 			}
 		}
 	}
-
 	return false;
 }
 
@@ -232,7 +228,6 @@ void UItemComponent::SelectItem(UItemInfo* Item)
 		{
 			ApplyInfItem(Item->DetailType.INFStackItem);
 			ResumeController(RLPC);
-			//이펙트, 소리
 			break;
 		}
 		case EItemType::FixMaxStackItem:

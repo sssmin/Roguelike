@@ -88,37 +88,19 @@ private:
 };
 
 
-enum class ETutorialState : uint8
-{
-	None,
-	Desc,
-	SpawnMob,
-	ActivePortal,
-	ItemWidget
-};
-
 UCLASS()
-class ROGUELIKE_API UTutorialManager : public UObject, public FTickableGameObject
+class ROGUELIKE_API UTutorialManager : public UObject
 {
 	GENERATED_BODY()
 
 public:
 	UTutorialManager();
-	
 	virtual void PostInitProperties() override;
-	virtual void Tick(float DeltaTime) override;
-	virtual bool IsTickable() const override;
-	virtual bool IsTickableInEditor() const override;
-	virtual bool IsTickableWhenPaused() const override;
-	virtual TStatId GetStatId() const override;
-	virtual UWorld* GetWorld() const override;
-	
 	void SetObjective();
 	void ReconstructCell(uint8 Dir, const FCell& Info);
-	void StepComplete();
-	
 	void SetNextTutorial();
 	void TutorialCompleted();
+	
 private:
 	void StartTutorial();
 	void InitTutorialTable();
@@ -137,7 +119,6 @@ private:
 	UPROPERTY()
 	ARLTutorialGameMode* TutorialGameMode;
 	FCell CellInfo;
-	ETutorialState CurrentTutorialState;
 	UPROPERTY()
 	TArray<UTutorialSteps*> Tutorials;
 	UPROPERTY()

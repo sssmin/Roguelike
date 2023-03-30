@@ -9,7 +9,7 @@
 void UHPBarWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
+	
 	if (HPBar)
 	{
 		HPBar->SetPercent(100.f);

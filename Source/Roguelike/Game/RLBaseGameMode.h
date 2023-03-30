@@ -28,12 +28,9 @@ public:
 	virtual void SetPlayerLocation(uint8 Dir) const;
 	TArray<UItemInfo*> CreateRandItem();
 	void InitItemInfoFromTable();
-	
-protected:
 	virtual TSubclassOf<AMonsterCharacter> GetNormalMonsterClass(EKindOfMonster KindOfMonster) const;
 
 private:
-	
 	UPROPERTY()
 	TArray<UItemInfo*> ItemInfos;
 	UPROPERTY()

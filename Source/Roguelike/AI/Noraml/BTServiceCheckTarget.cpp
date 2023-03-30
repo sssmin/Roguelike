@@ -9,11 +9,9 @@ void UBTServiceCheckTarget::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* N
 {
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 
-	UBlackboardComponent* BBComp = OwnerComp.GetBlackboardComponent();
-	if (BBComp)
+	if (UBlackboardComponent* BBComp = OwnerComp.GetBlackboardComponent())
 	{
-		ABaseCharacter* Target = Cast<ABaseCharacter>(BBComp->GetValueAsObject("Target"));
-		if (Target)
+		if (ABaseCharacter* Target = Cast<ABaseCharacter>(BBComp->GetValueAsObject("Target")))
 		{
 			if (Target->IsDead())
 			{

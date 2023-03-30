@@ -12,6 +12,7 @@ class AMonsterBossEgo;
 class AElementItem;
 class AHealItem;
 class ACellActor;
+class UMonsterObjectPool;
 
 UCLASS()
 class ROGUELIKE_API ARLMainGameMode  : public ARLBaseGameMode
@@ -19,6 +20,8 @@ class ROGUELIKE_API ARLMainGameMode  : public ARLBaseGameMode
 	GENERATED_BODY()
 	
 public:
+	UFUNCTION(BlueprintCallable)
+	void InitMonsterObjectPool();
 	ARLMainGameMode();
 	virtual void BeginPlay() override;
 	void RequestSpawnMob(int32 StageLevel, int32 MobCount);
@@ -29,20 +32,20 @@ public:
 	virtual void CreateCenterPortal() const override;
 	virtual void DestroySpawnedActors() override;
 	void CreatePrevBossPortal() const;
-	
+	void SetMonsterManager(int32 StageLevel, OUT FHealthManager& HealthManager, OUT FCombatManager& CombatManager) const;
 	TArray<UItemInfo*> CreateLoadItem();
 	FVector GetBossCellScale() const;
 	void SetItemIcon(TArray<UItemInfo*>& InItemInfos);
-	
+	FCombatManager& SetRandomElement(int32 StageLevel, FCombatManager& CombatManager);
+	TSubclassOf<ABossMonsterCharacter> GetBossMonsterClass(EKindOfBossMonster KindOfMonster) const;
 
 private:
-	FCombatManager& SetRandomElement(int32 StageLevel, FCombatManager& CombatManager);
 	void SpawnCounterElementItem(EElement Element);
-	void SetMonsterManager(int32 StageLevel, OUT FHealthManager& HealthManager, OUT FCombatManager& CombatManager) const;
+	
 	void SetPlayerLocation(uint8 Dir) const;
 	TArray<AMonsterCharacter*> SpawnMob(int32 MobCount, EKindOfMonster KindOfMonster, FCombatManager& CombatManager, FHealthManager& HealthManager);
 	void SpawnBoss(EKindOfBossMonster KindOfMonster, FCombatManager& CombatManager, FHealthManager& HealthManager);
-	TSubclassOf<ABossMonsterCharacter> GetBossMonsterClass(EKindOfBossMonster KindOfMonster) const;
+
 	void ConnectTurret(AMonsterCharacter* Turret, TArray<AMonsterCharacter*> SpawnedMobs);
 	AMonsterCharacter* SpawnBossEgo(const FCombatManager& CombatManager, AMonsterCharacter* Boss);
 	void InitImage();
@@ -59,11 +62,14 @@ private:
 	TMap<EBuff, UTexture2D*> BuffImages;
 	UPROPERTY()
 	TMap<EINFStackItem, UTexture2D*> StatImages;
+	UPROPERTY()
+	UMonsterObjectPool* MonsterObjectPool;
 
 public:
 	UTexture2D* GetStateImage(EState State);
 	UTexture2D* GetBuffImage(EBuff Buff);
 	UTexture2D* GetStatImage(EINFStackItem StatItem);
+	TSubclassOf<AMonsterBossEgo> GetBossEgoClass() const { return BossEgoClass; }
 	
 	
 };

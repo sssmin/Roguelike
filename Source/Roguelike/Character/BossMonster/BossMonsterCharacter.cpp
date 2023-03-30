@@ -6,6 +6,7 @@
 #include "Components/ArrowComponent.h"
 
 #include "Roguelike/Actor/WhirlwindActor.h"
+#include "Roguelike/Character/NormalMonster/MonsterBossEgo.h"
 #include "Roguelike/Component/BossCombatComponent.h"
 #include "Roguelike/Component/ManagerComponent.h"
 #include "Roguelike/PlayerController/RLMonsterAIController.h"
@@ -18,7 +19,7 @@ ABossMonsterCharacter::ABossMonsterCharacter()
 	
 	bSkillFlipflop = false;
 	BossCombatComp = CreateDefaultSubobject<UBossCombatComponent>(TEXT("BossCombatComp"));
-	if(GetMonsterCombatComp())
+	if (GetMonsterCombatComp())
 	{
 		GetMonsterCombatComp()->DestroyComponent();
 	}
@@ -39,12 +40,12 @@ void ABossMonsterCharacter::BeginPlay()
 	{
 		BossCombatComp->GetCombatManager.BindUObject(this, &ABaseCharacter::GetCombatManager);
 	}
-
 }
 
 void ABossMonsterCharacter::GiveBTToController()
 {
-	RLAIController = RLAIController == nullptr ? Cast<ARLMonsterAIController>(GetController()) : RLAIController;
+	RLAIController = Cast<ARLMonsterAIController>(GetController());
+	
 	if (RLAIController)
 	{
 		RLAIController->SetBehaviorTree(BossBT);
@@ -149,23 +150,23 @@ void ABossMonsterCharacter::Destroyed()
 	}
 }
 
-void ABossMonsterCharacter::SetIsDeadAnimInst()
+void ABossMonsterCharacter::SetIsDeadAnimInst(bool InIsDead)
 {
-	Super::SetIsDeadAnimInst();
+	Super::SetIsDeadAnimInst(InIsDead);
 	
 	if (BossEgo)
 	{
-		BossEgo->SetIsDeadAnimInst();
+		BossEgo->SetIsDeadAnimInst(InIsDead);
 	}
 }
 
-void ABossMonsterCharacter::SetIsDeadBB()
+void ABossMonsterCharacter::SetIsDeadBB(bool InIsDead)
 {
-	Super::SetIsDeadBB();
+	Super::SetIsDeadBB(InIsDead);
 	
 	if (BossEgo)
 	{
-		BossEgo->SetIsDeadBB();
+		BossEgo->SetIsDeadBB(InIsDead);
 	}
 }
 
@@ -173,6 +174,11 @@ void ABossMonsterCharacter::Dead()
 {
 	Super::Dead();
 
+	if (BossEgo)
+	{
+		BossEgo->DisconnectController();
+		BossEgo->Deactivate();
+	}
 	if (BossCombatComp)
 	{
 		BossCombatComp->ReserveDestroySpawnedWhirlwind();
@@ -185,9 +191,7 @@ void ABossMonsterCharacter::OnHit(const FCombatManager& EnemyCombatManager, cons
 
 	if (BossEgo)
 	{
-		ARLMonsterAIController* EgoController = Cast<ARLMonsterAIController>(BossEgo->GetController());
-
-		if (EgoController)
+		if (ARLMonsterAIController* EgoController = Cast<ARLMonsterAIController>(BossEgo->GetController()))
 		{
 			EgoController->SetTarget(Attacker);
 		}

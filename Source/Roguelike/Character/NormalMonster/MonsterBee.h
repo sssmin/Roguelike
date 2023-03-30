@@ -14,5 +14,6 @@ class ROGUELIKE_API AMonsterBee : public AMonsterCharacter
 public:
 	AMonsterBee();
 	virtual void SpecialAttack(AActor* Target) override;
+	virtual void Spawn() override;
 	
 };

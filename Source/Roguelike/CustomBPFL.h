@@ -11,6 +11,14 @@ class ROGUELIKE_API UCustomBPFL : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 
+public:
+	UFUNCTION(BlueprintCallable)
+	static void PlayLoadingScreen(UUserWidget* Widget, bool PlayUntilStopped, float PlayTime);
+	UFUNCTION(BlueprintCallable)
+	static void StopLoadingScreen();
+	UFUNCTION(BlueprintCallable)
+	static bool IsInEditor();
+	
 private:
 	UFUNCTION(BlueprintCallable)
 	static void FlushInput(const APlayerController* PC);

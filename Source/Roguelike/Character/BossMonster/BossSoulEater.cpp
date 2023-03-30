@@ -3,7 +3,7 @@
 
 ABossSoulEater::ABossSoulEater()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 }
 
 void ABossSoulEater::BeginPlay()
@@ -15,7 +15,7 @@ void ABossSoulEater::ExecuteSkill()
 {
 	if (GetSkillFlipflop())
 	{
-		int32 RandValue = FMath::RandRange(1, 4);
+		const int32 RandValue = FMath::RandRange(1, 4);
 		if (RandValue == 1)
 		{
 			Whirlwind();
@@ -38,15 +38,5 @@ void ABossSoulEater::ExecuteSkill()
 			Square();
 		}
 		SetSkillFlipflop(true);
-	}
-}
-
-void ABossSoulEater::Destroyed()
-{
-	Super::Destroyed();
-
-	if (GetBossEgo())
-	{
-		GetBossEgo()->Destroy();
 	}
 }

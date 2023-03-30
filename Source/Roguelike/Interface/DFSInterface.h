@@ -1,5 +1,4 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -99,5 +98,4 @@ class ROGUELIKE_API IDFSInterface
 {
 	GENERATED_BODY()
 
-public:
 };

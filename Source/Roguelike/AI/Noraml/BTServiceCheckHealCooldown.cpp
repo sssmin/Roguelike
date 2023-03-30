@@ -13,9 +13,8 @@ void UBTServiceCheckHealCooldown::TickNode(UBehaviorTreeComponent& OwnerComp, ui
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 
 	if (bHealCooldown) return;
-
-	UBlackboardComponent* BBComp = OwnerComp.GetBlackboardComponent();
-	if (BBComp)
+	
+	if (UBlackboardComponent* BBComp = OwnerComp.GetBlackboardComponent())
 	{
 		bool CanHeal = BBComp->GetValueAsBool(CanHealKey.SelectedKeyName);
 		if (!CanHeal)

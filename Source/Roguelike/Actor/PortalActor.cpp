@@ -69,8 +69,7 @@ void APortalActor::BeginOverlapped(UPrimitiveComponent* OverlappedComponent, AAc
 {
 	if (Cast<APlayerCharacter>(OtherActor))
 	{
-		URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
-		if (GI)
+		if (URLGameInstance* GI = URLGameInstance::GetRLGameInst(this))
 		{
 			switch (PortalType)
 			{
@@ -139,8 +138,7 @@ void APortalActor::Interact()
 {
 	if (bIsInteractActive)
 	{
-		URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
-		if (GI)
+		if (URLGameInstance* GI = URLGameInstance::GetRLGameInst(this))
 		{
 			GI->RequestMovePrevBossCell();
 		}

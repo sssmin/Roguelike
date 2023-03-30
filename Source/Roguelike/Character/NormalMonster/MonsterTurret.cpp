@@ -20,8 +20,8 @@ AMonsterTurret::AMonsterTurret()
 
 void AMonsterTurret::GiveBTToController()
 {
-	RLAIController = RLAIController == nullptr ? Cast<ARLMonsterAIController>(GetController()) : RLAIController;
-	if (RLAIController)
+	RLAIController = Cast<ARLMonsterAIController>(GetController());
+	if (RLAIController && TurretBT)
 	{
 		RLAIController->SetBehaviorTree(TurretBT);
 	}
@@ -32,13 +32,14 @@ void AMonsterTurret::SpecialAttack(AActor* Target)
 	FireSpread8PartsFromCenter(USpecialATKDamageType::StaticClass());
 }
 
-void AMonsterTurret::Destroyed()
+void AMonsterTurret::Deactivate()
 {
-	Super::Destroyed();
+	Super::Deactivate();
 
 	if (DestroySoundCue && DestroyParticle)
 	{
 		UGameplayStatics::PlaySound2D(this, DestroySoundCue);
 		UGameplayStatics::SpawnEmitterAtLocation(this, DestroyParticle, GetActorLocation());
 	}
+	
 }

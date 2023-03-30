@@ -26,12 +26,26 @@ void USelectItemCellWidget::Init(UItemInfo* Item, bool IsTutorial)
 		ItemName->SetText(FText::FromString(ItemInfo->ItemName));
 		ItemButton->OnClicked.AddUniqueDynamic(this, &ThisClass::SelectItem);
 		FButtonStyle ButtonStyle;
-		ButtonStyle.Normal.SetResourceObject(ItemInfo->ItemIcon);
+		if (ItemInfo->ItemIcon)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%s"), *ItemInfo->ItemIcon->GetName());
+			ButtonStyle.Normal.SetResourceObject(ItemInfo->ItemIcon);	
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("없슴"));
+		}
 		ButtonStyle.Normal.SetImageSize(FVector2D(256.f, 256.f));
-		ButtonStyle.Hovered.SetResourceObject(ItemInfo->ItemIcon);
+		if (ItemInfo->ItemIcon)
+		{
+			ButtonStyle.Hovered.SetResourceObject(ItemInfo->ItemIcon);
+		}
 		ButtonStyle.Hovered.TintColor = FSlateColor(FLinearColor(1.f, 1.f, 1.f, 0.5f));
 		ButtonStyle.Hovered.SetImageSize(FVector2D(256.f, 256.f));
-		ButtonStyle.Pressed.SetResourceObject(ItemInfo->ItemIcon);
+		if (ItemInfo->ItemIcon)
+		{
+			ButtonStyle.Pressed.SetResourceObject(ItemInfo->ItemIcon);
+		}
 		ButtonStyle.Pressed.TintColor = FSlateColor(FLinearColor(0.1f, 0.1f, 0.1f, 0.9f));
 		ButtonStyle.Pressed.SetImageSize(FVector2D(256.f, 256.f));
 

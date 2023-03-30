@@ -9,6 +9,7 @@
 #include "Roguelike/Component/MonsterCombatComponent.h"
 #include "Roguelike/Item/ElementItem.h"
 #include "Roguelike/Actor/CellActor.h"
+#include "MonsterObjectPool.h"
 
 ARLMainGameMode::ARLMainGameMode()
 {
@@ -16,13 +17,12 @@ ARLMainGameMode::ARLMainGameMode()
 	
 }
 
-
-
 void ARLMainGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
 	InitImage();
+	MonsterObjectPool = NewObject<UMonsterObjectPool>(this);
 }
 
 void ARLMainGameMode::RequestSpawnMob(int32 StageLevel, int32 MobCount)
@@ -35,42 +35,39 @@ void ARLMainGameMode::RequestSpawnMob(int32 StageLevel, int32 MobCount)
 	AMonsterCharacter* Turret = nullptr;
 	TArray<AMonsterCharacter*> SpawnedMobs;
 
-	Turret = SpawnMob(1, EKindOfMonster::Turret, CombatManager, HealthManager)[0]; 	//터렛
+	Turret = SpawnMob(1, EKindOfMonster::Turret, CombatManager, HealthManager)[0]; //터렛
 	
 	for (int32 i = 0; i < 2; ++i)
 	{
 		const EKindOfMonster RandMonster = static_cast<EKindOfMonster>(FMath::RandRange(1, static_cast<uint8>(EKindOfMonster::MAX) - 2));
-		//RandMonster = EKindOfMonster::Suicide; //TEST
 		SpawnedMobs.Append(SpawnMob(MobCount / 2, RandMonster, CombatManager, HealthManager));
 	}
 	
 	ConnectTurret(Turret, SpawnedMobs);
-	//SpawnBoss(EKindOfBossMonster::SOULEATER, CombatManager, HealthManager); //TEST
 }
 
 TArray<AMonsterCharacter*> ARLMainGameMode::SpawnMob(int32 MobCount, EKindOfMonster KindOfMonster, FCombatManager& CombatManager, FHealthManager& HealthManager)
 {
 	TArray<AMonsterCharacter*> SpawnedMobs;
-	TSubclassOf<AMonsterCharacter> SpawnMonsterClass = GetNormalMonsterClass(KindOfMonster);
-	//KindOfMonster = EKindOfMonster::Suicide; //TEST
-	//SpawnMonsterClass = GetNormalMonsterClass(EKindOfMonster::Suicide); //TEST
-	for (int32 i = 0; i < MobCount; ++i)
+	if (MonsterObjectPool)
 	{
-		AMonsterCharacter* Mob = GetWorld()->SpawnActor<AMonsterCharacter>(SpawnMonsterClass, GetMobSpawnPoints()[i], FRotator::ZeroRotator);
-		if (Mob && Mob->GetManagerComp())
+		for (int32 i = 0; i < MobCount; ++i)
 		{
-			if (FMath::RandBool())
+			AMonsterCharacter* Mob = MonsterObjectPool->GetNormalMonster(KindOfMonster);
+			if (Mob && Mob->GetManagerComp())
 			{
-				Mob->SetMonsterType(EMonsterType::Elite);
-				CombatManager.ATK *= 1.5f;
-				HealthManager.MaxHP *= 1.5f;
-				HealthManager.CurrentHP = HealthManager.MaxHP;
+				if (FMath::RandBool())
+				{
+					Mob->SetMonsterType(EMonsterType::Elite);
+					CombatManager.ATK *= 1.5f;
+					HealthManager.MaxHP *= 1.5f;
+					HealthManager.CurrentHP = HealthManager.MaxHP;
+				}
+				Mob->SetKindOfMonster(KindOfMonster);
+				Mob->SpawnInit(HealthManager, CombatManager, GetMobSpawnPoints()[i]);
+				
+				SpawnedMobs.Add(Mob);
 			}
-			Mob->SetKindOfMonster(KindOfMonster);
-			Mob->GetManagerComp()->SetManager(HealthManager, CombatManager);
-			Mob->SpawnDefaultController();
-			Mob->GiveBTToController();
-			SpawnedMobs.Add(Mob);
 		}
 	}
 	return SpawnedMobs;
@@ -89,40 +86,38 @@ void ARLMainGameMode::RequestSpawnBoss(int32 StageLevel)
 
 void ARLMainGameMode::SpawnBoss(EKindOfBossMonster KindOfMonster, FCombatManager& CombatManager, FHealthManager& HealthManager)
 {
-	const TSubclassOf<ABossMonsterCharacter> BossClass = GetBossMonsterClass(KindOfMonster);
-
-	AMonsterCharacter* Boss = GetWorld()->SpawnActor<AMonsterCharacter>(BossClass, GetMobSpawnPoints()[6], FRotator(0.f, -180.f, 0.f));
-	if (Boss && Boss->GetManagerComp())
+	if (MonsterObjectPool)
 	{
-		Boss->SetMonsterType(EMonsterType::Boss);
-		Boss->SpawnDefaultController();
-		Boss->GiveBTToController();
-		CombatManager.ATK *= 5.f;
-		HealthManager.MaxHP *= 10.f;
-		HealthManager.CurrentHP = HealthManager.MaxHP;
-		Boss->GetManagerComp()->SetManager(HealthManager, CombatManager);
-		Cast<ABossMonsterCharacter>(Boss)->SetKindOfBossMonster(KindOfMonster);
-		AMonsterCharacter* Ego = SpawnBossEgo(CombatManager, Boss);
-		if (Ego)
+		AMonsterCharacter* Boss = MonsterObjectPool->GetBossMonster(KindOfMonster);
+		if (Boss && Boss->GetManagerComp())
 		{
-			Cast<ABossMonsterCharacter>(Boss)->SetBossEgo(Ego);
+			CombatManager.ATK *= 5.f;
+			HealthManager.MaxHP *= 10.f;
+			HealthManager.CurrentHP = HealthManager.MaxHP;
+			Boss->SetMonsterType(EMonsterType::Boss);
+			Cast<ABossMonsterCharacter>(Boss)->SetKindOfBossMonster(KindOfMonster);
+			Boss->SpawnInit(HealthManager, CombatManager, GetMobSpawnPoints()[6]);
+			
+			AMonsterCharacter* Ego = SpawnBossEgo(CombatManager, Boss);
+			if (Ego)
+			{
+				Cast<ABossMonsterCharacter>(Boss)->SetBossEgo(Ego);
+			}
 		}
 	}
 }
 
 AMonsterCharacter* ARLMainGameMode::SpawnBossEgo(const FCombatManager& CombatManager, AMonsterCharacter* Boss)
 {
-	AMonsterCharacter* Mob = GetWorld()->SpawnActor<AMonsterCharacter>(BossEgoClass, GetMobSpawnPoints()[5], FRotator::ZeroRotator);
+	AMonsterCharacter* Mob = MonsterObjectPool->GetBossEgoMonster();
 	
 	if (Mob && Mob->GetManagerComp())
 	{
 		Mob->SetMonsterType(EMonsterType::Ego);
-		Mob->SpawnDefaultController();
-		Mob->GiveBTToController();
-		Cast<AMonsterBossEgo>(Mob)->SetBoss(Boss);
-		
 		Mob->SetKindOfMonster(EKindOfMonster::Dino);
-		Mob->GetManagerComp()->SetManager(FHealthManager(), CombatManager);
+		
+		Cast<AMonsterBossEgo>(Mob)->SetBoss(Boss);
+		Mob->SpawnInit(FHealthManager(), CombatManager, GetMobSpawnPoints()[5]);
 	}
 	return Mob;
 }
@@ -256,7 +251,6 @@ void ARLMainGameMode::DestroySpawnedActors()
 		SpawnedElementItem->Destroy();
 		SpawnedElementItem = nullptr;
 	}
-	
 }
 
 void ARLMainGameMode::SetPlayerLocation(uint8 Dir) const
@@ -268,14 +262,12 @@ void ARLMainGameMode::SetPlayerLocation(uint8 Dir) const
 	}
 	if (static_cast<EDir>(Dir) != EDir::Load)
 	{
-		ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(this, 0);
-		if (PlayerCharacter)
+		if (ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(this, 0))
 		{
 			const FVector PlayerLoc = PlayerCharacter->GetActorLocation();
 			PlayerCharacter->SetActorLocation(FVector(PlayerLocation.X, PlayerLocation.Y, PlayerLoc.Z));
 		}
 	}
-	
 }
 
 void ARLMainGameMode::RequestSpawnHealItem()
@@ -365,16 +357,12 @@ void ARLMainGameMode::CreatePrevBossPortal() const
 	}
 }
 
-
-
 TArray<UItemInfo*> ARLMainGameMode::CreateLoadItem()
 {
 	if (GetItemInfos().IsEmpty()) InitItemInfoFromTable();
 
 	return TArray<UItemInfo*>();
 }
-
-
 
 FVector ARLMainGameMode::GetBossCellScale() const
 {
@@ -393,10 +381,18 @@ void ARLMainGameMode::SetItemIcon(TArray<UItemInfo*>& InItemInfos)
 	{
 		for (const auto& SavedInfo : GetItemInfos())
 		{
-			if(SavedInfo->ItemName == ItemInfo->ItemName)
+			if (SavedInfo->ItemName == ItemInfo->ItemName)
 			{
 				ItemInfo->ItemIcon = SavedInfo->ItemIcon;
 			}
 		}
+	}
+}
+
+void ARLMainGameMode::InitMonsterObjectPool()
+{
+	if (MonsterObjectPool)
+	{
+		MonsterObjectPool->Init();
 	}
 }

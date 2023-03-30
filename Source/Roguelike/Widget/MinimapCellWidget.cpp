@@ -35,7 +35,6 @@ void UMinimapCellWidget::Init(ECellState CellState)
 		case ECellState::Clear:
 			Cell->SetBrushColor(FLinearColor::Gray);
 			break;
-
 		}
 		Cell->SetRenderOpacity(0.7f);
 	}

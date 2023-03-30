@@ -5,8 +5,7 @@
 
 EBTNodeResult::Type UBTTaskMoveComplete::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	UBlackboardComponent* BBComp = OwnerComp.GetBlackboardComponent();
-	if (BBComp)
+	if (UBlackboardComponent* BBComp = OwnerComp.GetBlackboardComponent())
 	{
 		BBComp->SetValueAsBool("ShouldMove", false);
 

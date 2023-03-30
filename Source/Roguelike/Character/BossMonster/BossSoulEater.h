@@ -16,6 +16,4 @@ public:
 	virtual void ExecuteSkill() override;
 	virtual void BeginPlay() override;
 	
-protected:
-	virtual void Destroyed() override;
 };

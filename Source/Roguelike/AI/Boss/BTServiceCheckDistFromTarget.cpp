@@ -12,14 +12,12 @@ void UBTServiceCheckDistFromTarget::OnBecomeRelevant(UBehaviorTreeComponent& Own
 {
 	Super::OnBecomeRelevant(OwnerComp, NodeMemory);
 	
-	UBlackboardComponent* BBComp = OwnerComp.GetBlackboardComponent();
-	if (BBComp)
+	if (UBlackboardComponent* BBComp = OwnerComp.GetBlackboardComponent())
 	{
 		AActor* Target = Cast<AActor>(BBComp->GetValueAsObject("Target"));
 		if (Target && OwnerComp.GetAIOwner())
 		{
-			AActor* AIOwner = OwnerComp.GetAIOwner()->GetPawn();
-			if (AIOwner)
+			if (AActor* AIOwner = OwnerComp.GetAIOwner()->GetPawn())
 			{
 				const float Dist = AIOwner->GetDistanceTo(Target);
 				if (Dist >= 900.f)

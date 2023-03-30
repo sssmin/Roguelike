@@ -16,8 +16,7 @@ public:
 	AMonsterTurret();
 	virtual void GiveBTToController() override;
 	virtual void SpecialAttack(AActor* Target) override;
-	virtual void Destroyed() override;
-
+	virtual void Deactivate() override;
 
 private:
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))

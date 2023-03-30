@@ -20,7 +20,8 @@ AMonsterBossEgo::AMonsterBossEgo()
 
 void AMonsterBossEgo::GiveBTToController()
 {
-	RLAIController = RLAIController == nullptr ? Cast<ARLMonsterAIController>(GetController()) : RLAIController;
+	RLAIController = Cast<ARLMonsterAIController>(GetController());
+	
 	if (RLAIController)
 	{
 		RLAIController->SetBehaviorTree(EgoBT);
@@ -29,8 +30,7 @@ void AMonsterBossEgo::GiveBTToController()
 
 void AMonsterBossEgo::OnHit(const FCombatManager& EnemyCombatManager, const FItemManager& EnemyItemManager, AActor* Attacker, AActor* DamageCauser, TSubclassOf<UDamageType> DamageType)
 {
-	ABossMonsterCharacter* BossCharacter = Cast<ABossMonsterCharacter>(Boss);
-	if (BossCharacter)
+	if (ABossMonsterCharacter* BossCharacter = Cast<ABossMonsterCharacter>(Boss))
 	{
 		ARLMonsterAIController* BossController = Cast<ARLMonsterAIController>(BossCharacter->GetController());
 
@@ -45,7 +45,7 @@ void AMonsterBossEgo::OnHit(const FCombatManager& EnemyCombatManager, const FIte
 void AMonsterBossEgo::SetBoss(AActor* InBoss)
 {
 	Boss = InBoss;
-	RLAIController = RLAIController == nullptr ? Cast<ARLMonsterAIController>(GetController()) : RLAIController;
+	RLAIController = Cast<ARLMonsterAIController>(GetController());
 	if (Boss && RLAIController && RLAIController->GetBlackboardComponent())
 	{
 		RLAIController->GetBlackboardComponent()->SetValueAsObject("Boss", Boss);

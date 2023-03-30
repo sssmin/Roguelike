@@ -25,16 +25,14 @@ void UCharacterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 		Velocity.Z = 0;
 		Speed = Velocity.Size();
 
-		bIsAccelerating = Char->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f ? true : false;
+		if (Char->GetCharacterMovement())
+		{
+			bIsAccelerating = Char->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f ? true : false;	
+		}
+		const FRotator MovementRot = UKismetMathLibrary::MakeRotFromX(Char->GetVelocity());
+		const FRotator DeltaRot = UKismetMathLibrary::NormalizedDeltaRotator(MovementRot, Char->GetLookRot());
 		
-		FRotator MovementRot = UKismetMathLibrary::MakeRotFromX(Char->GetVelocity());
-		
-		FRotator DeltaRot = UKismetMathLibrary::NormalizedDeltaRotator(MovementRot, Char->GetLookRot());
-		
-
 		DeltaRotation = FMath::RInterpTo(DeltaRotation, DeltaRot, DeltaTime, 6.f);
-		
 		YawOffset = DeltaRotation.Yaw;
-
 	}
 }

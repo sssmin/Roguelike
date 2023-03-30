@@ -4,6 +4,7 @@
 #include "RLGameInstance.h"
 #include "RLTutorialGameMode.h"
 #include "Kismet/GameplayStatics.h"
+#include "Roguelike/CustomBPFL.h"
 #include "Roguelike/PlayerController/RLPlayerController.h"
 #include "Roguelike/Widget/TutorialWidget.h"
 #include "Roguelike/Widget/FadeWidget.h"
@@ -12,7 +13,6 @@ UTutorialManager::UTutorialManager()
 {
 	CellInfo = FCell();
 	CurrentStep = 0;
-	CurrentTutorialState = ETutorialState::None;
 	PrevEnterDir = 0;
 }
 
@@ -20,7 +20,6 @@ void UTutorialManager::PostInitProperties()
 {
 	Super::PostInitProperties();
 	
-
 	TutorialGameMode = Cast<ARLTutorialGameMode>(UGameplayStatics::GetGameMode(this));
 	GameInst = Cast<URLGameInstance>(UGameplayStatics::GetGameInstance(this));
 	
@@ -32,36 +31,6 @@ void UTutorialManager::PostInitProperties()
 	}
 }
 
-void UTutorialManager::Tick(float DeltaTime)
-{
-	
-}
-
-bool UTutorialManager::IsTickable() const
-{
-	return true;
-}
-
-bool UTutorialManager::IsTickableInEditor() const
-{
-	return false;
-}
-
-bool UTutorialManager::IsTickableWhenPaused() const
-{
-	return false;
-}
-
-TStatId UTutorialManager::GetStatId() const
-{
-	return TStatId();
-}
-
-UWorld* UTutorialManager::GetWorld() const
-{
-	return GetOuter()->GetWorld();
-}
-
 void UTutorialManager::StartTutorial()
 {
 	check(TutorialGameMode);
@@ -69,7 +38,6 @@ void UTutorialManager::StartTutorial()
 	
 	CellInfo = GameInst->GetCellInfo();
 	TutorialGameMode->RequestSpawnCell(CellInfo.CellClass, CellInfo.TempWall);
-	//SetObjective();
 	InitTutorialTable();
 	InitDescTable();
 	ExecuteTutorial();
@@ -114,9 +82,9 @@ void UTutorialManager::InitDescTable()
 void UTutorialManager::EndTutorial()
 {
 	check(GameInst);
+	UCustomBPFL::PlayLoadingScreen(GameInst->GetLoadingWidget(), true, 3.f);
 	GameInst->NewGame();
-	GameInst->SetLoadState(ELoadState::NewGame);
-	UGameplayStatics::OpenLevel(GetWorld(), "LoadingScreen", true);
+	UGameplayStatics::OpenLevel(GetWorld(), "GameMap", true);
 }
 
 void UTutorialManager::ExecuteTutorial()
@@ -126,7 +94,6 @@ void UTutorialManager::ExecuteTutorial()
 	switch (Tutorials[CurrentStep]->TutorialTypes)
 	{
 	case ETutorialTypes::Desc:
-		CurrentTutorialState = ETutorialState::Desc;
 		if (TutorialGameMode->GetTutorialWidget())
 		{
 			VisibleDesc(true);
@@ -134,20 +101,16 @@ void UTutorialManager::ExecuteTutorial()
 		}
 		break;
 	case ETutorialTypes::SpawnMob:
-		CurrentTutorialState = ETutorialState::SpawnMob;
 		TutorialGameMode->SpawnTutorialMonster();
 		break;
 	case ETutorialTypes::ActivePortal:
 		TutorialGameMode->CreateTutorialPortal(GetDir());
-		CurrentTutorialState = ETutorialState::ActivePortal;
 		break;
 	case ETutorialTypes::ItemWidget:
-		ARLPlayerController* PC = Cast<ARLPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
-		if (PC)
+		if (ARLPlayerController* PC = Cast<ARLPlayerController>(UGameplayStatics::GetPlayerController(this, 0)))
 		{
 			PC->ShowSelectItemWidget(true);
 		}
-		CurrentTutorialState = ETutorialState::ItemWidget;
 		break;
 	}
 }
@@ -157,7 +120,7 @@ uint8 UTutorialManager::GetDir()
 	TArray<uint8> Dirs;
 	for (int32 i = 0; i < CellInfo.Status.Num(); ++i)
 	{
-		if (CellInfo.Status[i]) //i -> 0,1,2,3이 드갈거고, 
+		if (CellInfo.Status[i])
 		{
 			Dirs.Add(i);
 		}
@@ -210,7 +173,6 @@ void UTutorialManager::DescTypingSkip()
 
 bool UTutorialManager::CheckTypeCompleted()
 {
-	UE_LOG(LogTemp, Warning, TEXT("1"));
 	if (TutorialGameMode->GetTutorialWidget())
 	{
 		if (TutorialGameMode->GetTutorialWidget()->GetIsTypeCompleted())
@@ -262,26 +224,10 @@ void UTutorialManager::ReconstructCell(uint8 Dir, const FCell& Info)
 void UTutorialManager::SetObjective()
 {
 	check(TutorialGameMode);
-	
-	if (CellInfo.IsCleared)
+
+	if (CellInfo.CellType == ECellType::Bonus)
 	{
-		//TutorialGameMode->CreateSidePortal();
-	}
-	else
-	{
-		switch (CellInfo.CellType)
-		{
-		case ECellType::Mobs:
-			//TutorialGameMode->SpawnTutorialMonster();
-			break;
-		case ECellType::Boss:
-			//TutorialGameMode->SpawnTutorialMonster();
-			break;
-		case ECellType::Bonus:
-			TutorialGameMode->RequestSpawnHealItem();
-			//TutorialGameMode->CreateSidePortal();
-			break;
-		}
+		TutorialGameMode->RequestSpawnHealItem();
 	}
 }
 

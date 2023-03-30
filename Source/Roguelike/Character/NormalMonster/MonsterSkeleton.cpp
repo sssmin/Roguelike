@@ -23,8 +23,8 @@ void AMonsterSkeleton::BeginPlay()
 
 void AMonsterSkeleton::GiveBTToController()
 {
-	RLAIController = RLAIController == nullptr ? Cast<ARLMonsterAIController>(GetController()) : RLAIController;
-	if (RLAIController)
+	RLAIController = Cast<ARLMonsterAIController>(GetController());
+	if (RLAIController && SkeletonBT)
 	{
 		RLAIController->SetBehaviorTree(SkeletonBT);
 	}

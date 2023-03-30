@@ -11,6 +11,7 @@
 #include "RLTutorialGameMode.h"
 #include "RoguelikeSaveGame.h"
 #include "TutorialManager.h"
+#include "Blueprint/UserWidget.h"
 
 
 URLGameInstance::URLGameInstance()
@@ -25,6 +26,7 @@ void URLGameInstance::Init()
 	
 	DFS = MakeShared<DFSAgrt>();
 	ListenerManager = NewObject<URLListenerManager>();
+	
 	Initialize(0);
 }
 
@@ -48,7 +50,6 @@ void URLGameInstance::LoadComplete(const float LoadTime, const FString& MapName)
 	}
 	else if (MapName == "/Game/Maps/TutorialMap")
 	{
-		//튜토리얼 게임모드랑 내통. 튜토리얼  첫시작임.
 		ARLTutorialGameMode* RLTutoGM = Cast<ARLTutorialGameMode>(UGameplayStatics::GetGameMode(this));
 		if (RLTutoGM)
 		{
@@ -465,19 +466,6 @@ bool URLGameInstance::CanBind(FName MappingName, FKey Key)
 		}
 	}
 	return true;
-}
-
-int32 URLGameInstance::GetMappingNum(FName MappingName)
-{
-	UInputSettings* Settings = UInputSettings::GetInputSettings();
-	check(Settings);
-	if (Settings->DoesAxisExist(MappingName))
-	{
-		TArray<FInputAxisKeyMapping> Mappings;
-		Settings->GetAxisMappingByName(MappingName, Mappings);
-		return Mappings.Num();
-	}
-	return 0;
 }
 
 void URLGameInstance::RemoveBindKey(FKey Key) // W 가 들어왔으면 W랑 매핑된 걸 찾는다.

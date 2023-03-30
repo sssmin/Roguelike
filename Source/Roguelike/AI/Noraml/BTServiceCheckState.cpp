@@ -24,16 +24,12 @@ void UBTServiceCheckState::CheckState(UBehaviorTreeComponent& OwnerComp)
 	UBlackboardComponent* BBComp = OwnerComp.GetBlackboardComponent();
 	if (AIC && BBComp)
 	{
-		APawn* AIPawn = AIC->GetPawn();
-		
-		if (AIPawn)
+		if (APawn* AIPawn = AIC->GetPawn())
 		{
-			UManagerComponent* ManagerComp = UManagerComponent::GetManagerComp(AIPawn);
-			if (ManagerComp)
+			if (UManagerComponent* ManagerComp = UManagerComponent::GetManagerComp(AIPawn))
 			{
 				CurrentState = ManagerComp->GetCurrentState();
-			
-
+				
 				if (CurrentState & static_cast<uint8>(EState::Frozen))
 				{
 					BBComp->SetValueAsEnum(StateKey.SelectedKeyName, MonsterState::FROZEN);

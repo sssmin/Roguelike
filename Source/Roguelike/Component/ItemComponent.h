@@ -43,7 +43,7 @@ private:
 	uint8 GetFixMaxStack(EFixMaxStackItem Item);
 	void IncreaseFixMaxStack(EFixMaxStackItem Item);
 	void ResumeController(ARLPlayerController* RLPC);
-	float CalcStatValuePer(TArray<float> Per, TArray<int32> Value);
+	float CalcStatValuePer(const TArray<float>& Per, const TArray<int32>& Value);
 	
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
 	FItemManager ItemManager;

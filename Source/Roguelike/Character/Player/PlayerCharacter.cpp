@@ -16,9 +16,6 @@
 #include "Roguelike/Component/PlayerCombatComponent.h"
 #include "Roguelike/Interface/InteractInterface.h"
 #include "Roguelike/Character/CharacterAnimInstance.h"
-
-#include "DrawDebugHelpers.h"
-#include "Components/WidgetComponent.h"
 #include "Roguelike/Actor/DamageWidgetActor.h"
 #include "Roguelike/Game/RLMainGameMode.h"
 #include "Roguelike/Game/RLTutorialGameMode.h"
@@ -63,15 +60,14 @@ void APlayerCharacter::BeginPlay()
 	if (GetWorld())
 	{
 		PC = GetWorld()->GetFirstPlayerController();
+		if (PC)
+		{
+			FInputModeGameAndUI InputModeData;
+			InputModeData.SetHideCursorDuringCapture(false);
+			PC->SetInputMode(InputModeData);
+		}
 	}
-	if (PC)
-	{
-		FInputModeGameAndUI InputModeData;
-		InputModeData.SetHideCursorDuringCapture(false);
-		//InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::LockInFullscreen);
-		PC->SetInputMode(InputModeData);
-	}
-
+	
 	if (ManagerComponent && ItemComp)
 	{
 		ManagerComponent->SetItemComp(ItemComp);
@@ -136,7 +132,7 @@ void APlayerCharacter::Test1()
 	// 	Result
 	// );
 	ManagerComponent->HealByRate(100.f);
-	
+	ManagerComponent->UpdateCurrentAtk(100.f);
 }
 
 void APlayerCharacter::Test2()
@@ -177,7 +173,6 @@ void APlayerCharacter::Interact()
 {
 	FVector Start = GetActorLocation();
 	FVector End = GetActorLocation() + GetActorForwardVector() * 500.f;
-	//DrawDebugLine(GetWorld(), Start, End, FColor::Red, true, 5.f, 0, 10.f);
 	FHitResult HitResult;
 	FCollisionQueryParams QueryParams;
 	QueryParams.AddIgnoredActor(this);
@@ -249,56 +244,56 @@ void APlayerCharacter::ApplyMovementBuff() const
 void APlayerCharacter::SetStateIcon(EState State)
 {
 	ARLMainGameMode* MainGM = Cast<ARLMainGameMode>(UGameplayStatics::GetGameMode(this));
-	if (MainGM && Cast<ARLPlayerController>(PC))
+	ARLPlayerController* RLPC = Cast<ARLPlayerController>(PC);
+	if (MainGM && RLPC)
 	{
-		UTexture2D* Image = MainGM->GetStateImage(State);
-		if (Image)
+		if (UTexture2D* Image = MainGM->GetStateImage(State))
 		{
-			Cast<ARLPlayerController>(PC)->SetStateIcon(State, Image);	
+			RLPC->SetStateIcon(State, Image);	
 		}
-		
 	}
 }
 
 void APlayerCharacter::RemoveStateIcon(EState State)
 {
-	if (Cast<ARLPlayerController>(PC))
+	if (ARLPlayerController* RLPC = Cast<ARLPlayerController>(PC))
 	{
-		Cast<ARLPlayerController>(PC)->RemoveStateIcon(State);
+		RLPC->RemoveStateIcon(State);
 	}
 }
 
 void APlayerCharacter::FlickerStateIcon(EState State)
 {
-	if (Cast<ARLPlayerController>(PC))
+	if (ARLPlayerController* RLPC = Cast<ARLPlayerController>(PC))
 	{
-		Cast<ARLPlayerController>(PC)->FlickerStateIcon(State);
+		RLPC->FlickerStateIcon(State);
 	}
 }
 
 void APlayerCharacter::SetBuffIcon(EBuff Buff)
 {
 	ARLMainGameMode* MainGM = Cast<ARLMainGameMode>(UGameplayStatics::GetGameMode(this));
-	if (MainGM && Cast<ARLPlayerController>(PC))
+	ARLPlayerController* RLPC = Cast<ARLPlayerController>(PC);
+	if (MainGM && RLPC)
 	{
 		UTexture2D* Image = MainGM->GetBuffImage(Buff);
-		Cast<ARLPlayerController>(PC)->SetBuffIcon(Buff, Image);
+		RLPC->SetBuffIcon(Buff, Image);
 	}
 }
 
 void APlayerCharacter::RemoveBuffIcon(EBuff Buff)
 {
-	if (Cast<ARLPlayerController>(PC))
+	if (ARLPlayerController* RLPC = Cast<ARLPlayerController>(PC))
 	{
-		Cast<ARLPlayerController>(PC)->RemoveBuffIcon(Buff);
+		RLPC->RemoveBuffIcon(Buff);
 	}
 }
 
 void APlayerCharacter::FlickerBuffIcon(EBuff Buff)
 {
-	if (Cast<ARLPlayerController>(PC))
+	if (ARLPlayerController* RLPC = Cast<ARLPlayerController>(PC))
 	{
-		Cast<ARLPlayerController>(PC)->FlickerBuffIcon(Buff);
+		RLPC->FlickerBuffIcon(Buff);
 	}
 }
 
@@ -332,8 +327,7 @@ void APlayerCharacter::HealByItem() const
 	{
 		ManagerComponent->HealByRate(30.f);
 	}
-	ARLMainGameState* GSB = Cast<ARLMainGameState>(UGameplayStatics::GetGameState(this));
-	if (GSB)
+	if (ARLMainGameState* GSB = Cast<ARLMainGameState>(UGameplayStatics::GetGameState(this)))
 	{
 		GSB->AteHealThisCell();
 	}
@@ -358,8 +352,7 @@ void APlayerCharacter::RequestItemSwap(const UItemInfo* OldItem, const UItemInfo
 
 void APlayerCharacter::Recall()
 {
-	URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
-	if (GI)
+	if (URLGameInstance* GI = URLGameInstance::GetRLGameInst(this))
 	{
 		GI->ReadyToRecall();
 	}

@@ -29,9 +29,7 @@ private:
 	bool bIsDead;
 	UPROPERTY()
 	APlayerCharacter* Char;
-
-	FRotator CharacterRotationLastFrame;
-	FRotator CharacterRotation;
+	
 	FRotator DeltaRotation;
 
 public:

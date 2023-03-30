@@ -3,6 +3,7 @@
 
 #include "Animation/UMGSequencePlayer.h"
 #include "Animation/WidgetAnimation.h"
+#include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
 #include "Kismet/KismetStringLibrary.h"
@@ -148,11 +149,13 @@ float UTutorialWidget::PlayFadeAnimation(bool IsForward)
 void UTutorialWidget::Skip()
 {
 	URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
+	UWidgetLayoutLibrary::RemoveAllWidgets(this);
 	if (GI && GI->GetListenerManager())
 	{
 		GI->GetListenerManager()->OnTutorialCompleted();
 	}
-	RemoveFromParent();
+	//RemoveFromParent();
+	
 }
 
 void UTutorialWidget::ActivateTyping()

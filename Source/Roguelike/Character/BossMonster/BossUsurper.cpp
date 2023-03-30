@@ -3,7 +3,7 @@
 
 ABossUsurper::ABossUsurper()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 }
 
 void ABossUsurper::BeginPlay()
@@ -15,7 +15,7 @@ void ABossUsurper::ExecuteSkill()
 {
 	if (GetSkillFlipflop())
 	{
-		int32 RandValue = FMath::RandRange(1, 4);
+		const int32 RandValue = FMath::RandRange(1, 4);
 		if (RandValue == 1)
 		{
 			Whirlwind();
@@ -37,16 +37,5 @@ void ABossUsurper::ExecuteSkill()
 			Square();
 		}
 		SetSkillFlipflop(true);
-	}
-}
-
-
-void ABossUsurper::Destroyed()
-{
-	Super::Destroyed();
-
-	if (GetBossEgo())
-	{
-		GetBossEgo()->Destroy();
 	}
 }

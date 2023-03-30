@@ -27,7 +27,6 @@ void ARLTutorialGameMode::BeginPlay()
 			TutorialWidget->VisibleDescWidget(false);
 		}
 	}
-	
 }
 
 void ARLTutorialGameMode::SpawnTutorialMonster()
@@ -41,12 +40,9 @@ void ARLTutorialGameMode::SpawnTutorialMonster()
 	 	HealthManager.CurrentHP = 99999.f;
 	 	FCombatManager CombatManager;
 	 	
-	 	//Mob->SetKindOfMonster(EKindOfMonster::Tutorial);
 	 	Mob->GetManagerComp()->SetManager(HealthManager, CombatManager);
 	 }
 }
-
-
 
 UTutorialManager* ARLTutorialGameMode::GetTutorialManager() const
 {

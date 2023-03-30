@@ -8,14 +8,11 @@ void UBTServiceCheckDistFromBoss::TickNode(UBehaviorTreeComponent& OwnerComp, ui
 {
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 
-	UBlackboardComponent* BBComp = OwnerComp.GetBlackboardComponent();
-	if (BBComp)
+	if (UBlackboardComponent* BBComp = OwnerComp.GetBlackboardComponent())
 	{
-		AActor* Boss = Cast<AActor>(BBComp->GetValueAsObject("Boss"));
-		if (Boss)
+		if (AActor* Boss = Cast<AActor>(BBComp->GetValueAsObject("Boss")))
 		{
-			AActor* AIOwner = OwnerComp.GetAIOwner()->GetPawn();
-			if(AIOwner)
+			if(AActor* AIOwner = OwnerComp.GetAIOwner()->GetPawn())
 			{
 				const float Dist = Boss->GetDistanceTo(AIOwner);
 				if (Dist >= 200.f)
@@ -28,5 +25,4 @@ void UBTServiceCheckDistFromBoss::TickNode(UBehaviorTreeComponent& OwnerComp, ui
 			}
 		}
 	}
-	
 }

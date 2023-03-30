@@ -37,7 +37,7 @@ private:
 	UBlackboardComponent* BBComp;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UBehaviorTreeComponent* BTComp;
-	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UBehaviorTree* BehaviorTree;
 	UPROPERTY()
 	AMonsterCharacter* Monster;

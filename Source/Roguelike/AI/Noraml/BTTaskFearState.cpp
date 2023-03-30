@@ -7,17 +7,18 @@ EBTNodeResult::Type UBTTaskFearState::ExecuteTask(UBehaviorTreeComponent& OwnerC
 {
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 	
-	APawn* Monster = Cast<APawn>(OwnerComp.GetAIOwner()->GetPawn());
-	UBlackboardComponent* BBComp = OwnerComp.GetBlackboardComponent();
-	if (BBComp)
+	
+	
+	if (UBlackboardComponent* BBComp = OwnerComp.GetBlackboardComponent())
 	{
 		AActor* Target = Cast<AActor>(BBComp->GetValueAsObject("Target"));
+		APawn* Monster = Cast<APawn>(OwnerComp.GetAIOwner()->GetPawn());
 		BBComp->SetValueAsObject("Target", nullptr);
 		if (Target && Monster)
 		{
 			FVector ReverseToTargetVector = Monster->GetActorLocation() - Target->GetActorLocation();
 			ReverseToTargetVector = ReverseToTargetVector.GetSafeNormal();
-			FVector ToGoVector = Monster->GetActorLocation() + ReverseToTargetVector * 1000.f;
+			const FVector ToGoVector = Monster->GetActorLocation() + ReverseToTargetVector * 1000.f;
 			BBComp->SetValueAsVector("FearLocation", ToGoVector);
 		}
 	}

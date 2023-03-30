@@ -7,8 +7,8 @@ public class Roguelike : ModuleRules
 	public Roguelike(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "UMG", "AIModule", "GameplayTasks", "NavigationSystem", "Niagara"});
+
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "UMG", "AIModule", "GameplayTasks", "NavigationSystem", "Niagara", "RoguelikeLoadingScreen", "MoviePlayer"});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

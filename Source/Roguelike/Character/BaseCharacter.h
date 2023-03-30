@@ -23,6 +23,7 @@ public:
 	virtual void OnHit(const FCombatManager& EnemyCombatManager, const FItemManager& EnemyItemManager, AActor* Attacker, AActor* DamageCauser, TSubclassOf<UDamageType> DamageType);
 	virtual void Attack();
 	virtual void Dead();
+	virtual void Spawn();
 	bool IsDead();
 	FCombatManager GetCombatManager() const;
 	virtual void ShowNumWidget(float Damage, bool IsCritical, bool IsHeal, bool IsDodge);

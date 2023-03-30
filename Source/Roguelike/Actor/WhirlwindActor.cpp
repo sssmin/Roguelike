@@ -31,7 +31,6 @@ void AWhirlwindActor::BeginPlay()
 
 	FTimerHandle ActiveTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(ActiveTimerHandle, this, &ThisClass::ActiveThisSkill, ActiveTime, false);
-
 	GetWorld()->GetTimerManager().SetTimer(DestroyTimerHandle, this, &ThisClass::DestroyThisSkill, DestoryTime, false);
 	if (BoxComponent)
 	{
@@ -84,7 +83,10 @@ void AWhirlwindActor::DestroyThisSkill()
 	{
 		ParticleSystemComp->DestroyComponent();
 	}
-	Cast<ABossMonsterCharacter>(GetOwner())->RemoveSpawnedWhirlwindActor(this);
+	if (ABossMonsterCharacter* BossCharacter = Cast<ABossMonsterCharacter>(GetOwner()))
+	{
+		BossCharacter->RemoveSpawnedWhirlwindActor(this);
+	}
 	Destroy();
 }
 

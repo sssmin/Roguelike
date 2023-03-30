@@ -36,8 +36,8 @@ public:
 	void SetDefaultSpeed();
 	void RequestHeal(AActor* Requester);
 	virtual void Dead() override;
-	virtual void SetIsDeadAnimInst();
-	virtual void SetIsDeadBB();
+	virtual void SetIsDeadAnimInst(bool InIsDead);
+	virtual void SetIsDeadBB(bool InIsDead);
 	virtual void ShowNumWidget(float Damage, bool IsCritical, bool IsHeal, bool IsDodge) override;
 	virtual void SetStateIcon(EState State) override;
 	virtual void RemoveStateIcon(EState State) override;
@@ -45,6 +45,11 @@ public:
 	virtual void SetBuffIcon(EBuff Buff) override;
 	virtual void RemoveBuffIcon(EBuff Buff) override;
 	virtual void FlickerBuffIcon(EBuff Buff) override;
+	void SetActive(bool Active);
+	bool IsActive();
+	virtual void Deactivate();
+	void SpawnInit(const FHealthManager& InHealthManager, const FCombatManager& InCombatManager, FVector& SpawnLocation);
+	void DisconnectController();
 	
 protected:
 	void FireOneToTwo(TSubclassOf<UDamageType> DamageType);
@@ -55,17 +60,14 @@ protected:
 	void Fire3Projectile(TSubclassOf<UDamageType> DamageType);
 	void Meteor(const TSubclassOf<AMeteorActor>& Actor, AActor* Target);
 	void RemoveHPWidget();
+	void CalcGiveBuffPer();
+	void DeadInit();
+	
 	UPROPERTY()
 	ARLMonsterAIController* RLAIController;
-	
 private:
-	void ExecuteDestroy();
-	void CalcGiveBuffPer();
-	
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UMonsterCombatComponent* MonsterCombatComp;
-	
-	EKindOfMonster KindOfMonster;
 	UPROPERTY(EditInstanceOnly, Meta = (AllowPrivateAccess = "true"))
 	UWidgetComponent* HPBarWidgetComp;
 	UPROPERTY()
@@ -80,11 +82,13 @@ private:
 	USoundCue* HealSoundCue;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* HealParticle;
+	UPROPERTY(VisibleAnywhere)
+	EMonsterType MonsterType;
 	
 	float DefaultSpeed;
 	float PatrolSpeed;
-	UPROPERTY(VisibleAnywhere)
-	EMonsterType MonsterType;
+	bool bActive;
+	EKindOfMonster KindOfMonster;
 	
 public:
 	void SetMonsterType(EMonsterType Type) { MonsterType = Type; }

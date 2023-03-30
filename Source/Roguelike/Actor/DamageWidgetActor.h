@@ -22,6 +22,7 @@ public:
 private:
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UWidgetComponent* NumWidgetComp;
+	
 	float DestroyTime;
 
 public:

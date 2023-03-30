@@ -20,7 +20,6 @@ void ARLMainGameState::BeginPlay()
 	Super::BeginPlay();
 
 	RLGameMode = Cast<ARLMainGameMode>(UGameplayStatics::GetGameMode(this));
-
 	RLPlayerController = Cast<ARLPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
 	
 	if(GetRLGameInst() && GetRLGameInst()->GetListenerManager())
@@ -87,7 +86,7 @@ void ARLMainGameState::SetObjective()
 			{
 				ObjectiveNum = 6;
 			}
-			RLGameMode->RequestSpawnMob(StageLevel, ObjectiveNum++); //�⺻ �ͷ� 1 ++
+			RLGameMode->RequestSpawnMob(StageLevel, ObjectiveNum++); //Turret +1
 			break;
 		case ECellType::Boss:
 			ObjectiveNum = 1;
@@ -117,9 +116,12 @@ void ARLMainGameState::KillScored()
 {
 	if (++CurrentNum == ObjectiveNum)
 	{
+		
 		ClearThisCell();
 		CreateSidePortal();
 	}
+	UE_LOG(LogTemp, Warning, TEXT("CurrentNum : %d"), CurrentNum);
+	UE_LOG(LogTemp, Warning, TEXT("ObjectiveNum : %d"), ObjectiveNum);
 }
 
 void ARLMainGameState::ClearThisCell()

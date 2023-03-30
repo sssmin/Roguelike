@@ -50,6 +50,7 @@ AMonsterCharacter::AMonsterCharacter()
 	{
 		BT = BTObject.Object;
 	}
+	RLAIController = nullptr;
 }
 
 void AMonsterCharacter::BeginPlay()
@@ -60,15 +61,13 @@ void AMonsterCharacter::BeginPlay()
 	{
 		MonsterCombatComp->GetCombatManager.BindUObject(this, &ABaseCharacter::GetCombatManager);
 	}
-
-	RLAIController = Cast<ARLMonsterAIController>(GetController());
 }
 
 void AMonsterCharacter::GiveBTToController()
 {
-	RLAIController = RLAIController == nullptr ? Cast<ARLMonsterAIController>(GetController()) : RLAIController;
+	RLAIController = Cast<ARLMonsterAIController>(GetController());
 	
-	if (RLAIController)
+	if (RLAIController && BT)
 	{
 		RLAIController->SetBehaviorTree(BT);
 	}
@@ -77,8 +76,6 @@ void AMonsterCharacter::GiveBTToController()
 void AMonsterCharacter::OnHit(const FCombatManager& EnemyCombatManager, const FItemManager& EnemyItemManager, AActor* Attacker, AActor* DamageCauser, TSubclassOf<UDamageType> DamageType)
 {
 	Super::OnHit(EnemyCombatManager, EnemyItemManager, Attacker, DamageCauser, DamageType);
-
-	RLAIController = RLAIController == nullptr ? Cast<ARLMonsterAIController>(GetController()) : RLAIController;
 
 	if (RLAIController)
 	{
@@ -108,17 +105,14 @@ void AMonsterCharacter::RequestHeal(AActor* Requester) //Turret 시점
 	if (Requester)
 	{
 		if (Cast<AMonsterCharacter>(Requester)->IsDead()) return;
-		ARLMonsterAIController* AIController = Cast<ARLMonsterAIController>(GetController());
 	
-		if (AIController)
+		if (ARLMonsterAIController* AIController = Cast<ARLMonsterAIController>(GetController()))
 		{
-			UBlackboardComponent* BBComp = AIController->GetBlackboardComponent();
-			if (BBComp)
+			if (UBlackboardComponent* BBComp = AIController->GetBlackboardComponent())
 			{
 				if (BBComp->GetValueAsBool(FName("CanHeal")))
 				{
-					UManagerComponent* ManagerComp = UManagerComponent::GetManagerComp(Requester);
-					if (ManagerComp)
+					if (UManagerComponent* ManagerComp = UManagerComponent::GetManagerComp(Requester))
 					{
 						ManagerComp->HealByRate(50.f);
 						BBComp->SetValueAsBool(FName("CanHeal"), false);
@@ -139,35 +133,33 @@ void AMonsterCharacter::RequestHeal(AActor* Requester) //Turret 시점
 
 void AMonsterCharacter::Dead()
 {
-	Super::Dead();
+	Super::Dead(); //움직임X, NoCollision
 	
 	CalcGiveBuffPer();
-	SetIsDeadAnimInst();
-	SetIsDeadBB();
+	SetIsDeadAnimInst(true);
+	SetIsDeadBB(true);    
 	RemoveHPWidget();
+	DeadInit();
 	
 	FTimerHandle DestroyTimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(DestroyTimerHandle, this, &ThisClass::ExecuteDestroy, 3.f);
+	GetWorld()->GetTimerManager().SetTimer(DestroyTimerHandle, this, &ThisClass::Deactivate, 3.f);
 }
 
-void AMonsterCharacter::SetIsDeadAnimInst()
+void AMonsterCharacter::SetIsDeadAnimInst(bool InIsDead)
 {
 	if (GetMesh() && Cast<UMonsterAnimInstance>(GetMesh()->GetAnimInstance()))
 	{
-		Cast<UMonsterAnimInstance>(GetMesh()->GetAnimInstance())->SetIsDead((true));
+		Cast<UMonsterAnimInstance>(GetMesh()->GetAnimInstance())->SetIsDead(InIsDead);
 	}
 }
 
-void AMonsterCharacter::SetIsDeadBB()
+void AMonsterCharacter::SetIsDeadBB(bool InIsDead)
 {
-	ARLMonsterAIController* AIController = Cast<ARLMonsterAIController>(GetController());
-	
-	if (AIController)
+	if (ARLMonsterAIController* AIController = Cast<ARLMonsterAIController>(GetController()))
 	{
-		UBlackboardComponent* BBComp = AIController->GetBlackboardComponent();
-		if (BBComp)
+		if (UBlackboardComponent* BBComp = AIController->GetBlackboardComponent())
 		{
-			BBComp->SetValueAsBool("IsDead", true);
+			BBComp->SetValueAsBool("IsDead", InIsDead);
 		}
 	}
 }
@@ -260,11 +252,6 @@ void AMonsterCharacter::FireSpread8PartsFromCenter(TSubclassOf<UDamageType> Dama
 	}
 }
 
-void AMonsterCharacter::ExecuteDestroy()
-{
-	Destroy();
-}
-
 void AMonsterCharacter::SetHPBarWidget(const TSubclassOf<UHPBarWidget>& Widget)
 {
 	if (HPBarWidgetComp && Widget)
@@ -304,7 +291,8 @@ void AMonsterCharacter::RemoveHPWidget()
 	{
 		if (HPBarWidgetComp)
 		{
-			HPBarWidgetComp->DestroyComponent();
+			//HPBarWidgetComp->DestroyComponent();
+			HPBarWidgetComp->SetVisibility(false);
 		}
 	}
 	else
@@ -404,5 +392,67 @@ void AMonsterCharacter::CalcGiveBuffPer()
 				}
 			}	
 		}
+	}
+}
+
+void AMonsterCharacter::SetActive(bool Active)
+{
+	bActive = Active;
+	SetActorHiddenInGame(!Active);
+}
+
+void AMonsterCharacter::Deactivate()
+{
+	SetActive(false);
+	SetActorLocation(FVector(0.f, 0.f, -300.f));
+}
+
+bool AMonsterCharacter::IsActive()
+{
+	return bActive;
+}
+
+void AMonsterCharacter::DisconnectController()
+{
+	if (GetController())
+	{
+		AController* TempController = GetController();
+		GetController()->UnPossess();
+		TempController->Destroy();
+	}
+	RLAIController = nullptr;
+}
+
+void AMonsterCharacter::DeadInit()
+{
+	if (GetMonsterCombatComp() && GetManagerComp())
+	{
+		GetMonsterCombatComp()->SetTurret(nullptr);
+		GetManagerComp()->SetManager(FHealthManager(), FCombatManager());
+	}
+	DisconnectController();
+	KindOfMonster = EKindOfMonster::MAX;
+	MonsterType = EMonsterType::Normal;
+}
+
+void AMonsterCharacter::SpawnInit(const FHealthManager& InHealthManager, const FCombatManager& InCombatManager, FVector& SpawnLocation)
+{
+	if (GetManagerComp())
+	{
+		GetManagerComp()->SetManager(InHealthManager, InCombatManager);	
+		SpawnDefaultController();
+		
+		GiveBTToController();
+		SetActive(true);
+		SetActorLocation(SpawnLocation);
+		SetIsDeadAnimInst(false);
+		SetIsDeadBB(false);
+		if (HPBarWidgetComp)
+		{
+			HPBarWidgetComp->SetVisibility(true);
+			GetManagerComp()->HPSync();
+			GetManagerComp()->InitState();
+		}
+		Spawn();
 	}
 }
