@@ -68,7 +68,7 @@ public:
 	void LoadItem(TArray<UItemInfo*> ItemInfos);
 	
 protected:
-	virtual void OnPossess(APawn* aPawn) override;
+	virtual void OnPossess(APawn* InPawn) override;
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 	
@@ -108,6 +108,7 @@ private:
 	APlayerCharacter* PlayerCharacter;
 	UPROPERTY()
 	APlayersCamera* CurrentPlayersCamera;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Meta = (AllowPrivateAccess = "true"))
 	FTimerHandle RecallTimerHandle;
 	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Meta = (AllowPrivateAccess = "true"))

@@ -54,6 +54,5 @@ struct FInfoRecord
 
 		return Ar;
 	}
-	
 };
 

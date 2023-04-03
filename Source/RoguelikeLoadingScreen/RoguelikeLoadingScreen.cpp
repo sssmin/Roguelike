@@ -7,7 +7,6 @@ class FRoguelikeLoadingScreenModule : public IRoguelikeLoadingScreenModule
 public:
 	virtual void StartupModule() override
 	{
-		// Force load for cooker reference
 		LoadObject<UObject>(nullptr, TEXT("/Game/UI/T_MyProject_TransparentLogo.T_MyProject_TransparentLogo") );
 	}
 	

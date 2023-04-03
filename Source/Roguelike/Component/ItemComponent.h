@@ -7,7 +7,6 @@
 #include "Roguelike/Type/ItemManage.h"
 #include "ItemComponent.generated.h"
 
-class UManagerComponent;
 class ARLPlayerController;
 
 
@@ -47,8 +46,6 @@ private:
 	
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
 	FItemManager ItemManager;
-	UPROPERTY()
-	UManagerComponent* ManagerComp;
 	
 	const uint8 FIX_MAX_STACK = 10;
 	
@@ -59,6 +56,5 @@ private:
 	
 public:
 	FItemManager GetItemManager() const { return ItemManager; }
-	void SetManagerComp(UManagerComponent* Comp) { ManagerComp = Comp; }
 	TArray<UItemInfo*> GetItemInfos() const { return ItemInfos; }
 };

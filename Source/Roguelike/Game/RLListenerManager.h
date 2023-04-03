@@ -17,6 +17,12 @@ DECLARE_MULTICAST_DELEGATE(FOnStartTutorial);
 DECLARE_DELEGATE(FOnStepCompleted)
 DECLARE_DELEGATE(FOnTutorialCompleted);
 DECLARE_DELEGATE_RetVal(bool, FHaveCCState)
+DECLARE_DELEGATE_OneParam(FOnUpdateCurrentAtk, const float);
+DECLARE_DELEGATE_OneParam(FOnUpdateMaxHP, const float);
+DECLARE_DELEGATE_OneParam(FOnHealByValue, const float);
+DECLARE_DELEGATE_OneParam(FOnUpdateCurrentRange, const float);
+DECLARE_DELEGATE_OneParam(FOnUpdateCurrentCritical, const float);
+DECLARE_DELEGATE_RetVal_OneParam(bool, FCheckOnceItem, uint8);
 
 UCLASS()
 class ROGUELIKE_API URLListenerManager : public UObject
@@ -47,5 +53,17 @@ public:
 	void OnTutorialCompleted() const;
 	FHaveCCState HaveCCStateDelegate;
 	bool HaveCCState() const;
+	FOnUpdateCurrentAtk OnUpdateCurrentAtkDelegate;
+	void OnUpdateCurrentAtk(const float AddToValue) const;
+	FOnUpdateMaxHP OnUpdateMaxHPDelegate;
+	void OnUpdateMaxHP(const float AddToValue) const;
+	FOnHealByValue OnHealByValueDelegate;
+	void OnHealByValue(const float AddToValue) const;
+	FOnUpdateCurrentRange OnUpdateCurrentRangeDele;
+	void OnUpdateCurrentRange(const float AddToValue) const;
+	FOnUpdateCurrentCritical OnUpdateCurrentCriticalDele;
+	void OnUpdateCurrentCritical(const float AddToValue) const;
+	FCheckOnceItem CheckOnceItemDelegate;
+	bool CheckOnceItem(uint8 Item);
 	
 };

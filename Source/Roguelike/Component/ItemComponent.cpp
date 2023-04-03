@@ -33,6 +33,7 @@ void UItemComponent::BeginPlay()
 		GI->GetListenerManager()->OnSelectItemDelegate.BindUObject(this, &ThisClass::SelectItem);
 		GI->SetTempManageDelegate.AddUObject(this, &ThisClass::SetTempManager);
 		GI->GetListenerManager()->OnLoadGameDelegate.AddUObject(this, &ThisClass::Init);
+		GI->GetListenerManager()->CheckOnceItemDelegate.BindUObject(this, &ThisClass::CheckOnceItem);
 	}
 }
 
@@ -67,7 +68,8 @@ void UItemComponent::RemoveOnceItem(uint8 Item)
 
 void UItemComponent::ApplyInfItem(EINFStackItem Item)
 {
-	if (ManagerComp)
+	URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
+	if (GI && GI->GetListenerManager())
 	{
 		switch (Item)
 		{
@@ -76,7 +78,7 @@ void UItemComponent::ApplyInfItem(EINFStackItem Item)
 				const TArray<float> Per = { 3.f, 6.f, 9.f, 10.f, 12.f, 30.f, 40.f };
 				const TArray<int32> Value = { 9, 8, 7, 6, 5, 3, 2 };
 				const float AddToValue = CalcStatValuePer(Per, Value);
-				ManagerComp->UpdateCurrentAtk(AddToValue);
+				GI->GetListenerManager()->OnUpdateCurrentAtk(AddToValue);
 			}
 			break;
 		case EINFStackItem::IncreaseMaxHp:
@@ -84,8 +86,8 @@ void UItemComponent::ApplyInfItem(EINFStackItem Item)
 				const TArray<float> Per = { 3.f, 6.f, 9.f, 10.f, 12.f, 30.f, 40.f };
 				const TArray<int32> Value = { 28, 24, 21, 18, 15, 12, 10 };
 				const float AddToValue = CalcStatValuePer(Per, Value);
-				ManagerComp->UpdateMaxHP(AddToValue);
-				ManagerComp->HealByValue(AddToValue);
+				GI->GetListenerManager()->OnUpdateMaxHP(AddToValue);
+				GI->GetListenerManager()->OnHealByValue(AddToValue);
 			}
 			break;
 		}
@@ -112,34 +114,41 @@ float UItemComponent::CalcStatValuePer(const TArray<float>& Per, const TArray<in
 
 bool UItemComponent::ApplyFixMaxItem(EFixMaxStackItem Item)
 {
-	if (ManagerComp)
+	URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
+	if (GI && GI->GetListenerManager())
 	{
 		switch (Item)
-		{
-			case EFixMaxStackItem::IncreaseRange:
-			{
-				const uint8 Value = GetFixMaxStack(EFixMaxStackItem::IncreaseRange);
-				if (Value < FIX_MAX_STACK)
-				{
-					IncreaseFixMaxStack(EFixMaxStackItem::IncreaseRange);
-					ManagerComp->UpdateCurrentRange(50.f);
-					return true;
-				}
-				return false;
-			}
-			case EFixMaxStackItem::IncreaseCriticalPer:
-			{
-				const uint8 Value = GetFixMaxStack(EFixMaxStackItem::IncreaseCriticalPer);
-				if (Value < FIX_MAX_STACK)
-				{
-					IncreaseFixMaxStack(EFixMaxStackItem::IncreaseCriticalPer);
-					ManagerComp->UpdateCurrentCritical(1.f);
-					return true;
-				}
-				return false;
-			}
-		}
+        {
+        	case EFixMaxStackItem::IncreaseRange:
+        	{
+        		const uint8 Value = GetFixMaxStack(EFixMaxStackItem::IncreaseRange);
+        		if (Value < FIX_MAX_STACK)
+        		{
+        			IncreaseFixMaxStack(EFixMaxStackItem::IncreaseRange);
+        			//ManagerComp->UpdateCurrentRange(50.f);
+        			GI->GetListenerManager()->OnUpdateCurrentRange(50.f);
+        			return true;
+        		}
+        		return false;
+        	}
+        	case EFixMaxStackItem::IncreaseCriticalPer:
+        	{
+        		const uint8 Value = GetFixMaxStack(EFixMaxStackItem::IncreaseCriticalPer);
+        		if (Value < FIX_MAX_STACK)
+        		{
+        			IncreaseFixMaxStack(EFixMaxStackItem::IncreaseCriticalPer);
+        			//ManagerComp->UpdateCurrentCritical(1.f);
+        			GI->GetListenerManager()->OnUpdateCurrentCritical(1.f);
+        			return true;
+        		}
+        		return false;
+        	}
+        }
 	}
+
+	
+		
+	
 	return false;
 }
 

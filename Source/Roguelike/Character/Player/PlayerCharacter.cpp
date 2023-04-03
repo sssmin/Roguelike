@@ -67,12 +67,6 @@ void APlayerCharacter::BeginPlay()
 			PC->SetInputMode(InputModeData);
 		}
 	}
-	
-	if (ManagerComponent && ItemComp)
-	{
-		ManagerComponent->SetItemComp(ItemComp);
-		ItemComp->SetManagerComp(ManagerComponent);
-	}
 
 	if (PlayerCombatComp)
 	{

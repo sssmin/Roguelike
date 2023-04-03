@@ -28,12 +28,7 @@ void USelectItemCellWidget::Init(UItemInfo* Item, bool IsTutorial)
 		FButtonStyle ButtonStyle;
 		if (ItemInfo->ItemIcon)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("%s"), *ItemInfo->ItemIcon->GetName());
 			ButtonStyle.Normal.SetResourceObject(ItemInfo->ItemIcon);	
-		}
-		else
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("없슴"));
 		}
 		ButtonStyle.Normal.SetImageSize(FVector2D(256.f, 256.f));
 		if (ItemInfo->ItemIcon)

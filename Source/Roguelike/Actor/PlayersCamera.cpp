@@ -106,37 +106,33 @@ void APlayersCamera::MoveCam()
 	const FVector2D MousePos = UWidgetLayoutLibrary::GetMousePositionOnViewport(this);
 	const float ViewportScale = UWidgetLayoutLibrary::GetViewportScale(this);
 	const FVector2D ViewportSize = UWidgetLayoutLibrary::GetViewportSize(this);
-
-	if (SubLoc.X <= 500.f) //뷰포트 상단 500까지 갈 수 있음
+	
+	if (SubLoc.X <= 500.f) //상단ㅇ ㅣ동
 	{
 		float ViewportRange = UKismetMathLibrary::NormalizeToRange(MousePos.Y * ViewportScale, 0.f, ViewportSize.Y * 0.1f);
 		ViewportRange = FMath::Clamp(ViewportRange, 0.f, 1.f);
-
-		const FVector DeltaLoc{ (CameraSpeed) * (1.f - ViewportRange), 0.f , 0.f };
+		const FVector DeltaLoc{ CameraSpeed * (1.f - ViewportRange), 0.f , 0.f };
 		RootComponent->AddRelativeLocation(DeltaLoc);
 	}
-	if (SubLoc.X >= -500.f) 
+	if (SubLoc.X >= -500.f) //하단 이동
 	{
 		float ViewportRange = UKismetMathLibrary::NormalizeToRange(MousePos.Y * ViewportScale, ViewportSize.Y * 0.9f, ViewportSize.Y);
 		ViewportRange = FMath::Clamp(ViewportRange, 0.f, 1.f);
-
-		const FVector DeltaLoc{ -(CameraSpeed * 1.f) * (ViewportRange), 0.f , 0.f };
+		const FVector DeltaLoc{ -CameraSpeed * ViewportRange, 0.f , 0.f };
 		RootComponent->AddRelativeLocation(DeltaLoc);
 	}
-	if (SubLoc.Y <= 500.f)
+	if (SubLoc.Y <= 500.f) //우측 이동
 	{
 		float ViewportRange = UKismetMathLibrary::NormalizeToRange(MousePos.X * ViewportScale, ViewportSize.X * 0.9f, ViewportSize.X);
 		ViewportRange = FMath::Clamp(ViewportRange, 0.f, 1.f);
-
-		const FVector DeltaLoc{ 0.f, (CameraSpeed) * (ViewportRange), 0.f };
+		const FVector DeltaLoc{ 0.f, CameraSpeed * ViewportRange, 0.f };
 		RootComponent->AddRelativeLocation(DeltaLoc);
 	}
-	if (SubLoc.Y >= -500.f)
+	if (SubLoc.Y >= -500.f) //좌측 이동
 	{
 		float ViewportRange = UKismetMathLibrary::NormalizeToRange(MousePos.X * ViewportScale, 0.f, ViewportSize.X * 0.1f);
 		ViewportRange = FMath::Clamp(ViewportRange, 0.f, 1.f);
-
-		const FVector DeltaLoc{ 0.f, (CameraSpeed * -1.f) * (1.f - ViewportRange), 0.f };
+		const FVector DeltaLoc{ 0.f, -CameraSpeed * (1.f - ViewportRange), 0.f };
 		RootComponent->AddRelativeLocation(DeltaLoc);
 	}
 }

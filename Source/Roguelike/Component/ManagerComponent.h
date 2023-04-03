@@ -10,7 +10,6 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUpdateCurrentHP, float, CurrentHP, float, MaxHP);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSetStateNum, int32, Value);
 
-class UItemComponent;
 class UParticleSystem;
 class AController;
 class ABaseCharacter;
@@ -87,8 +86,6 @@ private:
 	uint8 CurrentState;
 	UPROPERTY(Meta = (Bitmask, BitmaskEnum = EBuff))
 	uint8 CurrentBuff;
-	UPROPERTY()
-	UItemComponent* ItemComponent;
 	int32 StateNum;
 	
 	int32 BurnStack;
@@ -132,7 +129,6 @@ public:
 		CombatManager = InCombatManager;
 	}
 	FCombatManager GetCombatManager() const { return CombatManager;  }
-	void SetItemComp(UItemComponent* Comp) { ItemComponent = Comp; }
 	uint8 GetCurrentState() const { return CurrentState; }
 	float GetMaxHP() const { return HealthManager.MaxHP; }
 	

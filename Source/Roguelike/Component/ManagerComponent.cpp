@@ -42,6 +42,11 @@ void UManagerComponent::BeginPlay()
 			GI->GetListenerManager()->OnLoadGameDelegate.AddUObject(this, &ThisClass::Load);
 			GI->GetListenerManager()->OnNewGameDelegate.AddUObject(this, &ThisClass::Init);
 			GI->GetListenerManager()->HaveCCStateDelegate.BindUObject(this, &ThisClass::HaveAnyState);
+			GI->GetListenerManager()->OnUpdateCurrentAtkDelegate.BindUObject(this, &ThisClass::UpdateCurrentAtk);
+			GI->GetListenerManager()->OnUpdateMaxHPDelegate.BindUObject(this, &ThisClass::UpdateMaxHP);
+			GI->GetListenerManager()->OnHealByValueDelegate.BindUObject(this, &ThisClass::HealByValue);
+			GI->GetListenerManager()->OnUpdateCurrentRangeDele.BindUObject(this, &ThisClass::UpdateCurrentRange);
+			GI->GetListenerManager()->OnUpdateCurrentCriticalDele.BindUObject(this, &ThisClass::UpdateCurrentCritical);
 		}
 	}
 }
@@ -132,18 +137,20 @@ void UManagerComponent::SetTempManager() const
 void UManagerComponent::ReceiveDamage(const FCombatManager& EnemyCombatManager, const FItemManager& EnemyItemManager, AActor* Attacker, AActor* DamageCauser, TSubclassOf<UDamageType> DamageType)
 {
 	if (IsDead()) return;
-	
-	if (ABaseCharacter* OwnerCharacter = Cast<ABaseCharacter>(GetOwner()))
+
+	URLGameInstance* GI = URLGameInstance::GetRLGameInst(this);
+	if (GI && GI->GetListenerManager())
 	{
-		float RiskReturn = 1.f;
-		
-		if (ItemComponent)
+		if (ABaseCharacter* OwnerCharacter = Cast<ABaseCharacter>(GetOwner()))
 		{
-			if (ItemComponent->CheckOnceItem(static_cast<uint8>(EOnceEquippedItem::RiskReturn)))
+			float RiskReturn = 1.f;
+		
+			
+			if (GI->GetListenerManager()->CheckOnceItem(static_cast<uint8>(EOnceEquippedItem::RiskReturn)))
 			{
 				RiskReturn = 3.f;
 			}
-			if (ItemComponent->CheckOnceItem(static_cast<uint8>(EOnceEquippedItem::Dodge)))
+			if (GI->GetListenerManager()->CheckOnceItem(static_cast<uint8>(EOnceEquippedItem::Dodge)))
 			{
 				if (IsDodge())
 				{
@@ -151,41 +158,44 @@ void UManagerComponent::ReceiveDamage(const FCombatManager& EnemyCombatManager, 
 					return;
 				}
 			}
-		}
-
-		CalcStateStack(EnemyCombatManager);
-
-		const float Coefficient = CalcCounter(EnemyCombatManager.Element); //계수
-		float EnemyATK = EnemyCombatManager.ATK;
-		const float CriticalPer = CalcCritical(EnemyCombatManager);
-		bool IsCritial = CriticalPer == 2.f ? true : false;
-	
-		if (Cast<USkillDamageType>(DamageType.GetDefaultObject()))
-		{
-			EnemyATK *= 5.f;
-		}
-		else if (Cast<USpecialATKDamageType>(DamageType.GetDefaultObject()))
-		{
-			EnemyATK *= 2.f;
-		}
-	
-		float Result = FMath::Clamp((EnemyATK * Coefficient) * FMath::RandRange(0.9, 1.1) * (RiskReturn) * CriticalPer, 0.f, TNumericLimits<int32>::Max());
-		if (Cast<UMaxHPRatioDamageType>(DamageType.GetDefaultObject()))
-		{
-			Result += (HealthManager.MaxHP * 0.1f);
-		}
-		else if (Cast<UCurrentHPRatioDamageType>(DamageType.GetDefaultObject()))
-		{
-			Result += (HealthManager.CurrentHP * 0.1f);
-		}
-		else if (Cast<ULostHPRatioDamageType>(DamageType.GetDefaultObject()))
-		{
-			Result += (HealthManager.MaxHP - HealthManager.CurrentHP * 0.1f);
-		}
 		
-		OwnerCharacter->ShowNumWidget(Result, IsCritial, false, false);
-		UpdateCurrentHP(-Result);
+
+			CalcStateStack(EnemyCombatManager);
+
+			const float Coefficient = CalcCounter(EnemyCombatManager.Element); //계수
+			float EnemyATK = EnemyCombatManager.ATK;
+			const float CriticalPer = CalcCritical(EnemyCombatManager);
+			bool IsCritial = CriticalPer == 2.f ? true : false;
+	
+			if (Cast<USkillDamageType>(DamageType.GetDefaultObject()))
+			{
+				EnemyATK *= 5.f;
+			}
+			else if (Cast<USpecialATKDamageType>(DamageType.GetDefaultObject()))
+			{
+				EnemyATK *= 2.f;
+			}
+	
+			float Result = FMath::Clamp((EnemyATK * Coefficient) * FMath::RandRange(0.9, 1.1) * (RiskReturn) * CriticalPer, 0.f, TNumericLimits<int32>::Max());
+			if (Cast<UMaxHPRatioDamageType>(DamageType.GetDefaultObject()))
+			{
+				Result += (HealthManager.MaxHP * 0.1f);
+			}
+			else if (Cast<UCurrentHPRatioDamageType>(DamageType.GetDefaultObject()))
+			{
+				Result += (HealthManager.CurrentHP * 0.1f);
+			}
+			else if (Cast<ULostHPRatioDamageType>(DamageType.GetDefaultObject()))
+			{
+				Result += (HealthManager.MaxHP - HealthManager.CurrentHP * 0.1f);
+			}
+		
+			OwnerCharacter->ShowNumWidget(Result, IsCritial, false, false);
+			UpdateCurrentHP(-Result);
+		}
 	}
+	
+	
 }
 
 bool UManagerComponent::CheckState(uint8 State) const

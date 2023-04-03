@@ -50,10 +50,6 @@ void DFSAgrt::Init()
 	BonusCellNum = FMath::RandRange(1, Parts);
 	TotalCellNum -= BonusCellNum;
 
-	//CellCount = 3;
-	//Parts = 2; 
-	//BonusCellNum = 1; //test
-
 	int32 Length = Size.X / 2;
 	int32 Breadth = Size.Y / 2;
 	for (int32 y = 0; y < Breadth; ++y)
@@ -68,16 +64,14 @@ void DFSAgrt::MazeGenerator()
 {
 	int32 CurrentCell = StartCell;
 
-	TArray<int> Path;
 	TArray<int32> SideCells;
-
 	int32 CreatedCellCount = 0;
 	int32 BeforeCell = 0;
 
 	while (true)
 	{
 		SideCells.Empty();
-
+		
 		Board[CurrentCell].Visited = true;
 		Board[CurrentCell].CellState = ECellState::Normal;
 		Board[CurrentCell].CellType = ECellType::Mobs;

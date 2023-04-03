@@ -140,7 +140,6 @@ void ABaseProjectile::SetCombatManage(const FCombatManager& InManager)
 	CombatManager = InManager;
 }
 
-
 void ABaseProjectile::SpawnParticle()
 {
 	if (ProjectileParticle)

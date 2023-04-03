@@ -95,16 +95,15 @@ void ARLPlayerController::PlayerTick(float DeltaTime)
 	LookAtCursor();
 }
 
-void ARLPlayerController::OnPossess(APawn* aPawn)
+void ARLPlayerController::OnPossess(APawn* InPawn)
 {
-	Super::OnPossess(aPawn);
+	Super::OnPossess(InPawn);
 
 	URLGameInstance* GI = Cast<URLGameInstance>(GetGameInstance());
 	if (GI)
 	{
 		GI->RequestInfo();
 	}
-	
 }
 
 void ARLPlayerController::MoveForward(float Value)
@@ -145,21 +144,12 @@ void ARLPlayerController::SetMapInfo(FVector2Int Size, TArray<FCell> InBoard, in
 	Board = InBoard;
 	PlayerCell = PlayerCurrentCell;
 	DrawMap();
+	
+	SetViewTargetWithBlend(nullptr, 0.f);
+	
 	if (CurrentPlayersCamera)
 	{
-		CurrentPlayersCamera->Destroy();
-	}
-	
-	const FTransform SpawnTransform = FTransform(FRotator::ZeroRotator, GetPawn()->GetActorLocation(), FVector(1.f, 1.f, 1.f));
-	FActorSpawnParameters Params;
-	Params.Owner = GetPawn();
-	if (PlayersCameraClass && GetWorld())
-	{
-		CurrentPlayersCamera = GetWorld()->SpawnActor<APlayersCamera>(PlayersCameraClass, SpawnTransform, Params);
-		if (CurrentPlayersCamera)
-		{
-			SetViewTargetWithBlend(CurrentPlayersCamera, 0.7f);
-		}
+		SetViewTargetWithBlend(CurrentPlayersCamera, 0.7f);
 	}
 }
 
@@ -226,7 +216,6 @@ void ARLPlayerController::ShowGameOverWidget()
 		if (GameOverWidget)
 		{
 			FInputModeUIOnly InputModeData;
-			//InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::LockInFullscreen);
 			SetInputMode(InputModeData);
 			
 			GameOverWidget->AddToViewport();
@@ -297,7 +286,6 @@ void ARLPlayerController::LookAtCursor()
 void ARLPlayerController::ResumeController()
 {
 	FInputModeGameAndUI InputModeData;
-	//InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::LockInFullscreen);
 	SetInputMode(InputModeData);
 	SetActorTickEnabled(true);
 }
