@@ -264,8 +264,8 @@ struct FInfoRecord
 
 ### PlayersCamera 클래스
 + 우클릭으로 화면 이동을 위한 클래스.
-+ 마우스 위치, 뷰포트 크기, 뷰포트와 스크린 비율을 구하고, 마우스 위치에 따른 Delta 값으로 카메라 위치 조정
-+ 쿼터뷰로 카메라는 캐릭터 위에 존재. -> 카메라와 캐릭터 거리 X, Y 만으로 계산 후 비교
++ 마우스 위치, 뷰포트 크기, 뷰포트와 스크린 비율을 구하고, 마우스 위치에 따른 Delta 값으로 카메라 위치 조정.
++ 쿼터뷰로 카메라는 캐릭터 위에 존재. -> 카메라와 캐릭터 거리 X, Y 만으로 계산 후 비교.
 ```c++
 void APlayersCamera::MoveCam()
 {
@@ -284,7 +284,15 @@ void APlayersCamera::MoveCam()
 //...
 ```
 + MoveCam 함수는 우클릭을 하면 Tick에서 호출하여 카메라가 이동.
-
++ 방 이동 시 SetViewTargetWithBlend 함수를 이용한 뷰 전환 효과.
+```c++
+SetViewTargetWithBlend(nullptr, 0.f);
+	
+if (CurrentPlayersCamera)
+{
+    SetViewTargetWithBlend(CurrentPlayersCamera, 0.7f);
+}
+```
 ### ManagerComponent
 + 플레이어, 몬스터 캐릭터 스탯을 관리하는 클래스.
 + 2스테이지부터 몬스터는 속성을 가짐. 대미지를 받으면 속성에 따라 속성 스택이 쌓이고 최대 스택이 됐을 때 상태 이상 부여, 지속 시간 관리.
