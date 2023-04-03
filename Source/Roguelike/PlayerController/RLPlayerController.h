@@ -79,7 +79,7 @@ private:
 	void RestorePC();
 	void RecallCancel();
 	void RecallEnd();
-	void DrawMap();
+	void DrawMap(FVector2Int Size, TArray<FCell> InBoard);
 	void ToggleMap();
 	void LookAtCursor();
 
@@ -123,13 +123,9 @@ private:
 	UParticleSystemComponent* RecallStartParticleComp;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* RecallEndParticle;
-	UPROPERTY()
-	TArray<FCell> Board;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UStatNoticeWidget> StatNoticeClass;
 	
-	FVector2Int MapSize;
-	int32 PlayerCell;
 	bool bVisibleMap;
 	
 	

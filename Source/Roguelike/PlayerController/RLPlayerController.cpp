@@ -140,11 +140,7 @@ void ARLPlayerController::MoveRight(float Value)
 
 void ARLPlayerController::SetMapInfo(FVector2Int Size, TArray<FCell> InBoard, int32 PlayerCurrentCell)
 {
-	MapSize = Size;
-	Board = InBoard;
-	PlayerCell = PlayerCurrentCell;
-	DrawMap();
-	
+	DrawMap(Size, InBoard);
 	SetViewTargetWithBlend(nullptr, 0.f);
 	
 	if (CurrentPlayersCamera)
@@ -153,14 +149,14 @@ void ARLPlayerController::SetMapInfo(FVector2Int Size, TArray<FCell> InBoard, in
 	}
 }
 
-void ARLPlayerController::DrawMap()
+void ARLPlayerController::DrawMap(FVector2Int Size, TArray<FCell> InBoard)
 {
 	if (MinimapWidgetClass && GetWorld())
 	{
 		MinimapWidget = CreateWidget<UMinimapWidget>(GetWorld(), MinimapWidgetClass);
 		if (MinimapWidget)
 		{
-			MinimapWidget->Init(MapSize.X, MapSize.Y, Board);
+			MinimapWidget->Init(Size.X, Size.Y, InBoard);
 			MinimapWidget->AddToViewport();
 			bVisibleMap ? MinimapWidget->SetVisibility(ESlateVisibility::Visible) : MinimapWidget->SetVisibility(ESlateVisibility::Hidden);
 		}
