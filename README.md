@@ -2,7 +2,7 @@
 
 포트폴리오 목적으로 제작한 로그라이크 프로토타입<br>
 
-> 아래 이미지 클릭하면 유튜브로 이동합니다. 짧게 플레이 영상만 담았습니다. <br>
+> 아래 이미지 클릭하면 유튜브로 이동합니다. 약 7분 길이의 영상입니다. <br>
 
 [![Image](https://user-images.githubusercontent.com/27758519/230600186-e4bb837b-e38f-4dfa-9073-b8daaf09665c.jpg)](https://youtu.be/VU1xKQi2RtI)
 
