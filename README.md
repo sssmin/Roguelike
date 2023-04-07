@@ -4,6 +4,10 @@
 
 > 아래 이미지 클릭하면 유튜브로 이동합니다. 짧게 플레이 영상만 담았습니다. <br>
 
+[![Image](https://user-images.githubusercontent.com/27758519/230600186-e4bb837b-e38f-4dfa-9073-b8daaf09665c.jpg)](https://youtu.be/VU1xKQi2RtI)
+
+
+
 <br>
 엔진 : UnrealEngine 5.0.3 - UnrealEngine 5.1.1 (반강제 업그레이드..) <br>
 제작기간 : 약 1달 반 <br>
